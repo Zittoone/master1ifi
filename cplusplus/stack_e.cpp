@@ -1,6 +1,6 @@
-#include "stack.h"
+#include "stack_e.h"
 
-Stack::Stack(int n): a(n) {
+Stack::Stack(int n): Array(n) {
   max = 0;
 }
 
@@ -18,7 +18,7 @@ bool Stack::empty() {
 }
 
 int Stack::top() {
-    return a.get(max);
+    return this->get(max);
 }
 
 void Stack::pop() {
@@ -30,10 +30,10 @@ void Stack::pop() {
 }
 
 void Stack::push(const int i) {
-    if((max + 1) == a.capacity())
-        a.expand(10); // valeur arbitraire
+    if((max + 1) == this->capacity())
+        this->expand(10); // valeur arbitraire
 
-    a.set(++max, i);
+    this->set(++max, i);
 }
 
 int Stack::size() {

@@ -1,6 +1,7 @@
-#include "stack.h"
+#include "stack_ap.h"
 
-Stack::Stack(int n): a(n) {
+Stack::Stack(int n) {
+  a = new Array(n);
   max = 0;
 }
 
@@ -9,7 +10,7 @@ Stack::Stack(const Stack&){
 }
 
 Stack::~Stack() {
-
+  delete a;
 }
 
 
@@ -18,22 +19,21 @@ bool Stack::empty() {
 }
 
 int Stack::top() {
-    return a.get(max);
+    return a->get(max);
 }
 
 void Stack::pop() {
     if(empty())
         return;
 
-    // check if this has problem
     max--;
 }
 
 void Stack::push(const int i) {
-    if((max + 1) == a.capacity())
-        a.expand(10); // valeur arbitraire
+    if((max + 1) == a->capacity())
+        a->expand(10); // valeur arbitraire
 
-    a.set(++max, i);
+    a->set(++max, i);
 }
 
 int Stack::size() {

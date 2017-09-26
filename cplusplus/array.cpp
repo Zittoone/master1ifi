@@ -1,43 +1,24 @@
-#include<iostream>
+#include <iostream>
+#include "array.h"
 
-using namespace std;
+//  Constructeur allocation n éléments si spécifié, 10 sinon
+Array::Array(int n) {
+  aSize = n;
+  a = new int[n];
+}
 
-class Array {
+// Constructeur par recopie
+Array::Array(const Array& aCpy){
+  aSize = aCpy.aSize;
+    //for(int i = 0; i < aSize; i++){
+    //  set(i, aCpy.get(i));
+    //}
+}
 
-  private:
-    int *a;
-    int aSize;
-
-  public:
-
-    //  Constructeur allocation n éléments si spécifié, 10 sinon
-    Array(int n=10) {
-        aSize = n;
-        a = new int[n];
-    }
-
-    // Constructeur par recopie
-/*    Array(const Array& aCpy){
-        aSize = aCpy.aSize;
-        for(int i = 0; i < aSize; i++){
-            set(i, aCpy->get(i));
-        }
-    }
-*/
-    // Destructeur
-    ~Array() {
-        delete [] a;
-    }
-
-    void set(const int, const int);
-    int get(const int);
-    int capacity();
-    void print();
-    void nonDecreasingSort();
-    int& operator[](const int);
-    void expand(const int);
-
-};
+// Destructeur
+Array::~Array() {
+  delete [] a;
+}
 
 
 void Array::set(const int i, const int val) {
@@ -64,7 +45,7 @@ int Array::capacity(){
 
 void Array::print(){
     for(int i = 0; i < aSize; i++)
-        cout<<"Elem "<<i<<" "<<a[i]<<endl;
+        std::cout<<"Elem "<<i<<" "<<a[i]<<std::endl;
 }
 
 void Array::nonDecreasingSort(){
@@ -97,16 +78,14 @@ void Array::expand(const int n){
         return;
 
     // On recopie d'abord les valeurs dans le nouvel objet avec sa nouvelle taille
-    int* aNew = new int[n];
+    int* aNew = new int[aSize + n];
 
     for(int i = 0; i < aSize; i++){
         aNew[i] = a[i];
     }
 
-    aSize = n;
+    aSize = aSize + n;
 
     // delete [] a;
     a = aNew;
 }
-
-

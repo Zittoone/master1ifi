@@ -2,7 +2,7 @@
 # Basic C++: makefile example to use as a reminder or as a template
 #-----------------------------------------------------------------------
 # Julien DeAntoni --- No Copyright 2016
-# $Id: convenient Makefile but muist be tuned for templated project 
+# $Id: convenient Makefile but muist be tuned for templated project
 #      v0.2 2016/09/06
 #=======================================================================
 
@@ -16,17 +16,17 @@ LINKER =g++
 #options for linker and compiler
 FLAGS =-g -ansi -Wall -Wextra -Wold-style-cast -Woverloaded-virtual -D_DEBUG_ -std=c++11
 
-EXE_NAME= palindrome.exe
+EXE_NAME= main
 
 #can have several ones separated by spaces, only cpp files
-SOURCES = main_palindrome.cpp myUtils.cpp
+SOURCES = main.cpp array.cpp stack_e.cpp
 
 
 #PATH to extra header used in the project (when using libs not installed in the OS)
 INC_PATHS= -I
 
 #extra libs used in the project (for instance -lpthread)
-LIBS	= -L 
+LIBS	= -L
 
 LINKOBJ	= $(SOURCES:.cpp=.o)
 SOURCEHEADERS = $(SOURCES:.cpp=.h)
@@ -40,4 +40,3 @@ $(EXE_NAME): $(LINKOBJ)
 # cleanup
 clean:
 	rm -f $(LINKOBJ)
-
