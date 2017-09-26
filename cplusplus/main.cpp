@@ -101,13 +101,13 @@ void Array::expand(const int n){
         return;
 
     // On recopie d'abord les valeurs dans le nouvel objet avec sa nouvelle taille
-    int* aNew = new int[n];
+    int* aNew = new int[aSize + n];
 
     for(int i = 0; i < aSize; i++){
         aNew[i] = a[i];
     }
 
-    aSize = n;
+    aSize = aSize + n;
 
     // delete [] a;
     a = aNew;
@@ -133,8 +133,6 @@ class Stack {
 
     ~Stack() {
 
-    delete &a;
-
     }
 
     bool empty();
@@ -157,7 +155,7 @@ void Stack::pop() {
         return;
 
     // check if this has problem
-    delete &a[max--];
+    max--;
 }
 
 void Stack::push(const int i) {
@@ -201,7 +199,7 @@ Array a;
     myArray[3] = 2;
     cout << "valeur de 3:" << myArray.get(3) << endl;
 
-    myArray.expand(15);
+    myArray.expand(10);
     myArray.print();
 
 	Stack s;
@@ -209,6 +207,24 @@ Array a;
     s.push(2);
     s.push(9);
     s.pop();
+	s.push(44);
+    s.push(4);
+    s.push(8);
+	s.push(2);
+    s.push(1);
+    s.push(4);
+	s.push(8);
+    s.push(6);
+    s.push(5);
+	s.pop();
+	s.pop();
+	s.pop();
+	s.pop();
+	s.pop();
+	s.pop();
+	s.pop();
+	s.pop();
+	cout << s.top() << endl;
 
     return 0;
 }
