@@ -19,7 +19,7 @@ FLAGS =-g -ansi -Wall -Wextra -Wold-style-cast -Woverloaded-virtual -D_DEBUG_ -s
 EXE_NAME= main
 
 #can have several ones separated by spaces, only cpp files
-SOURCES = main.cpp array.cpp stack_e.cpp
+SOURCES = main.cpp array.cpp stack_s.cpp
 
 
 #PATH to extra header used in the project (when using libs not installed in the OS)

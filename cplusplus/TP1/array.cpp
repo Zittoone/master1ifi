@@ -86,6 +86,5 @@ void Array::expand(const int n){
 
     aSize = aSize + n;
 
-    // delete [] a;
     a = aNew;
 }

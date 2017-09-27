@@ -1,0 +1,61 @@
+#include "stack_s.h"
+
+Stack::Stack(int n) {
+	tab = new int[n];
+	max = 0;
+	capacity = n;	
+}
+
+Stack::Stack(const Stack& s) : 
+	tab( s.tab ),
+	capacity( s.capacity),
+	max( s.max)	
+{}
+
+Stack::~Stack() {
+	delete [] tab;
+}
+
+
+bool Stack::empty() {
+    return max == 0;
+}
+
+int Stack::top() {
+    return tab[max];
+}
+
+void Stack::pop() {
+    if(empty())
+        return;
+
+    max--;
+}
+
+void Stack::push(const int i) {
+    if((max + 1) == capacity)
+        expand(10); // valeur arbitraire
+
+    tab[++max] = i;
+}
+
+int Stack::size() {
+    return max;
+}
+
+void Stack::expand(const int n){
+	if(n < 1)
+        return;
+
+    // On recopie d'abord les valeurs dans le nouvel objet avec sa nouvelle taille
+    int* aNew = new int[capacity + n];
+
+    for(int i = 0; i < capacity; i++){
+        aNew[i] = tab[i];
+    }
+
+    capacity = capacity + n;
+
+    tab = aNew;
+}
+
