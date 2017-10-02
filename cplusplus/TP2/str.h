@@ -12,9 +12,14 @@ class Str {
 	~Str();
 
 	void print();
-	void printDebug();
+	void printDebug(const char*);
 	char* ch();
 	void concat(/*const int,*/ const char*);
+	void concat2(Str);
+	Str concat3(Str);
+	Str concat4(Str&);
+
+	//Str& operator+(const Str);
 
 };
 
