@@ -31,7 +31,6 @@ Vous pouvez construire le comportement de votre créature au fur et à mesure en
 
         double moySpeed = 0.;
         double moyDirection = 0.;
-        //double distMin = 0.;
 
         List<AbstractCreature> creaturesAround = environment.creaturesAround(this);
         if(!creaturesAround.isEmpty()){
@@ -39,11 +38,16 @@ Vous pouvez construire le comportement de votre créature au fur et à mesure en
             for (AbstractCreature creature : creaturesAround){
                 moySpeed += creature.getSpeed();
                 moyDirection += creature.getDirection();
+
+                if(creature.distanceFromAPoint(this.position()) < 5){
+                    moyDirection = -direction * creaturesAround.size();
+                    break;
+                }
             }
 
             speed = moySpeed / creaturesAround.size();
-            setDirection(moyDirection / creaturesAround.size());
-            // direction = moyDirection / creaturesAround.size();
+            direction = moyDirection / creaturesAround.size();
+
         }
 
         double incX = speed * cos(direction);
