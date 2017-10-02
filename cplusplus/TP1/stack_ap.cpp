@@ -5,7 +5,7 @@ Stack::Stack(int n) {
   max = 0;
 }
 
-Stack::Stack(const Stack&){
+Stack::Stack(const Stack&) : a(new Array(*(s.a))), max(s.max){
 
 }
 
@@ -30,10 +30,10 @@ void Stack::pop() {
 }
 
 void Stack::push(const int i) {
-    if((max + 1) == a->capacity())
-        a->expand(10); // valeur arbitraire
+    if(max  == a->capacity())
+        a->expand(2 * max); // valeur arbitraire
 
-    a->set(++max, i);
+    a->set(max++, i);
 }
 
 int Stack::size() {

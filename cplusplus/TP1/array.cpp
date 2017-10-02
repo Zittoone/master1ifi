@@ -10,9 +10,9 @@ Array::Array(int n) {
 // Constructeur par recopie
 Array::Array(const Array& aCpy){
   aSize = aCpy.aSize;
-    //for(int i = 0; i < aSize; i++){
-    //  set(i, aCpy.get(i));
-    //}
+    for(int i = 0; i < aSize; i++){
+      set(i, aCpy.get(i));
+    }
 }
 
 // Destructeur

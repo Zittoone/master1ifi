@@ -4,8 +4,8 @@ Stack::Stack(int n): Array(n) {
   max = 0;
 }
 
-Stack::Stack(const Stack&){
-
+Stack::Stack(const Stack& s) : Array(s){
+	max = s.max;
 }
 
 Stack::~Stack() {
@@ -30,10 +30,10 @@ void Stack::pop() {
 }
 
 void Stack::push(const int i) {
-    if((max + 1) == this->capacity())
-        this->expand(10); // valeur arbitraire
+    if((max) == this->capacity())
+        this->expand(2 * max);
 
-    this->set(++max, i);
+    this->set(max++, i);
 }
 
 int Stack::size() {

@@ -7,7 +7,7 @@ Stack::Stack(int n) {
 }
 
 Stack::Stack(const Stack& s) : 
-	tab( s.tab ),
+	tab( new int[s.max] ),
 	capacity( s.capacity),
 	max( s.max)	
 {}
@@ -22,7 +22,7 @@ bool Stack::empty() {
 }
 
 int Stack::top() {
-    return tab[max];
+    return tab[max - 1];
 }
 
 void Stack::pop() {
@@ -33,10 +33,10 @@ void Stack::pop() {
 }
 
 void Stack::push(const int i) {
-    if((max + 1) == capacity)
-        expand(10); // valeur arbitraire
+    if((max ) == capacity)
+        expand(2 * capacity); // valeur arbitraire
 
-    tab[++max] = i;
+    tab[max++] = i;
 }
 
 int Stack::size() {
