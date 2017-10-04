@@ -2,7 +2,7 @@
 #include "str.h"
 #include <string.h>
 
-Str::Str(){
+Str::Str() /*: ch(new char[1])*/ {
 	string = new char[1];
 	string[0] = '\0';
 	print();
@@ -35,7 +35,7 @@ Str::Str(const Str& s){
 Str::~Str(){
 	print();
 	printDebug(__FUNCTION__);
-	// delete string;
+	delete [] string;
 }
 
 void Str::print(){
@@ -71,9 +71,16 @@ void Str::concat(/*const int i,*/ const char* c){
 
 	temp[cLength + sLength] = '\0';
 
+	delete [] string;
+
 	string = temp;
 }
 
+/*
+ * Le constructeur par recopie est appelé -> création d'un objet temporaire car pas pointeur
+ * puis destruction de ce même objet
+ * si b est modifié dans la fonction il n'est pas modifié globalement
+ */
 void Str::concat2(Str b){
 	concat(b.ch());
 }
@@ -137,4 +144,10 @@ Str operator+(Str& a, Str& b) {
 Str operator<(Str& a, Str& b)
 {
 	return Str();
+}
+
+Str& Str::operator=(Str b)
+{
+	std::swap(string, b.string);
+	return *this; 
 }

@@ -28,6 +28,8 @@ class Str {
 	// friend Str operator+(Str&, Str&); // non testé
 	friend Str operator<(Str&, Str&);
 
+	Str& operator=(Str);
+
 
 };
 
