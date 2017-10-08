@@ -19,15 +19,28 @@
 
 #include <iostream>
 #include "Engine.h"
+#include "Papillon.h"
+#include "MyGraphicEngine.h"
+#include "MyGameEngine.h"
+#include "MyControlEngine.h"
 #include <chrono>
 #include <thread>
 
 int main(int argc, char * argv[])
 {
     
-    Engine *e = new Engine(argc,argv,600,600);
-    e->start();
-    delete e;
+	Engine e(argc, argv);
+
+	std::vector<Papillon *> paps;
+	std::vector<Fourmi *> frmis;
+	GraphicEngineBase * ge = new MyGraphicEngine(&paps, &frmis);
+	GameEngineBase * gme = new MyGameEngine(&paps, &frmis);
+	ControlEngineBase * ce = new MyControlEngine(&paps, &frmis);
+
+	e.setGraphicEngine(ge);
+	e.setGameEngine(gme);
+	e.setControlEngine(ce);
+	e.start();
     
     return 0;
     
