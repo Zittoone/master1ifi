@@ -6,7 +6,15 @@
 class Animal {
 
 	public:
-    virtual void exprimer() = 0;
+	Animal(){
+		std::cout << "Constructeur Animal appelé" << std::endl;
+	}
+
+	virtual ~Animal() {
+		std::cout << "Destructeur Animal appelé" << std::endl;
+	};
+
+	virtual void exprimer() = 0;
 
 };
 

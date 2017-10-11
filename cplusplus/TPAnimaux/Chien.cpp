@@ -5,9 +5,18 @@
 
 class Chien : public Animal {
 
+	public :
     void exprimer(){
 
 		std::cout << "Ouaf~~" << std::endl;
+	}
+
+	Chien(){
+		std::cout << "Constructeur Chien appelé" << std::endl;
+	}
+
+	~Chien(){
+		std::cout << "Destructeur Chien appelé" << std::endl;
 	}
 
 };

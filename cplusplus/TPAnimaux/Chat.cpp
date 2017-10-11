@@ -5,9 +5,18 @@
 
 class Chat : public Animal {
 
+	public :
     void exprimer(){
 
 		std::cout << "Meow~~" << std::endl;
+	}
+
+	Chat(){
+		std::cout << "Constructeur Chat appelé" << std::endl;
+	}
+
+	~Chat(){
+		std::cout << "Destructeur Chat appelé" << std::endl;
 	}
 
 };
