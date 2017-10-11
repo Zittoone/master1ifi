@@ -7,7 +7,15 @@
 int main(){
 
     // Tableau de pointeurs sur animaux
-    Animal* animaux[4] = { new Chat(), new Chien(), new Lapin(), new Lion() };
+
+    // Variante de déclaration
+    // Animal* animaux[4] = { new Chat(), new Chien(), new Lapin(), new Lion() };
+
+    Animal** animaux = new Animal*[4];
+    animaux[0] = new Chat();
+    animaux[1] = new Chien();
+    animaux[2] = new Lapin();
+    animaux[3] = new Lion();
 
     for(int i = 0; i < 4; i++){
         animaux[i]->exprimer();
