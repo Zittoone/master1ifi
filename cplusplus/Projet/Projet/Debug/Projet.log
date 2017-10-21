@@ -1,0 +1,16 @@
+﻿  Papillon.cpp
+  MyGraphicEngine.cpp
+c:\users\zt00n\documents\master1ifi\cplusplus\projet\projet\src\mygraphicengine.cpp(10): warning C4018: '<' : incompatibilité signed/unsigned
+  MyGameEngine.cpp
+c:\users\zt00n\documents\master1ifi\cplusplus\projet\projet\src\mygameengine.cpp(4): warning C4018: '<' : incompatibilité signed/unsigned
+  MyControlEngine.cpp
+  main.cpp
+  Génération de code en cours...
+libGraph.lib(ControlEngineBase.obj) : warning LNK4099: PDB 'TP3_Setup.pdb' n'a pu être trouvé avec 'libGraph.lib(ControlEngineBase.obj)' ou sur 'C:\Users\zT00N\Documents\master1ifi\cplusplus\Projet\Debug\TP3_Setup.pdb' ; l'objet sera lié sans informations de débogage
+libGraph.lib(Engine.obj) : warning LNK4099: PDB 'TP3_Setup.pdb' n'a pu être trouvé avec 'libGraph.lib(Engine.obj)' ou sur 'C:\Users\zT00N\Documents\master1ifi\cplusplus\Projet\Debug\TP3_Setup.pdb' ; l'objet sera lié sans informations de débogage
+libGraph.lib(GameEngineBase.obj) : warning LNK4099: PDB 'TP3_Setup.pdb' n'a pu être trouvé avec 'libGraph.lib(GameEngineBase.obj)' ou sur 'C:\Users\zT00N\Documents\master1ifi\cplusplus\Projet\Debug\TP3_Setup.pdb' ; l'objet sera lié sans informations de débogage
+libGraph.lib(GraphicEngineBase.obj) : warning LNK4099: PDB 'TP3_Setup.pdb' n'a pu être trouvé avec 'libGraph.lib(GraphicEngineBase.obj)' ou sur 'C:\Users\zT00N\Documents\master1ifi\cplusplus\Projet\Debug\TP3_Setup.pdb' ; l'objet sera lié sans informations de débogage
+libGraph.lib(GraphicPrimitives.obj) : warning LNK4099: PDB 'TP3_Setup.pdb' n'a pu être trouvé avec 'libGraph.lib(GraphicPrimitives.obj)' ou sur 'C:\Users\zT00N\Documents\master1ifi\cplusplus\Projet\Debug\TP3_Setup.pdb' ; l'objet sera lié sans informations de débogage
+libGraph.lib(TextureManager.obj) : warning LNK4099: PDB 'TP3_Setup.pdb' n'a pu être trouvé avec 'libGraph.lib(TextureManager.obj)' ou sur 'C:\Users\zT00N\Documents\master1ifi\cplusplus\Projet\Debug\TP3_Setup.pdb' ; l'objet sera lié sans informations de débogage
+  Projet.vcxproj -> C:\Users\zT00N\Documents\master1ifi\cplusplus\Projet\Debug\Projet.exe
+  Projet.vcxproj -> C:\Users\zT00N\Documents\master1ifi\cplusplus\Projet\Debug\Projet.pdb (Partial PDB)
