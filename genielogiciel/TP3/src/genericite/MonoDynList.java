@@ -8,14 +8,14 @@ public class MonoDynList extends ArrayList<Object> {
 
 	public MonoDynList(Class protoClass) {
 		super();
-		// TODO conserver le prototype
+		this.protoClass = protoClass;
 		
 	}
 	
 	public MonoDynList(Object proto) {
 		super();
-		// TODO placer l'objet dans la liste et s'en servir comme prototype
-		
+		this.protoClass = proto.getClass();
+		this.add(proto);
 	}
 	
 	public Class getProtoClass() {
@@ -23,9 +23,13 @@ public class MonoDynList extends ArrayList<Object> {
 	}
 	
 	public boolean add(Object t) {
-		// TODO v�rifier la coh�rence avec la classe prototype
-		// TODO ne pas oublier de g�rer le bool�en (vrai si l'ajout s'est bien fait)
-		return true;
+
+		if(t.getClass().equals(protoClass)){
+			super.add(t);
+			return true;
+		}
+
+		return false;
 	}
 
 }

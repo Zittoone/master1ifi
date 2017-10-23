@@ -12,7 +12,8 @@ public class MonoMultiList<T> extends ArrayList<T> {
 		// param�tre est un sous-type de T (impossibilit� de Java 5 car T disparait � la
 		// compilation par n�cessit� de compatibilit�)
 		super();
-        // TODO placer l'objet dans la liste et s'en servir comme prototype		
+		protoClass = proto.getClass();
+		add(proto);
 		isMono = true;  // liste monomorphe stricte
 	}
 	
@@ -28,7 +29,17 @@ public class MonoMultiList<T> extends ArrayList<T> {
 	public boolean add(T t) {
 		// TODO si on est mode Monomorphe, v�rifier la coh�rence avec la classe prototype
 		// TODO ne pas oublier de g�rer le bool�en (vrai si l'ajout s'est bien fait)
-		return true;
+		if(isMono){
+			if(t.getClass().equals(protoClass)){
+				super.add(t);
+				return true;
+			} else {
+				return false;
+			}
+		} else /*if(t.getClass().isAssignableFrom(this.getClass().getTypeParameters()[0].getClass())) */{
+			super.add(t);
+			return true;
+		}
 	}
 	
 }

@@ -17,7 +17,10 @@ public class Utils {
 	public static <T> Iterable<T> filter(Iterable<? extends T> c, Predicate<? super T> p) {
 		List<T> result = new ArrayList<T>();
 
-		// TODO: write the code of filter (filtering elements of c with predicate p)
+		for (T ic : c){
+			if(p.apply(ic))
+				result.add(ic);
+		}
 
 		return result;
 	}
@@ -26,7 +29,7 @@ public class Utils {
 	 * 
 	 * 
 	 * 
-	 * @param i
+	 * @param
 	 * @param f
 	 * @param z
 	 *            start value

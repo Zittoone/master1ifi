@@ -1,5 +1,7 @@
 package creatures;
 
+import commons.Utils;
+
 import static java.lang.Math.PI;
 import static java.lang.Math.atan;
 import static java.lang.Math.toDegrees;
@@ -9,6 +11,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -33,7 +36,7 @@ public abstract class AbstractCreature {
 	protected double visionDistance = DEFAULT_VISION_DISTANCE;
 
 	/** Position */
-	protected double x, y;
+	protected Point2D pos;
 
 	/** Speed in pixels */
 	protected double speed;
@@ -83,7 +86,7 @@ public abstract class AbstractCreature {
 	}
 
 	public double getX() {
-		return x;
+		return pos.getX();
 	}
 
 	public void setX(double newX) {
@@ -93,11 +96,11 @@ public abstract class AbstractCreature {
 			newX = environment.getWidth() / 2;
 		}
 
-		this.x = newX;
+		pos.setLocation(newX, pos.getY());
 	}
 
 	public double getY() {
-		return y;
+		return pos.getY();
 	}
 
 	public void setY(double newY) {
@@ -107,7 +110,7 @@ public abstract class AbstractCreature {
 			newY = environment.getHeight() / 2;
 		}
 
-		this.y = newY;
+		pos.setLocation(pos.getX(), newY);
 	}
 	
 	public double getSpeed() {
@@ -116,6 +119,10 @@ public abstract class AbstractCreature {
 
 	public double getDirection() {
 		return direction;
+	}
+
+	public Environment getEnvironment() {
+		return environment;
 	}
 
 	public void setDirection(double direction) {
@@ -138,7 +145,7 @@ public abstract class AbstractCreature {
 	 * @return position of the creature as a {@link Point}
 	 */
 	public Point2D getPosition() {
-		return new Point2D.Double(x, y);
+		return pos;
 	}
 
 	// ----------------------------------------------------------------------------
@@ -146,8 +153,8 @@ public abstract class AbstractCreature {
 	// ----------------------------------------------------------------------------
 
 	protected void move(double incX, double incY) {
-		setX(x + incX);
-		setY(y + incY);
+		setX(getX() + incX);
+		setY(getY() + incY);
 	}
 
 	protected void rotate(double angle) {
@@ -170,10 +177,10 @@ public abstract class AbstractCreature {
 
 		// use a inverse trigonometry to get the angle in an orthogonal triangle
 		// formed by the points (x,y) and (x1,y1)
-		if (x != p.getX()) {
+		if (getX() != p.getX()) {
 			// if we are not in the same horizontal axis
-			b = atan((y - p.getY()) / (x - p.getX()));
-		} else if (y < p.getY()) {
+			b = atan((getY() - p.getY()) / (getX() - p.getX()));
+		} else if (getY() < p.getY()) {
 			// below -pi/2
 			b = -PI / 2;
 		} else {
@@ -183,7 +190,7 @@ public abstract class AbstractCreature {
 
 		// make a distinction between the case when the (x1, y1)
 		// is right from the (x,y) or left
-		if (x < p.getX()) {
+		if (getX() < p.getX()) {
 			b += PI;
 		}
 
@@ -216,12 +223,12 @@ public abstract class AbstractCreature {
 	/**
 	 * Draws creature to a given canvas.
 	 * 
-	 * @param g
+	 * @param g2
 	 *            canvas where to draw the creature.
 	 */
 	public void paint(Graphics2D g2) {
 		// center the point
-		g2.translate(x, y);
+		g2.translate(getX(), getY());
 		// center the surrounding rectangle
 		g2.translate(-size / 2, -size / 2);
 		// center the arc
@@ -250,9 +257,17 @@ public abstract class AbstractCreature {
 	private List<String> getProperties(Class<?> clazz) {
 		List<String> properties = new ArrayList<String>();
 
+
 		Collection<Field> fields = Arrays.asList(clazz.getDeclaredFields());
 
-		for (Field f : fields) {
+		Iterable<Field> fFields = Utils.filter(fields, new Utils.Predicate<Field>() {
+			@Override
+			public boolean apply(Field input) {
+				return !Modifier.isStatic(input.getModifiers());
+			}
+		});
+
+		for (Field f : fFields) {
 			String name = f.getName();
 			Object value = null;
 
@@ -284,23 +299,9 @@ public abstract class AbstractCreature {
 			return name;
 		}
 	}
-	
-	/**
-	 * Concatenates elements using a {@code sep} as a separator
-	 * @param c
-	 * @param sep
-	 * @return
-	 */
+
 	public static String mkString(Collection<String> c, final String sep) {
-		if (c.isEmpty()) {
-			return "";
-		}
-		
-		String head = c.iterator().next();
-		Collection<String> tail = new ArrayList<String>(c);
-		tail.remove(head);
-		
-		return head + sep + mkString(tail, sep);
+		return Utils.mkString(c, sep);
 	}
 
 

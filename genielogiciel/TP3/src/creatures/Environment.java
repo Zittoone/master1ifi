@@ -1,5 +1,7 @@
 package creatures;
 
+import commons.Utils;
+
 import static java.lang.Math.PI;
 import static java.lang.Math.pow;
 
@@ -13,6 +15,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -197,21 +201,27 @@ public class Environment extends JPanel implements Runnable {
 	 *            the creature observing other creatures around
 	 * @return a list of all creatures within FOV of the given {@code observer}.
 	 */
-	public List<AbstractCreature> creaturesAround(AbstractCreature observer) {
+	public List<AbstractCreature> creaturesAround(final AbstractCreature observer) {
 		ArrayList<AbstractCreature> list = new ArrayList<AbstractCreature>();
 
-		for (AbstractCreature c : creatures) {
+		Iterable<AbstractCreature> fList = Utils.filter(creatures, new Utils.Predicate<AbstractCreature>() {
+			@Override
+			public boolean apply(AbstractCreature input) {
+				if (input != observer) {
+					Point2D o = observer.getPosition();
+					double dirAngle = input.directionFromAPoint(o, observer.getDirection());
 
-			if (c != observer) {
-				Point2D o = observer.getPosition();
-				double dirAngle = c.directionFromAPoint(o, observer.getDirection());
-
-				if (Math.abs(dirAngle) < (observer.fieldOfView / 2)
-						&& observer.distanceFromAPoint(c.getPosition()) <= observer.visionDistance) {
-					list.add(c);
+					if (Math.abs(dirAngle) < (observer.fieldOfView / 2)
+							&& observer.distanceFromAPoint(input.getPosition()) <= observer.visionDistance) {
+						return true;
+					}
 				}
+				return false;
 			}
-		}
+		});
+
+		for(AbstractCreature ac : fList)
+			list.add(ac);
 
 		return list;
 	}

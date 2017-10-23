@@ -67,10 +67,10 @@ public class BouncingCreature extends AbstractCreature {
 	 * The actual move
 	 */
 	public void move() {
-		double newX = x + speed * cos(direction);
+		double newX = getX() + speed * cos(direction);
 		// the reason there is a minus instead of a plus is that in our plane
 		// Y coordinates rises downwards
-		double newY = y - speed * sin(direction);
+		double newY = getY() - speed * sin(direction);
 
 		double hw = environment.getWidth() / 2;
 		double hh = environment.getHeight() / 2;
