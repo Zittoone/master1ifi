@@ -20,7 +20,7 @@ public class CreatureInspector extends JFrame {
 		pack();
 	}
 
-	public void setCreature(AbstractCreature creature) {
+	public void setCreature(ICreature creature) {
 		if (creature != null) {
 			textArea.setText(creature.toString());
 		} else {

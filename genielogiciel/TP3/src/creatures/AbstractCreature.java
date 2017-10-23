@@ -18,7 +18,7 @@ import java.util.Collection;
 import java.util.List;
 
 
-public abstract class AbstractCreature {
+public abstract class AbstractCreature implements ICreature {
 
 	public static final int DEFAULT_SIZE = 40;
 	public static final int DEFAULT_VISION_DISTANCE = 50;
@@ -53,25 +53,17 @@ public abstract class AbstractCreature {
 	/** Size of the creature in pixels */
 	protected final int size = DEFAULT_SIZE;
 
-	public AbstractCreature(Environment environment, double newX, double newY) {
+	public AbstractCreature(Environment environment, Point2D newP) {
 		this.environment = environment;
 
-		if (newX > environment.getWidth() / 2)
-			newX -= size;
+		if (newP.getX() > environment.getWidth() / 2)
+			newP.setLocation(newP.getX() - size, newP.getY());
 
-		if (newY > environment.getHeight() / 2)
-			newY -= size;
+		if (newP.getY() > environment.getHeight() / 2)
+			newP.setLocation(newP.getX(), newP.getY() - size);
 
-		setX(newX);
-		setY(newY);
+		pos = newP;
 	}
-
-	/**
-	 * The core method of a creature. It is suppose to modify its internal state
-	 * (position, etc.) in a response to an environment. It can use methods
-	 * defined in the {@link #environment}.
-	 */
-	public abstract void act();
 
 	// ----------------------------------------------------------------------------
 	// Getters and Setters
@@ -113,15 +105,18 @@ public abstract class AbstractCreature {
 		pos.setLocation(pos.getX(), newY);
 	}
 	
+	@Override
 	public double getSpeed() {
 		return speed;
 	}
 
+	@Override
 	public double getDirection() {
 		return direction;
 	}
 
-	public Environment getEnvironment() {
+	@Override
+	public IEnvironment getEnvironment() {
 		return environment;
 	}
 
@@ -131,10 +126,12 @@ public abstract class AbstractCreature {
 			this.direction += PI * 2;
 	}
 
+	@Override
 	public Color getColor() {
 		return color;
 	}
 
+	@Override
 	public int getSize() {
 		return size;
 	}
@@ -144,6 +141,7 @@ public abstract class AbstractCreature {
 	 * 
 	 * @return position of the creature as a {@link Point}
 	 */
+	@Override
 	public Point2D getPosition() {
 		return pos;
 	}
@@ -172,6 +170,7 @@ public abstract class AbstractCreature {
 	 * @return direction in radians between given point and current position in
 	 *         respect to a given {@code axis}.
 	 */
+	@Override
 	public double directionFromAPoint(Point2D p, double axis) {
 		double b = 0d;
 
@@ -212,6 +211,7 @@ public abstract class AbstractCreature {
 	 * 
 	 * @return distance between the current position and a given point.
 	 */
+	@Override
 	public double distanceFromAPoint(Point2D p) {
 		return getPosition().distance(p);
 	}
@@ -226,6 +226,7 @@ public abstract class AbstractCreature {
 	 * @param g2
 	 *            canvas where to draw the creature.
 	 */
+	@Override
 	public void paint(Graphics2D g2) {
 		// center the point
 		g2.translate(getX(), getY());

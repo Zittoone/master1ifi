@@ -45,8 +45,8 @@ public class SmartCreature extends AbstractCreature {
 		double minDist = Double.MAX_VALUE;
 
 		// iterate over all nearby creatures
-		Collection<AbstractCreature> creatures = environment.creaturesAround(this);
-		for (AbstractCreature c : creatures) {
+		Collection<ICreature> creatures = environment.creaturesAround(this);
+		for (ICreature c : creatures) {
 			avgSpeed += c.getSpeed();
 			avgDir += c.getDirection();
 			minDist = Math.min(minDist, c.distanceFromAPoint(getPosition()));

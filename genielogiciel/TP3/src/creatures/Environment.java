@@ -15,8 +15,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -29,15 +27,20 @@ import javax.swing.JPanel;
  * Environment for the creatures together with the visualization facility.
  */
 @SuppressWarnings("serial")
-public class Environment extends JPanel implements Runnable {
+public class Environment extends JPanel implements Runnable, IEnvironment {
 	
 	/**
 	 * Maximum speed in pixels / cycle
 	 */
 	public static final float MAX_SPEED = 10f;
-	
+
+	@Override
+	public Iterable<ICreature> getCreatures() {
+		return creatures;
+	}
+
 	/** List of creatures in the simulation. */
-	private List<AbstractCreature> creatures;
+	private List<ICreature> creatures;
 
 	/** Number of creates in the simulator. */
 	private int creaturesCount = 50;
@@ -80,6 +83,10 @@ public class Environment extends JPanel implements Runnable {
 
 	}
 
+	@Override
+	public Dimension getSize(){
+		return super.getSize();
+	}
 	private synchronized void handleMouseMoved(MouseEvent e) {
 		if (!paused) {
 			return;
@@ -90,7 +97,7 @@ public class Environment extends JPanel implements Runnable {
 		}
 		
 		Point mp = e.getPoint();
-		Collection<AbstractCreature> nearBy = creaturesNearByAPoint(mp);
+		Collection<ICreature> nearBy = creaturesNearByAPoint(mp);
 		
 		if (nearBy.isEmpty()) {
 			inspector.setCreature(null);
@@ -101,7 +108,7 @@ public class Environment extends JPanel implements Runnable {
 			inspector.setVisible(true);
 		}
 
-		inspector.setCreature((AbstractCreature) nearBy.iterator().next());
+		inspector.setCreature(nearBy.iterator().next());
 	}
 
 	
@@ -121,7 +128,7 @@ public class Environment extends JPanel implements Runnable {
 	 */
 	public void run() {
 		while (true) {
-			for (AbstractCreature c : creatures) {
+			for (ICreature c : creatures) {
 				c.act();
 			}
 
@@ -152,8 +159,8 @@ public class Environment extends JPanel implements Runnable {
 	 *            of creatures to be created
 	 * @return a list of size {@code number} containing newly created creatures
 	 */
-	public List<AbstractCreature> createCreatures(int number) {
-		List<AbstractCreature> list = new ArrayList<AbstractCreature>();
+	public List<ICreature> createCreatures(int number) {
+		List<ICreature> list = new ArrayList<ICreature>();
 		Random rand = new Random();
 
 		// view the color space as a cube and then iterate over it using a small
@@ -201,12 +208,12 @@ public class Environment extends JPanel implements Runnable {
 	 *            the creature observing other creatures around
 	 * @return a list of all creatures within FOV of the given {@code observer}.
 	 */
-	public List<AbstractCreature> creaturesAround(final AbstractCreature observer) {
-		ArrayList<AbstractCreature> list = new ArrayList<AbstractCreature>();
+	public List<ICreature> creaturesAround(final AbstractCreature observer) {
+		ArrayList<ICreature> list = new ArrayList<ICreature>();
 
-		Iterable<AbstractCreature> fList = Utils.filter(creatures, new Utils.Predicate<AbstractCreature>() {
+		Iterable<ICreature> fList = Utils.filter(creatures, new Utils.Predicate<ICreature>() {
 			@Override
-			public boolean apply(AbstractCreature input) {
+			public boolean apply(ICreature input) {
 				if (input != observer) {
 					Point2D o = observer.getPosition();
 					double dirAngle = input.directionFromAPoint(o, observer.getDirection());
@@ -220,16 +227,16 @@ public class Environment extends JPanel implements Runnable {
 			}
 		});
 
-		for(AbstractCreature ac : fList)
+		for(ICreature ac : fList)
 			list.add(ac);
 
 		return list;
 	}
 	
-	public synchronized Collection<AbstractCreature> creaturesNearByAPoint(Point mp) {
-		ArrayList<AbstractCreature> list = new ArrayList<AbstractCreature>();
+	public synchronized Collection<ICreature> creaturesNearByAPoint(Point mp) {
+		ArrayList<ICreature> list = new ArrayList<ICreature>();
 		mp.translate(-getWidth() / 2, -getHeight() / 2);
-		for (AbstractCreature c : creatures) {
+		for (ICreature c : creatures) {
 			if (c.distanceFromAPoint(mp) <= 20.0)
 				list.add(c);
 		}
@@ -237,7 +244,7 @@ public class Environment extends JPanel implements Runnable {
 	}
 	
 
-	public synchronized void setCreatures(List<AbstractCreature> creatures) {
+	public synchronized void setCreatures(List<ICreature> creatures) {
 		pause();
 		this.creatures = creatures;
 		this.creaturesCount = creatures.size();
@@ -259,7 +266,7 @@ public class Environment extends JPanel implements Runnable {
 			// save the transformation so the creature can do anything
 			AffineTransform cT = g2.getTransform();
 
-			AbstractCreature c = (AbstractCreature) obj;
+			ICreature c = (ICreature) obj;
 			c.paint(g2);
 
 			// revert the transformation

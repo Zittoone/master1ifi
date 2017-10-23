@@ -29,13 +29,13 @@ public class SmartCreatureTest {
 	public void testEmerginBehavior() throws Exception {
 		SmartCreature main = new SmartCreature(environment, 0.0, 0.0, toRadians(0), 5, Color.RED);
 
-		AbstractCreature other = mock(AbstractCreature.class);
+		ICreature other = mock(AbstractCreature.class);
 		when(other.getDirection()).thenReturn(toRadians(270));
 		when(other.getSpeed()).thenReturn(10.0);
 		when(other.getPosition()).thenReturn(new Point2D.Double(1, 0));
 		when(other.directionFromAPoint(eq(main.getPosition()), eq(main.direction))).thenReturn(0.0);
 
-		ArrayList<AbstractCreature> creaturesAround = new ArrayList<AbstractCreature>();
+		ArrayList<ICreature> creaturesAround = new ArrayList<ICreature>();
 		creaturesAround.add(other);
 		
 		when(environment.creaturesAround(main)).thenReturn(creaturesAround);
