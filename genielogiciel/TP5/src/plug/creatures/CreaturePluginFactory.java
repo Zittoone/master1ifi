@@ -75,11 +75,11 @@ public class CreaturePluginFactory {
 
     @SuppressWarnings("unchecked")
     private void buildConstructorMap() {
-        for (Class<IPlugin> p : pluginLoader.getPluginClasses()) {
+        for (Class<? extends IPlugin> p : pluginLoader.getPluginClasses()) {
             Constructor<? extends ICreature> c = null;
             try {
                 // TODO get the constructor with the expected signature
-                c = (Constructor<? extends ICreature>) p.getConstructor(IEnvironment.class, Point2D.class, double.class, double.class, Color.class);
+                c = (Constructor<? extends ICreature>) p.getDeclaredConstructor(IEnvironment.class, Point2D.class, double.class, double.class, Color.class);
                 c.setAccessible(true);
             } catch (SecurityException e) {
                 logger.info("Cannot access (security) constructor for plugin" + p.getName());

@@ -79,7 +79,9 @@ public class Launcher extends JFrame {
 						}
 					}
 					// TODO: create the creatures and start the simulator properly
-
+					simulator.clearCreatures();
+					simulator.addAllCreatures(factory.createCreatures(simulator, 30, new ColorCube(3), currentConstructor));
+					simulator.start();
 				}
 			}
 		});

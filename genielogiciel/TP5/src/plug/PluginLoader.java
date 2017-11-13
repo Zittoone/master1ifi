@@ -214,11 +214,11 @@ public class PluginLoader {
 		  logger.info("Request for loading class " + className + " by " + this);
 		  // TODO load the class
           Object loadedClass = loader.loadClass(className);
-		  if ( loadedClass.getClass().isAssignableFrom(IPlugin.class) ) { // TODO check if it is compatible with "ptype"
+		  if ( ptype.isAssignableFrom((Class<?>) loadedClass) ) { // TODO check if it is compatible with "ptype"
 			  return (Class <IPlugin>) loadedClass;
 		  } else {
 			  logger.warning("Class " + className +
-					  " is not from the expected type" +
+					  " is not from the expected type " +
 					  ptype.getName());
 		  }
 	  }
