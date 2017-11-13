@@ -79,15 +79,13 @@ public class CreaturePluginFactory {
             Constructor<? extends ICreature> c = null;
             try {
                 // TODO get the constructor with the expected signature
-                c = (Constructor<? extends ICreature>) Class.forName(p.getName()).getConstructor(double.class, double.class, double.class, double.class, Color.class);
+                c = (Constructor<? extends ICreature>) p.getConstructor(IEnvironment.class, Point2D.class, double.class, double.class, Color.class);
                 c.setAccessible(true);
             } catch (SecurityException e) {
                 logger.info("Cannot access (security) constructor for plugin" + p.getName());
                 e.printStackTrace();
             } catch (NoSuchMethodException e) {
                 logger.info("No constructor in plugin " + p.getName() + " with the correct signature");
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
             if (c != null)
@@ -120,7 +118,7 @@ public class CreaturePluginFactory {
             T creature = null;
             try {
                 // TODO : call the constructor to create an instance
-                creature = constructor.newInstance(x, y, direction, speed, colorStrategy.getColor());
+                creature = constructor.newInstance(env, new Point2D.Double(x, y), direction, speed, colorStrategy.getColor());
             } catch (Exception e) {
                 logger.info("calling constructor " + constructor + " failed with exception " + e.getLocalizedMessage());
                 e.printStackTrace();
