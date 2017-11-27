@@ -1,0 +1,14 @@
+s := 0;
+i := 0;
+Boucle1: test := (i>=100);
+if(test) goto Fin_Boucle_1;
+adr_tab := &tab;
+depl := i * 8;
+adr_tab := adr_tab + depl;
+element := *adr_tab;
+test_if := (element >= 5);
+if(test_if) goto Fin_If_1;
+s := s+ element;
+Fin_If_1: i := i + 1;
+goto Boucle1;
+Fin_Boucle_1:

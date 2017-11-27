@@ -1,0 +1,12 @@
+Processeur VLIW
+
+            MEMOIRE ;   UAL ;   UAL ;   BRANCHEMENT
+VLIW0   =>              1       2                   ;;
+VLIW1   =>  4           3                           ;;
+VLIW2   =>                                          ;;
+VLIW3   =>                                          ;;
+VLIW4   =>  5                                       ;;
+VLIW5   =>  7                                       ;;
+VLIW6   =>                                          ;;
+VLIW7   =>              6                           ;;
+VLIW8   =>                                  8       ;;

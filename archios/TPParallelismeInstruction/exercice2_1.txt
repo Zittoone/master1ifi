@@ -1,0 +1,16 @@
+# Pipeline SIMPLE
+
+Cycle           0   1   2   3   4   5   6   7   8   9   10  11  12  13  14  15  16
+LI   R0,0       IF  ID  EX  MEM WB
+LI   R1,1           IF  ID  EX  MEM WB
+LI   R7,5               IF  ID  EX  MEM WB
+LW   R0,R3,10               IF  ID  EX  MEM WB
+LW   R3,R4,1                    IF  ID  EX  MEM WB
+SLT  R4,R7,R6                       IF  ID  EX  MEM WB
+LW   R3,R3,0                            IF  ID  EX  MEM WB
+BNEZ R0,R6,-3                               IF  ID  EX  MEM WB
+LW   R3,R4,1                                    IF  ID  EX  MEM WB
+SLT  R4,R7,R6                                       IF  ID  EX  MEM WB
+LW   R3,R3,0                                            IF  ID  EX  MEM WB
+BNEZ R0,R6,-3                                               IF  ID  EX  MEM WB
+LW   R3,R4,1                                                    IF  ID  EX  MEM WB
