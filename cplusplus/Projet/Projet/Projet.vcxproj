@@ -19,17 +19,21 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Damier.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MyControlEngine.cpp" />
     <ClCompile Include="src\MyGameEngine.cpp" />
     <ClCompile Include="src\MyGraphicEngine.cpp" />
     <ClCompile Include="src\Papillon.cpp" />
+    <ClCompile Include="src\Spacecraft.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Damier.h" />
     <ClInclude Include="src\MyControlEngine.h" />
     <ClInclude Include="src\MyGameEngine.h" />
     <ClInclude Include="src\MyGraphicEngine.h" />
     <ClInclude Include="src\Papillon.h" />
+    <ClInclude Include="src\Spacecraft.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

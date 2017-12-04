@@ -7,16 +7,17 @@
 #include "MyControlEngine.h"
 #include "MyGameEngine.h"
 #include "MyGraphicEngine.h"
-#include "Papillon.h"
+#include "Spacecraft.h"
 
 int main(int argc, char* argv[]){
+
     Engine e(argc,argv);
     
-    std::vector<Papillon*> paps;
+    std::vector<Spacecraft*> ships;
     
-    GraphicEngineBase* ge = new MyGraphicEngine(&paps);
-    GameEngineBase* gme = new MyGameEngine(&paps);
-    ControlEngineBase* ce = new MyControlEngine(&paps);
+    GraphicEngineBase* ge = new MyGraphicEngine(&ships, 8);
+    GameEngineBase* gme = new MyGameEngine(&ships);
+    ControlEngineBase* ce = new MyControlEngine(&ships);
     
     e.setGraphicEngine(ge);
     e.setGameEngine(gme);

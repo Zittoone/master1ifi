@@ -2,15 +2,18 @@
 
 #include "Engine.h"
 #include "GameEngineBase.h"
-#include "Papillon.h"
+#include "Spacecraft.h"
 
 class MyGameEngine : public GameEngineBase {
+
 private:
-    std::vector<Papillon*>* paps;
+    std::vector<Spacecraft*>* ships;
+
 public:
-    MyGameEngine(std::vector<Papillon*>* papillons)
-		:paps(papillons){
+    MyGameEngine(std::vector<Spacecraft*>* spaceships)
+		:ships(spaceships){
 	}
     virtual void idle();
+	static Spacecraft* requestCreation(int x, int y);
 };
 

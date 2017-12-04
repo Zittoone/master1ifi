@@ -3,6 +3,16 @@
 
 void MyControlEngine::MouseCallback(int button, int state, int x, int y){
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-        paps->push_back(new Papillon((x - 400) / 400.f, (y - 300)/ -300.f ));
+
+		Spacecraft *pSpacecraft = MyGameEngine::requestCreation((x - 400) / 400.f, (y - 300) / -300.f);
+
+		if (pSpacecraft == nullptr) {
+			// On refuse la requête
+		}
+		else {
+			// On accepte la requête
+			ships->push_back(pSpacecraft);
+		}
+		
     }
 }

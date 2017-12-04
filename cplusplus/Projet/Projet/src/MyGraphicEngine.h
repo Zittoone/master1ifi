@@ -1,25 +1,20 @@
 #pragma once
 #include "Engine.h"
 #include "GraphicPrimitives.h"
-#include "Papillon.h"
+#include "Spacecraft.h"
+#include "Damier.h"
 
 class MyGraphicEngine : public GraphicEngineBase {
 private:
-    std::vector<Papillon*>* paps;
-    char* str;
+    std::vector<Spacecraft*>* ships;
+
+	Damier damier;
 
 public:
     
-    MyGraphicEngine(std::vector<Papillon * > * paps_):
-        paps(paps_),
-    str(new char[13]{'C','l','i','c',' ','&',' ','E','n','j','o','y','\0'}),
-        x1(0.5f),
-        x2(-0.5f),
-        dx1(0.01),
-        dx2(-0.02)
+    MyGraphicEngine(std::vector<Spacecraft * > * spaceships, int n):
+		ships(spaceships), damier(n, -0.7f, 1.0f, 1.0f, -0.7f)
         {}
-    
-    float x1,x2, dx1, dx2;
     
     virtual void Draw();
     

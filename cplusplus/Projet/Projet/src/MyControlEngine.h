@@ -1,11 +1,13 @@
 #pragma once
 #include "Engine.h"
-#include "Papillon.h"
+#include "Spacecraft.h"
 
 class MyControlEngine : public ControlEngineBase {
-    std::vector<Papillon*>* paps;
+
+    std::vector<Spacecraft*>* ships;
+
 public:
-    MyControlEngine(std::vector<Papillon*>* paps_):paps(paps_){}
+    MyControlEngine(std::vector<Spacecraft*>* spaceships):ships(spaceships){}
     
     virtual void MouseCallback(int button, int state, int x, int y) ;
 };
