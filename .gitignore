@@ -57,8 +57,7 @@ buildNumber.properties
 # Visual Studio / Code
 *.vs
 *.vscode
-LangNat/Projet/.idea/
-LangNat/Projet/compte-rendu.pdf
-LangNat/Projet/src/main/resources/
-LangNat/Projet/yodaTalk.iml
-MaN/Vigenere/.idea/workspace.xml
+cplusplus/*/*/Debug/
+cplusplus/*/Debug/
+*.vcxproj
+*.vcxproj.filters*
