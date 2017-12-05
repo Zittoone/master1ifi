@@ -87,9 +87,7 @@ to move [dist] ;; procédure récursive exécutée par un véhicule
           [ positionner-vehicule-sur-un-site prochain-site (one-of les-rues-potentielles) ] ;; faire demi-tour
            ;; consulter la doc afin de bien comprendre la différence entre les instructions self et myself
           [
-            ;;positionner-vehicule-sur-un-site prochain-site (one-of les-rues-potentielles with [self != [rue-actuelle] of myself])
-            let rue-to-use min-one-of () [distance carrefour-arrivee]
-            positionner-vehicule-sur-un-site prochain-site rue-to-use
+            positionner-vehicule-sur-un-site prochain-site (one-of les-rues-potentielles with [self != [rue-actuelle] of myself])
             ]
       ;; forward (dist - distance-next-site)
     ]

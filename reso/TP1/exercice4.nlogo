@@ -3,10 +3,12 @@ globals [
  patch-depart
  patch-arrivee
  la-tete
+ nombre-suiveurs max-vitesse vitesse ;; 0 < vitesse < 1
 ]
 
 ;; déclarer les variables propres
 turtles-own [devant] ;; devant représente "celui qui est devant moi et donc que je vais suivre"
+breed [agents agent] ; on renomme les turtles
 
 to setup ;;  initialiser
   clear-all
@@ -190,7 +192,7 @@ delai
 delai
 1
 20
-1
+5
 1
 1
 NIL
