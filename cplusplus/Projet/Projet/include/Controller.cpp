@@ -4,18 +4,49 @@
 
 void Controller::MouseCallback(int button, int state, int x, int y)
 {
-
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-		if (environment->RequestCreation(1, 1)) {
-			CreateSpacecraft((x - 400) / 400.f, (y - 300) / -300.f);
-			//TODO: add request to get the x and y of the model from values
+		
+		if (gdb->isCheckboard(x, y)) {
+			// Do stuff
+			int _x = gdb->getCheckboardX(x);
+			int _y = gdb->getCheckboardY(y);
+			if (environment->RequestCreation(_x, _y)) {
+				CreateSpacecraft(_x, _y);
+			}
+			else {
+				// message d'erreur
+			}
 		}
-
+		else if (gdb->isLeftMenu(x, y)) {
+			// Do stuff
+		}
+		else if (gdb->isDownMenu(x, y)) {
+			// Do stuff
+		}
 	}
 }
 
 void Controller::CreateSpacecraft(int x, int y) {
-	Spacecraft* sc = new Hispania(x, y, 0.005f, 0.005f, 1, 0, 0);
+
+	if (scStrategy == 0 || scStrategy == nullptr) {
+		return;
+	}
+
+	Spacecraft* sc = scStrategy->getSpacecraft();
+	sc->setX(gdb->getXCoordFor(x));
+	sc->setY(gdb->getYCoordFor(y));
+
+	// Ajout tick
 	environment->addTickable(sc);
-	environment->addDrawable(sc);
+	// Ajout graphique
+	gdb->addDrawable(sc);
+}
+
+void Controller::setSpacecraftStrategy(ISpacecraftStrategy * scStrategy)
+{
+	if (this->scStrategy != 0) {
+		delete this->scStrategy;
+	}
+	this->scStrategy = scStrategy;
+
 }

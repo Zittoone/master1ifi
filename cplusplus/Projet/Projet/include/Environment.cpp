@@ -1,5 +1,21 @@
 #include "Environment.h"
 
+Environment::Environment(GraphicalDrawingBoard * gdp) : gdp(gdp)
+{
+		tickables = new std::vector<ITickable*>;
+		
+}
+
+bool Environment::withdrawMoney(double amount)
+{
+	double moneyLeft = money - amount;
+	if (moneyLeft > 0) {
+		setMoney(moneyLeft);
+	}
+		
+	return moneyLeft > 0;
+}
+
 void Environment::idle()
 {
 	int size = tickables->size();
@@ -25,14 +41,4 @@ void Environment::removeTickable(ITickable* tickable) {
 			tickables->begin(), tickables->end(), tickable
 		), tickables->end()
 	);
-}
-
-void Environment::addDrawable(IDrawable * drawable)
-{
-	gdp->addDrawable(drawable);
-}
-
-void Environment::removeTickable(IDrawable * drawable)
-{
-	gdp->removeDrawable(drawable);
 }
