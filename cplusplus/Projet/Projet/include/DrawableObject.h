@@ -14,8 +14,6 @@ public:
 
 	~DrawableObject();
 
-	/* virtual void Draw() const = 0; donn't know if i should write this */ 
-
 	// Setters déclaration inline implicite
 	void setX		(float x)		{ this->x = x; }
 	void setY		(float y)		{ this->y = y; }
@@ -32,11 +30,4 @@ public:
 	float getG()		{ return g; }
 	float getB()		{ return b; }
 
-	//void Rotate(float direction);
-
 };
-/*
-void DrawableObject::Rotate(float direction) {
-	//TODO: implement drawing rotation
-}
-*/

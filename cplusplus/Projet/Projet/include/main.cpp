@@ -18,6 +18,7 @@ int main(int argc, char* argv[]){
     ControlEngineBase* ce = new Controller((Environment *)gme, (GraphicalDrawingBoard *)ge);
 
 	((Controller *)ce)->setSpacecraftStrategy(new HispaniaStrategy());
+	((GraphicalDrawingBoard *)ge)->setEnvironment((Environment *)gme);
     
     e.setGraphicEngine(ge);
     e.setGameEngine(gme);

@@ -9,12 +9,15 @@ void Controller::MouseCallback(int button, int state, int x, int y)
 		if (gdb->isCheckboard(x, y)) {
 			// Do stuff
 			int _x = gdb->getCheckboardX(x);
+			std::cout << "X coords : " << _x << std::endl;
 			int _y = gdb->getCheckboardY(y);
+			std::cout << "Y coords : " << _y << std::endl;
 			if (environment->RequestCreation(_x, _y)) {
 				CreateSpacecraft(_x, _y);
 			}
 			else {
 				// message d'erreur
+				std::cout << "refused" << std::endl;
 			}
 		}
 		else if (gdb->isLeftMenu(x, y)) {
@@ -33,11 +36,9 @@ void Controller::CreateSpacecraft(int x, int y) {
 	}
 
 	Spacecraft* sc = scStrategy->getSpacecraft();
-	sc->setX(gdb->getXCoordFor(x));
-	sc->setY(gdb->getYCoordFor(y));
 
 	// Ajout tick
-	environment->addTickable(sc);
+	environment->addSpacecraft(sc, x, y);
 	// Ajout graphique
 	gdb->addDrawable(sc);
 }

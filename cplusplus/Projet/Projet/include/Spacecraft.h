@@ -1,7 +1,9 @@
 #pragma once
-#include "GraphicPrimitives.h"
+
 #include "DrawableObject.h"
 #include "ITickable.h"
+#include "LaserShot.h"
+#include <vector>
 
 class Spacecraft : public DrawableObject, public ITickable {
 
@@ -12,13 +14,14 @@ protected:
 	double range;
 	double health;
 	double cost;
+	std::vector<LaserShot *>* laserShots;
 
 public:
 	
 	Spacecraft(float x, float y, float width, float height, float r, float g, float b)
 		: DrawableObject(x, y, width, height, r, g, b) {};
 
-	/*virtual */~Spacecraft()/* = 0*/;
+	~Spacecraft() {};
 
 	double getFrequency()	{ return frequency; }
 	double getPower()		{ return power;		}
@@ -26,5 +29,8 @@ public:
 	double getHealth()		{ return health;	}
 	double getCost()		{ return cost;		}
 
-};// Derived class -> to extract to different files
+	virtual void Tick() = 0;
+	virtual void Draw() = 0;
+
+};
 
