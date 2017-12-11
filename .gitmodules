@@ -1,3 +1,6 @@
 [submodule "genielogiciel/Projet"]
 	path = genielogiciel/Projet
 	url = git@github.com:GenieLogiciel17-18/tp-long-1-showmercyplsalaricdontknowhow2java.git
+[submodule "genielogiciel/Projet2"]
+	path = genielogiciel/Projet2
+	url = https://github.com/GenieLogiciel17-18/tp-long-2-gazon/
