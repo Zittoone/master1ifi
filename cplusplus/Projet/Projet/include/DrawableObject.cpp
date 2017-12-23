@@ -22,3 +22,15 @@ void DrawableObject::rotate_point(float x, float y, float angle, float * px, flo
 	*px = xnew + this->x;
 	*py = ynew + this->y;
 }
+
+float DrawableObject::angle_to_drawble(DrawableObject * drawable)
+{
+	if (drawable == nullptr) return -M_PI / 2.;
+	return atan2(drawable->getY() - y, drawable->getX() - x);
+}
+
+float DrawableObject::distance_to(DrawableObject * d)
+{
+	// merci Pythagore 
+	return sqrt(pow(x - d->getX(), 2) + pow(y - d->getY(), 2));
+}

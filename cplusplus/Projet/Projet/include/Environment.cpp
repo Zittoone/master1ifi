@@ -141,7 +141,7 @@ Asteroid * Environment::closestAsteroidFromSpacecraft(Spacecraft * spacecraft)
 
 	for (int i = 0; i < size; i++) {
 		tdistance = gdb->distanceBetweenTwoPoints(spacecraft->getX(), spacecraft->getY(), (*asteroids)[i]->getX(), (*asteroids)[i]->getY());
-		if (tdistance < distance || distance == -1) {
+		if (distance == -1 || tdistance < distance) {
 			distance = tdistance;
 			indexClosest = i;
 		}

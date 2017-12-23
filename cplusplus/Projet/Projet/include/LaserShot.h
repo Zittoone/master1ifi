@@ -13,8 +13,9 @@ class LaserShot : public MovableObject {
 	Spacecraft* origin;
 	Asteroid* destination;
 
-	LaserShot(float x, float y, float direction, float speed, float width, float height, float r, float g, float b)
-		: MovableObject(x, y, direction, speed, width, height, r, g, b) {}
+public:
+	LaserShot(float x, float y, float direction, float speed, float width, float height, float r, float g, float b, Spacecraft* origin, Asteroid* destination)
+		: origin(origin), destination(destination), MovableObject(x, y, direction, speed, width, height, r, g, b) {}
 
 	//TODO: implement methods below
 	virtual void Draw();

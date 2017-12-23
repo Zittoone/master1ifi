@@ -32,5 +32,8 @@ public:
 
 	// Useful fonc
 	virtual void rotate_point(float x, float y, float angle, float* px, float* py);
+	// angle in radians
+	virtual float angle_to_drawble(DrawableObject* drawable);
+	virtual float distance_to(DrawableObject* drawable);
 
 };

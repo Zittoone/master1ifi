@@ -2,6 +2,7 @@
 
 // Circular dependency
 class GraphicalDrawingBoard;
+class Spacecraft;
 class Level;
 
 #include "Spacecraft.h"

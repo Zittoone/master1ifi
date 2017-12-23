@@ -5,5 +5,5 @@
 
 class ISpacecraftStrategy {
 public:
-	virtual Spacecraft* getSpacecraft(int x, int y, GraphicalDrawingBoard* gdb) = 0;
+	virtual Spacecraft* getSpacecraft(int x, int y, GraphicalDrawingBoard* gdb, Environment* environment) = 0;
 };

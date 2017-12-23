@@ -32,7 +32,7 @@ void Controller::CreateSpacecraft(int x, int y) {
 		return;
 	}
 
-	Spacecraft* sc = scStrategy->getSpacecraft(x, y, gdb);
+	Spacecraft* sc = scStrategy->getSpacecraft(x, y, gdb, environment);
 	if (environment->withdrawMoney(sc->getCost())) {
 		// Ajout tick
 		environment->addSpacecraft(sc, x, y);

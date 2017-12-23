@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GraphicalDrawingBoard.h"
+#include "Environment.h"
 #include "Elysium.h"
 #include "Hispania.h"
 #include "Nostromo.h"
@@ -35,9 +36,9 @@ public:
 	//AsteroidFactory(AsteroidFactory const&) = delete;
 	//void operator=(AsteroidFactory const&) = delete;
 
-	virtual Elysium* getElysiumSpacecraft(int x, int y, GraphicalDrawingBoard* gdb);
-	virtual Hispania* getHispaniaSpacecraft(int x, int y, GraphicalDrawingBoard* gdb);
-	virtual Nostromo* getNostromoSpacecraft(int x, int y, GraphicalDrawingBoard* gdb);
+	virtual Elysium* getElysiumSpacecraft(int x, int y, GraphicalDrawingBoard* gdb, Environment* environment);
+	virtual Hispania* getHispaniaSpacecraft(int x, int y, GraphicalDrawingBoard* gdb, Environment* environment);
+	virtual Nostromo* getNostromoSpacecraft(int x, int y, GraphicalDrawingBoard* gdb, Environment* environment);
 
 	// Note: Scott Meyers mentions in his Effective Modern
 	//       C++ book, that deleted functions should generally
