@@ -7,11 +7,8 @@ void Controller::MouseCallback(int button, int state, int x, int y)
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 		
 		if (gdb->isCheckboard(x, y)) {
-			// Do stuff
 			int _x = gdb->getCheckboardX(x);
-			std::cout << "X coords : " << _x << std::endl;
 			int _y = gdb->getCheckboardY(y);
-			std::cout << "Y coords : " << _y << std::endl;
 			if (environment->RequestCreation(_x, _y)) {
 				CreateSpacecraft(_x, _y);
 			}
@@ -35,12 +32,18 @@ void Controller::CreateSpacecraft(int x, int y) {
 		return;
 	}
 
-	Spacecraft* sc = scStrategy->getSpacecraft();
+	Spacecraft* sc = scStrategy->getSpacecraft(x, y, gdb);
+	if (environment->withdrawMoney(sc->getCost())) {
+		// Ajout tick
+		environment->addSpacecraft(sc, x, y);
+		// Ajout graphique
+		gdb->addDrawable(sc);
+	}
+	else {
+		// error
+	}
 
-	// Ajout tick
-	environment->addSpacecraft(sc, x, y);
-	// Ajout graphique
-	gdb->addDrawable(sc);
+	
 }
 
 void Controller::setSpacecraftStrategy(ISpacecraftStrategy * scStrategy)

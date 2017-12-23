@@ -1,8 +1,7 @@
 #include "HispaniaStrategy.h"
-#include "Hispania.h"
+#include "SpacecraftFactory.h"
 
-Spacecraft * HispaniaStrategy::getSpacecraft()
+Spacecraft * HispaniaStrategy::getSpacecraft(int x, int y, GraphicalDrawingBoard* gdb)
 {
-	//TODO: replace with factory call
-	return new Hispania(0.f, 0.f, 0.05f, 0.05f, 1, 0, 1);
+	return SpacecraftFactory::getInstance().getHispaniaSpacecraft(x, y, gdb);
 }

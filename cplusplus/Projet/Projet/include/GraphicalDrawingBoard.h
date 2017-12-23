@@ -15,6 +15,8 @@ class GraphicalDrawingBoard : public GraphicEngineBase {
 
 	// Checkboard
 	int size;
+	// x1 y1 is corner top left
+	// x2 y2 et is bottom right
 	float x1, y1, x2, y2;
 
 	virtual float xCoordToPercent(int x);
@@ -35,6 +37,10 @@ public:
 
 	int getSize() const { return size; }
 	float getX1() const { return x1; }
+	float getX2() const { return x2; }
+	float getY1() const { return y1; }
+	float getY2() const { return y2; }
+
 	virtual int getCheckboardX(float x);
 	virtual int getCheckboardY(float y);
 	virtual float getXCoordFor(int x);

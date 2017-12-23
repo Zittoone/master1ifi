@@ -30,4 +30,7 @@ public:
 	float getG()		{ return g; }
 	float getB()		{ return b; }
 
+	// Useful fonc
+	virtual void rotate_point(float x, float y, float angle, float* px, float* py);
+
 };

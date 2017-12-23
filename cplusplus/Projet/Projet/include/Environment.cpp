@@ -27,11 +27,11 @@ Environment::Environment(GraphicalDrawingBoard * gdb) : gdb(gdb)
 bool Environment::withdrawMoney(double amount)
 {
 	double moneyLeft = money - amount;
-	if (moneyLeft > 0) {
+	if (moneyLeft >= 0) {
 		setMoney(moneyLeft);
 	}
 		
-	return moneyLeft > 0;
+	return moneyLeft >= 0;
 }
 
 void Environment::idle()
@@ -98,6 +98,11 @@ void Environment::setLevel(Level * level)
 		delete this->level;
 	}
 	this->level = level;
+}
+
+void Environment::setLevel(int level)
+{
+	this->level = new Level(level);
 }
 
 Level * Environment::getLevel()

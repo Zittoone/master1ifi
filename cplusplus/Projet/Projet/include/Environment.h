@@ -1,19 +1,20 @@
 #pragma once
 
+// Circular dependency
+class GraphicalDrawingBoard;
+class Level;
+
 #include "Spacecraft.h"
 #include "GameEngineBase.h"
 #include "GraphicalDrawingBoard.h"
 #include "Asteroid.h"
 #include "Level.h"
 
-// Circular dependency
-class GraphicalDrawingBoard;
 
 class Environment : public GameEngineBase {
 
 	// 2D array map
 	bool** board;
-	//std::vector<ITickable*>* tickables;
 	GraphicalDrawingBoard* gdb;
 
 	std::vector<Spacecraft*>* spacecrafts;
@@ -34,15 +35,25 @@ public:
 	virtual void idle();
 	virtual bool RequestCreation(int x, int y);
 
+	/* Spacecraft */
 	virtual void addSpacecraft(Spacecraft* spacecraft, int x, int y);
 	virtual void removeSpacecraft(Spacecraft* spacecraft);
+
+	/* Asteroids */
 	virtual void addAsteroid(Asteroid* asteroid);
 	virtual void removeAsteroid(Asteroid* asteroid);
+
+	/* Level */
 	virtual void setLevel(Level* level);
+	virtual void setLevel(int level);
 	virtual Level* getLevel();
+	
+	/* Health */
 	virtual void loseHealth(int amount);
 	virtual void giveHealth(int amount);
 	int getHealth() { return health; }
+
+	/* Terminner la partie */
 	virtual void endGame();
 
 	virtual Asteroid* closestAsteroidFromSpacecraft(Spacecraft* spacecraft);

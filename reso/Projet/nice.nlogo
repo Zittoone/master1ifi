@@ -93,7 +93,7 @@ to setup-carte
   ;set p-rues-pietonnes 0
 
   ifelse (ville = "Nice")
-    [set shapefile-dataset gis:load-dataset ("cartes/Nice.shp")]
+    [set shapefile-dataset gis:load-dataset ("cartes/London.shp")]
     [set shapefile-dataset gis:load-dataset ("cartes/Manhattan.shp")]
   ;; dans la question 8, vous remplacerez ici Manhattan par votre propre ville
   ask patches [ set pcolor white ]

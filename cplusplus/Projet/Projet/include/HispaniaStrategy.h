@@ -4,5 +4,5 @@
 
 class HispaniaStrategy : public ISpacecraftStrategy {
 public:
-	virtual Spacecraft* getSpacecraft();
+	virtual Spacecraft * getSpacecraft(int x, int y, GraphicalDrawingBoard* gdb);
 };

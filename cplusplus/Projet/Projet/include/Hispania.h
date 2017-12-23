@@ -4,11 +4,9 @@
 class Hispania : public Spacecraft {
 
 public:
-	Hispania(float x, float y, float width, float height, float r, float g, float b)
-		: Spacecraft(x, y, width, height, r, g, b) {};
+	Hispania(float x, float y, float width, float height, double frequency, double power, double range, double health, double cost, float r, float g, float b)
+		: Spacecraft(x, y, width, height, frequency, power, range, health, cost, r, g, b) {};
 
-	// virtual ~Hispania();
-
-	virtual void Draw();
 	virtual void Tick();
+	virtual void Draw();
 };
