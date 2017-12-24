@@ -1,6 +1,10 @@
 #include "GraphicalDrawingBoard.h"
-
+#include "HispaniaStrategy.h"
+#include "ElysiumStrategy.h"
+#include "NostromoStrategy.h"
 #include <cmath>
+#include <algorithm>
+
 
 void GraphicalDrawingBoard::Draw()
 {
@@ -38,22 +42,51 @@ void GraphicalDrawingBoard::Draw()
 	}
 
 	// MONEY
-	char* buffer = new char[10];
+	char* buffer = new char[256];
 	sprintf(buffer, "%.2f $", env->getMoney());
 	GraphicPrimitives::drawText2D(buffer, -0.98f, 0.92f, 1, 1, 1);
 
 	// LEVEL
-
-
+	if(env->getLevel() != nullptr){
+		sprintf(buffer, "Level %d", env->getLevel()->getN());
+		GraphicPrimitives::drawText2D(buffer, -0.98f, 0.72f, 1, 1, 1);
+		sprintf(buffer, "(%d ast. left)", env->getLevel()->getNAsteroidLeft() + env->getNbAsteroids());
+		GraphicPrimitives::drawText2D(buffer, -0.98f, 0.65f, 1, 1, 1);
+	}
 	// HEALTH
 	sprintf(buffer, "%d HP", env->getHealth());
 	GraphicPrimitives::drawText2D(buffer, -0.98f, 0.82f, 1, 1, 1);
 
-	/*
-	GraphicPrimitives::drawLine2D(0, 0, 1, 1, 1, 1, 0);
-	GraphicPrimitives::drawLine2D(0, 0, -1, 1, 1, 1, 0);
-	GraphicPrimitives::drawLine2D(0, 0, 1, -1, 1, 1, 0);
-	GraphicPrimitives::drawLine2D(0, 0, -1, -1, 1, 0, 0);*/
+	/* Strategy */
+	GraphicPrimitives::drawOutlinedRect2D(x1, y2, width / 4, -1, 1, 1, 0);
+	sprintf(buffer, "Hispania (250$)");
+	GraphicPrimitives::drawText2D(buffer, x1, y2 - 0.05, 1, 1, 1);
+	sprintf(buffer, "15 Dmg");
+	GraphicPrimitives::drawText2D(buffer, x1, y2 - 0.1, 1, 1, 1);
+	sprintf(buffer, "Medium range");
+	GraphicPrimitives::drawText2D(buffer, x1, y2 - 0.15, 1, 1, 1);
+
+	GraphicPrimitives::drawOutlinedRect2D(x1 + width / 4, y2, width / 4, -1, 1, 1, 0);
+	sprintf(buffer, "Elysium (500$)");
+	GraphicPrimitives::drawText2D(buffer, x1 + width / 4, y2 - 0.05, 1, 1, 1);
+	sprintf(buffer, "30 Dmg");
+	GraphicPrimitives::drawText2D(buffer, x1 + width / 4, y2 - 0.1, 1, 1, 1);
+	sprintf(buffer, "Medium range");
+	GraphicPrimitives::drawText2D(buffer, x1 + width / 4, y2 - 0.15, 1, 1, 1);
+
+	GraphicPrimitives::drawOutlinedRect2D(x1 + 2 * width / 4, y2, width / 4, -1, 1, 1, 0);
+	sprintf(buffer, "Nostromo (1000$)");
+	GraphicPrimitives::drawText2D(buffer, x1 + 2 * width / 4, y2 - 0.05, 1, 1, 1);
+	sprintf(buffer, "60 Dmg");
+	GraphicPrimitives::drawText2D(buffer, x1 + 2 * width / 4, y2 - 0.1, 1, 1, 1);
+	sprintf(buffer, "Long range");
+	GraphicPrimitives::drawText2D(buffer, x1 + 2 * width / 4, y2 - 0.15, 1, 1, 1);
+
+	if (!env->getLevel()->hasStarted()) {
+		GraphicPrimitives::drawOutlinedRect2D(-1, 0.60f, x1 + 1, -0.2, 1, 1, 0);
+		sprintf(buffer, "Start!");
+		GraphicPrimitives::drawText2D(buffer, -0.98f, 0.5, 1, 1, 1);
+	}
 }
 
 void GraphicalDrawingBoard::addDrawable(IDrawable * drawable)
@@ -63,6 +96,24 @@ void GraphicalDrawingBoard::addDrawable(IDrawable * drawable)
 
 void GraphicalDrawingBoard::removeDrawable(IDrawable * drawable)
 {
+	drawables->erase(
+		std::remove(
+			drawables->begin(), drawables->end(), drawable
+		), drawables->end()
+	);
+
+	/*asteroids->erase(
+		std::remove(
+			asteroids->begin(), asteroids->end(), asteroid
+		), asteroids->end()
+	);*/
+}
+
+float GraphicalDrawingBoard::isStartButton(float x, float y) {
+	float _x = xCoordToPercent(x); 
+	float _y = yCoordToPercent(y);
+	std::cout << _x << ":" << _y << std::endl;
+	return _x >= -1 && _x < x1 && _y < 0.6 && _y > 0.4;
 }
 
 float GraphicalDrawingBoard::xCoordToPercent(int x)
@@ -127,11 +178,16 @@ bool GraphicalDrawingBoard::isCheckboard(float x, float y)
 	return (x > x1 && x < x2) && (y < y1 && y > y2);
 }
 
+bool GraphicalDrawingBoard::isCheckboardPercent(float x, float y)
+{
+	return (x > x1 && x < x2) && (y < y1 && y > y2);
+}
+
 bool GraphicalDrawingBoard::isLeftMenu(float x, float y)
 {
 	x = xCoordToPercent(x);
 	y = yCoordToPercent(y);
-	return (x < x1) && (y < y2);
+	return (x < x1);
 }
 
 bool GraphicalDrawingBoard::isDownMenu(float x, float y)
@@ -145,4 +201,25 @@ float GraphicalDrawingBoard::distanceBetweenTwoPoints(float x1, float y1, float 
 	return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
 }
 
+ISpacecraftStrategy* GraphicalDrawingBoard::getStrategyFor(float x, float y) {
+	float _x = xCoordToPercent(x);
+	float _y = yCoordToPercent(y);
+
+	float width = x2 - x1;
+
+	if (_x > x1 && _x < x1 + width / 4) {
+		return new HispaniaStrategy();
+	}
+	else if(_x > x1 + width / 4 && _x < x1 + 2 * width / 4) {
+		return new ElysiumStrategy();
+	}
+	else if (_x > x1 + 2 * width / 4 && _x < x1 + 3 * width / 4) {
+		return new NostromoStrategy();
+	}
+	else {
+
+	}
+
+	return nullptr;
+}
 

@@ -8,6 +8,8 @@ class Level;
 #include "Spacecraft.h"
 #include "GameEngineBase.h"
 #include "GraphicalDrawingBoard.h"
+#include <ctime>
+#include <vector>
 #include "Asteroid.h"
 #include "Level.h"
 
@@ -21,6 +23,7 @@ class Environment : public GameEngineBase {
 	std::vector<Spacecraft*>* spacecrafts;
 	std::vector<Asteroid*>* asteroids;
 	Level* level;
+	std::time_t lastSpawn;
 
 	double money;
 	int health;
@@ -32,6 +35,8 @@ public:
 	void addMoney(double amount) { money += amount; }
 	double getMoney() { return money; }
 	virtual bool withdrawMoney(double amount);
+
+	virtual int getNbAsteroids();
 
 	virtual void idle();
 	virtual bool RequestCreation(int x, int y);
@@ -60,4 +65,5 @@ public:
 	virtual Asteroid* closestAsteroidFromSpacecraft(Spacecraft* spacecraft);
 	virtual Asteroid* closestAsteroidToLeft(Spacecraft* spacecraft);
 	virtual Asteroid* lowestHealthTouchableAsteroid(Spacecraft* spacecraft);
+	virtual bool isDrawableInGdb(DrawableObject * drawable);
 };

@@ -13,10 +13,15 @@ class Level {
 	bool started;
 	int nbAsteroid;
 	int nbAsteroidLeft;
+	int n;
 
 public:
 	Level(int level);
 
 	virtual void startLevel();
 	virtual Asteroid* getAsteroid(GraphicalDrawingBoard* gdb);
+	bool hasStarted() { return started; }
+	int getN() { return n; }
+	int getNAsteroid() { return nbAsteroid; }
+	int getNAsteroidLeft() { return nbAsteroidLeft; }
 };

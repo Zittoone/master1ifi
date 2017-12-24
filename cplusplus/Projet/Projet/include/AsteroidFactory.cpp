@@ -10,8 +10,11 @@
 float AsteroidFactory::randomFloatRange(float min, float max)
 {
 	// Seed to get more random
-	srand(static_cast <unsigned> (time(0)));
-	return min + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (max - min)));;
+	//srand(time(NULL));
+	float random = ((float)rand()) / (float)RAND_MAX;
+	float diff = max - min;
+	float r = random * diff;
+	return min + r;
 }
 
 Eros * AsteroidFactory::getErosAsteroid(GraphicalDrawingBoard* gdb)
@@ -19,38 +22,38 @@ Eros * AsteroidFactory::getErosAsteroid(GraphicalDrawingBoard* gdb)
 	//float x, float y, double health, float direction, float speed, float width, float height, float r, float g, float b
 	// X should be the very right of the game
 	float x = gdb->getX2();
-	float y = randomFloatRange(gdb->getY1() - 0.02, gdb->getY2() + 0.02);
+	float y = randomFloatRange(gdb->getY1() - 0.08, gdb->getY2() + 0.08);
 	double health = 100.;
 	float direction = M_PI; // always go total left
-	float speed = 0.005;
-	float width = 0.015;
-	float height = 0.015;
+	float speed = 0.001;
+	float width = 0.045;
+	float height = 0.045;
 	float r, g, b;
-	r = g = b = 0.005;
-	return new Eros(x, y, health, direction, speed, width, height, r, g, b);
+	r = g = b = 0.5;
+	return new Eros(x, y, health, direction, speed, width, height, r, g, b, 50.);
 }
 
 Blume * AsteroidFactory::getBlumeAsteroid(GraphicalDrawingBoard* gdb)
 {
 	float x = gdb->getX2();
-	float y = randomFloatRange(gdb->getY1() + 0.02, gdb->getY2() - 0.02);
+	float y = randomFloatRange(gdb->getY1() - 0.1, gdb->getY2() + 0.1);
 	double health = 200.;
 	float direction = M_PI; // always go total left
-	float speed = 0.003;
-	float width = 0.020;
-	float height = 0.020;
-	return new Blume(x, y, health, direction, speed, width, height, 0, 0, 0.5);
+	float speed = 0.0008;
+	float width = 0.1;
+	float height = 0.1;
+	return new Blume(x, y, health, direction, speed, width, height, 0, 1., 1., 200.);
 }
 
 Zephyr * AsteroidFactory::getZephyrAsteroid(GraphicalDrawingBoard* gdb)
 {
 	float x = gdb->getX2();
-	float y = randomFloatRange(gdb->getY1() + 0.02, gdb->getY2() - 0.02);
-	double health = 200.;
-	double shield = 100.;
+	float y = randomFloatRange(gdb->getY1() - 0.3, gdb->getY2() + 0.3);
+	double health = 1000.;
+	double shield = 500.;
 	float direction = M_PI; // always go total left
-	float speed = 0.001;
-	float width = 0.040;
-	float height = 0.040;
-	return new Zephyr(x, y, health, shield, direction, speed, width, height, 0.55, 0, 0);
+	float speed = 0.0004;
+	float width = 0.3;
+	float height = 0.3;
+	return new Zephyr(x, y, health, shield, direction, speed, width, height, 0.9, 0, 0, 500.);
 }

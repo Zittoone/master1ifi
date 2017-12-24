@@ -6,9 +6,10 @@ Environment::Environment(GraphicalDrawingBoard * gdb) : gdb(gdb)
 {
 	spacecrafts = new std::vector<Spacecraft*>;
 	asteroids = new std::vector<Asteroid*>;
+	level = new Level(1);
 
 	health = 100;
-	money = 2000.;
+	money = 1000.;
 
 	int size = gdb->getSize();
 	board = (bool**)malloc(sizeof(bool*) * size);
@@ -34,22 +35,81 @@ bool Environment::withdrawMoney(double amount)
 	return moneyLeft >= 0;
 }
 
+int Environment::getNbAsteroids() {
+	return asteroids->size();
+}
+
 void Environment::idle()
 {
 	int size = spacecrafts->size();
 
+	if (level->getNAsteroidLeft() <= 0 && asteroids->size() == 0) {
+		Level* pBuf = level;
+		level = new Level(pBuf->getN() + 1);
+		delete pBuf;
+	}
+
+	// seconds
+	std::time_t now = std::time(nullptr);
+	if (lastSpawn == NULL || (now - lastSpawn) >= 5 - (5 / (level->getN() * 2))) {
+		lastSpawn = now;
+		std::cout << "spawned at " << now << std::endl;
+		Asteroid* asteroid = level->getAsteroid(gdb);
+		if (asteroid != nullptr) {
+			addAsteroid(asteroid);
+			// Ajout graphique
+			gdb->addDrawable(asteroid);
+		}
+
+		// hardcoded because im tired
+		if (level->getN() >= 5) {
+			Asteroid* asteroid = level->getAsteroid(gdb);
+			if (asteroid != nullptr) {
+				addAsteroid(asteroid);
+				// Ajout graphique
+				gdb->addDrawable(asteroid);
+			}
+		}
+
+		if (level->getN() >= 10) {
+			Asteroid* asteroid = level->getAsteroid(gdb);
+			if (asteroid != nullptr) {
+				addAsteroid(asteroid);
+				// Ajout graphique
+				gdb->addDrawable(asteroid);
+			}
+		}
+
+	}
 	for (int i = 0; i < size; i++) {
 		(*spacecrafts)[i]->Tick();
 	}
 
+	/* ASTEROIDS*/
 	size = asteroids->size();
+	std::vector<Asteroid*>* toRemove = new std::vector<Asteroid*>; // To remove
+
 	for (int i = 0; i < size; i++) {
-		if ((*asteroids)[i]->getX() < gdb->getX1()) {
-			removeAsteroid((*asteroids)[i]);
-			loseHealth(5); // Transform this to level.getLosingHealth etc.
+		if ((*asteroids)[i]->getX() <= gdb->getX1()){
+			toRemove->push_back((*asteroids)[i]);
+			loseHealth((*asteroids)[i]->getValue() / 100.);
 		}
-		(*asteroids)[i]->Tick();
+		else if ((*asteroids)[i]->getHealth() <= 0) {
+			toRemove->push_back((*asteroids)[i]);
+			addMoney((*asteroids)[i]->getValue());
+		} else {
+			(*asteroids)[i]->Tick();
+		}
 	}
+
+	size = toRemove->size();
+	for (int i = 0; i < size; i++)
+	{
+		
+		removeAsteroid((*toRemove)[i]);
+	}
+	delete toRemove;
+
 }
 
 bool Environment::RequestCreation(int x, int y)
@@ -71,6 +131,7 @@ void Environment::addSpacecraft(Spacecraft* spacecraft, int x, int y) {
 
 
 void Environment::removeSpacecraft(Spacecraft* spacecraft) {
+	// TODO: remove from board
 	spacecrafts->erase(
 		std::remove(
 			spacecrafts->begin(), spacecrafts->end(), spacecraft
@@ -85,6 +146,7 @@ void Environment::addAsteroid(Asteroid * asteroid)
 
 void Environment::removeAsteroid(Asteroid * asteroid)
 {
+	gdb->removeDrawable(asteroid);
 	asteroids->erase(
 		std::remove(
 			asteroids->begin(), asteroids->end(), asteroid
@@ -112,7 +174,7 @@ Level * Environment::getLevel()
 
 void Environment::loseHealth(int amount)
 {
-	if (health > amount)
+	if (health < amount)
 		endGame();
 	else health -= amount;
 }
@@ -157,4 +219,8 @@ Asteroid * Environment::closestAsteroidToLeft(Spacecraft * spacecraft)
 Asteroid * Environment::lowestHealthTouchableAsteroid(Spacecraft * spacecraft)
 {
 	return nullptr;
+}
+
+bool Environment::isDrawableInGdb(DrawableObject* drawable) {
+	return gdb->isCheckboardPercent(drawable->getX(), drawable->getY());
 }

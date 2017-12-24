@@ -3,9 +3,12 @@
 #include "GraphicEngineBase.h"
 #include "Environment.h"
 #include "IDrawable.h"
+#include <vector>
+#include "ISpacecraftStrategy.h"
 
 // Circular dependency
 class Environment;
+class ISpacecraftStrategy;
 
 class GraphicalDrawingBoard : public GraphicEngineBase {
 
@@ -19,9 +22,6 @@ class GraphicalDrawingBoard : public GraphicEngineBase {
 	// x2 y2 et is bottom right
 	float x1, y1, x2, y2;
 
-	virtual float xCoordToPercent(int x);
-	virtual float yCoordToPercent(int y);
-
 public:
 
 	GraphicalDrawingBoard(int n, float x1, float y1, float x2, float y2)
@@ -33,6 +33,7 @@ public:
 
 	virtual void addDrawable(IDrawable* drawable);
 	virtual void removeDrawable(IDrawable* drawable);
+	virtual float isStartButton(float x, float y);
 	void setEnvironment(Environment* env) { this->env = env; }
 
 	int getSize() const { return size; }
@@ -45,11 +46,16 @@ public:
 	virtual int getCheckboardY(float y);
 	virtual float getXCoordFor(int x);
 	virtual float getYCoordFor(int y);
+	virtual float xCoordToPercent(int x);
+	virtual float yCoordToPercent(int y);
 
 	virtual bool isCheckboard(float x, float y);
+	bool isCheckboardPercent(float x, float y);
 	virtual bool isLeftMenu(float x, float y);
 	virtual bool isDownMenu(float x, float y);
 
 	virtual float distanceBetweenTwoPoints(float x1, float y1, float x2, float y2);
+
+	ISpacecraftStrategy * getStrategyFor(float x, float y);
 
 };

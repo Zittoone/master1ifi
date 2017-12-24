@@ -18,10 +18,14 @@ void Controller::MouseCallback(int button, int state, int x, int y)
 			}
 		}
 		else if (gdb->isLeftMenu(x, y)) {
-			// Do stuff
+			if (gdb->isStartButton(x, y)) {
+				std::cout << "clicked" << std::endl;
+				environment->getLevel()->startLevel();
+			}
 		}
 		else if (gdb->isDownMenu(x, y)) {
 			// Do stuff
+			scStrategy = gdb->getStrategyFor(x, y);
 		}
 	}
 }

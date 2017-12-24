@@ -11,8 +11,8 @@ class Zephyr
 
 public:
 
-	Zephyr(float x, float y, double health, double shield, float direction, float speed, float width, float height, float r, float g, float b)
-		: shield(shield), Asteroid(x, y, health, direction, speed, width, height, r, g, g) {} ;
+	Zephyr(float x, float y, double health, double shield, float direction, float speed, float width, float height, float r, float g, float b, double value)
+		: shield(shield), Asteroid(x, y, health, direction, speed, width, height, r, g, g, value) {} ;
 
 	double getShield() { return shield; }
 
