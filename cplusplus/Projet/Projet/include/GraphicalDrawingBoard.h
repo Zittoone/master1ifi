@@ -58,4 +58,6 @@ public:
 
 	ISpacecraftStrategy * getStrategyFor(float x, float y);
 
+	void endGame();
+
 };

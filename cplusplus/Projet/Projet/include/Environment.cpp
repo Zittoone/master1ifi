@@ -53,7 +53,6 @@ void Environment::idle()
 	std::time_t now = std::time(nullptr);
 	if (lastSpawn == NULL || (now - lastSpawn) >= 5 - (5 / (level->getN() * 2))) {
 		lastSpawn = now;
-		std::cout << "spawned at " << now << std::endl;
 		Asteroid* asteroid = level->getAsteroid(gdb);
 		if (asteroid != nullptr) {
 			addAsteroid(asteroid);
@@ -92,7 +91,7 @@ void Environment::idle()
 	for (int i = 0; i < size; i++) {
 		if ((*asteroids)[i]->getX() <= gdb->getX1()){
 			toRemove->push_back((*asteroids)[i]);
-			loseHealth((*asteroids)[i]->getValue() / 100.);
+			loseHealth((*asteroids)[i]->getValue() / 10.);
 		}
 		else if ((*asteroids)[i]->getHealth() <= 0) {
 			toRemove->push_back((*asteroids)[i]);
@@ -186,7 +185,39 @@ void Environment::giveHealth(int amount)
 
 void Environment::endGame()
 {
-	//DO STUFF
+	Level* ptr = level;
+	level = new Level(1);
+	delete ptr;
+	health = 100;
+	money = 1000.;
+
+	int size = spacecrafts->size();
+	for (int i = 0; i < size; i++)
+	{
+		delete (*spacecrafts)[i];
+	}
+
+	delete spacecrafts;
+
+	size = asteroids->size();
+	for (int i = 0; i < size; i++)
+	{
+		delete (*asteroids)[i];
+	}
+
+	delete asteroids;
+
+	for (int i = 0; i < size; i++) {
+		for (int j = 0; j < size; j++) {
+			board[i][j] = false;
+		}
+	}
+
+	gdb->endGame();
+
+
+	spacecrafts = new std::vector<Spacecraft*>;
+	asteroids = new std::vector<Asteroid*>;
 }
 
 Asteroid * Environment::closestAsteroidFromSpacecraft(Spacecraft * spacecraft)

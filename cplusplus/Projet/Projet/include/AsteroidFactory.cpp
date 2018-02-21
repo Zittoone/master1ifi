@@ -30,7 +30,7 @@ Eros * AsteroidFactory::getErosAsteroid(GraphicalDrawingBoard* gdb)
 	float height = 0.045;
 	float r, g, b;
 	r = g = b = 0.5;
-	return new Eros(x, y, health, direction, speed, width, height, r, g, b, 50.);
+	return new Eros(x, y, health, direction, speed, width, height, r, g, b, 25.);
 }
 
 Blume * AsteroidFactory::getBlumeAsteroid(GraphicalDrawingBoard* gdb)
@@ -42,7 +42,7 @@ Blume * AsteroidFactory::getBlumeAsteroid(GraphicalDrawingBoard* gdb)
 	float speed = 0.0008;
 	float width = 0.1;
 	float height = 0.1;
-	return new Blume(x, y, health, direction, speed, width, height, 0, 1., 1., 200.);
+	return new Blume(x, y, health, direction, speed, width, height, 0, 1., 1., 100.);
 }
 
 Zephyr * AsteroidFactory::getZephyrAsteroid(GraphicalDrawingBoard* gdb)
@@ -55,5 +55,5 @@ Zephyr * AsteroidFactory::getZephyrAsteroid(GraphicalDrawingBoard* gdb)
 	float speed = 0.0004;
 	float width = 0.3;
 	float height = 0.3;
-	return new Zephyr(x, y, health, shield, direction, speed, width, height, 0.9, 0, 0, 500.);
+	return new Zephyr(x, y, health, shield, direction, speed, width, height, 0.9, 0, 0, 200.);
 }

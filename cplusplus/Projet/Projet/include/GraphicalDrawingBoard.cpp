@@ -223,3 +223,8 @@ ISpacecraftStrategy* GraphicalDrawingBoard::getStrategyFor(float x, float y) {
 	return nullptr;
 }
 
+void GraphicalDrawingBoard::endGame() {
+	delete drawables;
+	drawables = new std::vector<IDrawable*>;
+}
+
