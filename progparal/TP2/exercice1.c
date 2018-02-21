@@ -9,7 +9,7 @@ void carre(long*, int);
 
 // Var globales
 int nbthread;
-long total=9999;
+long total=0;
 
 int main(int argc, char* argv[]){
 
@@ -22,7 +22,7 @@ int main(int argc, char* argv[]){
 	int size = atoi(argv[1]);
 
 	long* tab = malloc(sizeof(long) * size);
-	srand(time(NULL));
+	srand(time(NULL) % 10 + 1);
 
 	for(int i = 0; i < size; i++){
 		tab[i] = rand();
@@ -47,12 +47,15 @@ int main(int argc, char* argv[]){
 
 void carre(long* tab, int size){
 
-	#pragma omp parallel for private(total)
+	#pragma omp parallel for
 	for(int i = 0; i < size; i++){		
 		tab[i] = tab[i] * tab[i];
 
-		// Update total inside parallelized loop
-		total += tab[i];
+		#pragma omp critical
+		{
+        	total += tab[i];
+        }
+		
 
 		if (i==0) {
 			nbthread = omp_get_num_threads();
