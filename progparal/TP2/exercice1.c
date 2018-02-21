@@ -1,8 +1,9 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <sys/time.h>
 #include <omp.h>
+
 
 void carre(long*, int);
 
@@ -19,16 +20,27 @@ int main(int argc, char* argv[]){
 	for(int i = 0; i < size; i++){
 		tab[i] = rand();
 	}
+
+	// Calcul du temps en fonction de la taille du tableau
+	struct timeval t1, t2;
+
+	gettimeofday (&t1, NULL);
 	
 	carre(tab, size);
 
-	for(int i = 0; i < size; i++){
-		printf("%ld\n", tab[i]);
-	}
+	gettimeofday (&t2, NULL);
+
+	float texec =
+      (float) ((t2.tv_sec - t1.tv_sec) * 1000000 + t2.tv_usec -
+      t1.tv_usec);
+
+	printf("%d %f\n", size, texec);
 }
 
 void carre(long* tab, int size){
-	for(int i = 0; i < size; i++){
+
+	#pragma omp parallel for
+	for(int i = 0; i < size; i++){		
 		tab[i] = tab[i] * tab[i];
-	}
+	}	
 }
