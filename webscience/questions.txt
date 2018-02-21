@@ -1,0 +1,47 @@
+Question WebScience :
+
+1. Alexis COUVREUR
+2. Hypertext
+3. HTTP, HTML, URL
+4. 1994
+5. 	<book>
+	<title>Architecture</title>
+	<author>Jordinio, Philip</author>
+	<ID isbn10="3822840912" />
+	</book>
+6. LOGML, OML, XAML
+7. Graphe de méta-données
+8. HTML:
+	<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN" "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-GB">
+	<head profile="http://dublincore.org/documents/dcq-html/">
+
+			<title>BBC Nature - Great white shark videos, news and facts</title>        <meta name="description" content="Great white sharks are at the very top of the marine food chain. " />
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />        
+	<link rel="schema.dcterms" href="http://purl.org/dc/terms/" />
+									<meta name="DCTERMS.created" content="2009-07-28T12:00:00Z" />
+			<meta name="DCTERMS.modified" content="2014-01-29T14:47:18+00:00" />
+	<!-- Begin PG -->
+	<style type="text/css">
+
+	RDF:
+	<?xml version="1.0" encoding="utf-8"?><rdf:RDF
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" 
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" 
+    xmlns:owl="http://www.w3.org/2002/07/owl#" 
+    xmlns:foaf="http://xmlns.com/foaf/0.1/" 
+    xmlns:dc="http://purl.org/dc/terms/" 
+    xmlns:dctypes="http://purl.org/dc/dcmitype/" 
+    xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#" 
+    xmlns:po="http://purl.org/ontology/po/" 
+	
+9. URI
+10. SPARQL, CURL
+11. OWL, RDFS
+12. Teacher was tired, lol.
+13. 
+14. PICS
+15. 
+16. 
+17. Bus, Fork, Plant device...
+18. IRI
