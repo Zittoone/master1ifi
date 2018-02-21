@@ -1,0 +1,1952 @@
+﻿COUVREUR Alexis
+GAUTHIER Thomas
+TABARIES Alaric
+
+Pour une meilleure lisibilité, les questions seront espacées entre elles par plusieurs lignes vides, et encadrées par des symboles '*'. Les spools seront indiqués par une succession de symboles '!' en fin de question.
+
+
+***************************************************************************************************
+1.1.2.a Définir ou générer un schéma logique de la base de données avec au moins 7 tables:
+***************************************************************************************************
+
+Afin de ne pas avoir à insérer un ID à chaque fois, et étant donné qu'il n'existe pas de clause AUTO INCREMENT sous Oracle,
+nous avons créé pour chaque table une séquence et un trigger qui nous permet d'incrémenter l'id de la clé primaire 
+qui sera utilisée pour le prochain enregistrement après chaque insertion.
+Nous avons aussi créé des indexes sur les clés étrangères car cette opération n'est pas réalisée par défaut par
+Oracle lors de la création de la clé étrangère. Cela permet, entre autres, d'éviter à Oracle de réaliser des opérations coûteuses lors d'instructions de suppression et de mise à jour.
+Vous trouverez plus de détails sur le modèle conceptuel dans le fichier "MCD.pdf".
+
+/*
+ ----------------------------------------------------------------
+ ---------------------- CREATION TABLE BANQUE -------------------
+ ----------------------------------------------------------------
+*/
+-- TABLE BANQUE
+CREATE TABLE BANQUE (
+    id_banque INTEGER NOT NULL PRIMARY KEY,
+    nom_banque VARCHAR(20) UNIQUE
+)
+tablespace ora_data
+storage(initial 100K next 100K minextents 1 pctincrease 0);
+
+-- SEQUENCE BANQUE PRIMARY KEY
+CREATE SEQUENCE banq_seq START WITH 1;
+
+-- TRIGGER BEFORE INSERT ROW
+CREATE OR REPLACE TRIGGER banq_bir 
+BEFORE INSERT ON BANQUE 
+FOR EACH ROW
+BEGIN
+  SELECT banq_seq.NEXTVAL
+  INTO   :new.id_banque
+  FROM   dual;
+END;
+/
+/*
+ ----------------------------------------------------------------
+ --------------------- CREATION TABLE AGENCE -------------------- 
+ ----------------------------------------------------------------
+*/
+-- TABLE AGENCE
+CREATE TABLE AGENCE (
+    id_agence INTEGER NOT NULL PRIMARY KEY,
+    id_banque INTEGER NOT NULL,
+    adresse_agence VARCHAR(80) NOT NULL,
+    ville_agence VARCHAR(20) NOT NULL,
+    code_postal_agence NUMBER(5) NOT NULL,
+    FOREIGN KEY(id_banque) REFERENCES BANQUE(id_banque)
+)
+tablespace ora_data
+storage(initial 100K next 100K minextents 1 pctincrease 0);
+
+-- SEQUENCE AGENCE PRIMARY KEY
+CREATE SEQUENCE agce_seq START WITH 1;
+
+-- TRIGGER BEFORE INSERT ROW
+CREATE OR REPLACE TRIGGER agce_bir 
+BEFORE INSERT ON AGENCE 
+FOR EACH ROW
+BEGIN
+  SELECT agce_seq.NEXTVAL
+  INTO   :new.id_agence
+  FROM   dual;
+END;
+/
+/*
+ ----------------------------------------------------------------
+ -------------------- CREATION TABLE PERSONNE -------------------
+ ----------------------------------------------------------------
+*/
+-- TABLE PERSONNE
+CREATE TABLE PERSONNE (
+	id_personne INTEGER PRIMARY KEY,
+	nom_personne VARCHAR2(30),
+	prenom_personne VARCHAR2(30),
+  adresse_personne VARCHAR(80) NOT NULL,
+  ville_personne VARCHAR(20) NOT NULL,
+  code_postal_personne NUMBER(5) NOT NULL,
+	telephone_personne VARCHAR2(10)
+)
+tablespace ora_data
+storage(initial 100K next 100K minextents 1 pctincrease 0);
+
+-- SEQUENCE PERSONNE PRIMARY KEY
+CREATE SEQUENCE prsn_seq START WITH 1;
+
+-- TRIGGER BEFORE INSERT ROW
+CREATE OR REPLACE TRIGGER prsn_bir 
+BEFORE INSERT ON PERSONNE 
+FOR EACH ROW
+BEGIN
+  SELECT prsn_seq.NEXTVAL
+  INTO   :new.id_personne
+  FROM   dual;
+END;
+/
+/*
+ ----------------------------------------------------------------
+ --------------------- CREATION TABLE EMPLOYE ------------------- 
+ ----------------------------------------------------------------
+*/
+-- TABLE EMPLOYE
+CREATE TABLE EMPLOYE (
+	id_employe INTEGER PRIMARY KEY,
+	id_personne INTEGER NOT NULL,
+	id_agence INTEGER NOT NULL,
+    libelle_poste VARCHAR2(15),
+    CONSTRAINT check_libelle_poste
+    CHECK (libelle_poste IN('Directeur', 'Conseiller', 'Accueil')),
+    FOREIGN KEY(id_personne) REFERENCES PERSONNE(id_personne),
+    FOREIGN KEY(id_agence) REFERENCES AGENCE(id_agence)
+)
+tablespace ora_data
+storage(initial 100K next 100K minextents 1 pctincrease 0);
+
+-- SEQUENCE EMPLOYE PRIMARY KEY
+CREATE SEQUENCE empl_seq START WITH 1;
+
+-- TRIGGER BEFORE INSERT ROW
+CREATE OR REPLACE TRIGGER empl_bir 
+BEFORE INSERT ON EMPLOYE 
+FOR EACH ROW
+BEGIN
+  SELECT empl_seq.NEXTVAL
+  INTO   :new.id_employe
+  FROM   dual;
+END;
+/
+/*
+ ----------------------------------------------------------------
+ --------------------- CREATION TABLE CLIENT -------------------- 
+ ----------------------------------------------------------------
+*/
+-- TABLE CLIENT
+CREATE TABLE CLIENT (
+	id_client INTEGER PRIMARY KEY,
+	id_personne INTEGER NOT NULL,
+	id_agence INTEGER NOT NULL,
+	id_conseiller INTEGER NOT NULL,
+	FOREIGN KEY(id_personne) REFERENCES PERSONNE(id_personne),
+	FOREIGN KEY(id_agence) REFERENCES AGENCE(id_agence),
+	FOREIGN KEY(id_conseiller) REFERENCES EMPLOYE(id_employe)
+)
+tablespace ora_data
+storage(initial 100K next 100K minextents 1 pctincrease 0);
+
+-- SEQUENCE CLIENT PRIMARY KEY
+CREATE SEQUENCE clnt_seq START WITH 1;
+
+-- TRIGGER BEFORE INSERT ROW
+CREATE OR REPLACE TRIGGER clnt_bir 
+BEFORE INSERT ON CLIENT 
+FOR EACH ROW
+BEGIN
+  SELECT clnt_seq.NEXTVAL
+  INTO   :new.id_client
+  FROM   dual;
+END;
+/
+
+/*
+ ----------------------------------------------------------------
+ --------------------- CREATION TABLE COMPTE -------------------- 
+ ----------------------------------------------------------------
+*/
+-- TABLE COMPTE
+CREATE TABLE COMPTE (
+    id_compte INTEGER NOT NULL PRIMARY KEY,
+    id_client INTEGER NOT NULL,
+    solde BINARY_DOUBLE DEFAULT 0 NOT NULL,
+    taux_interet BINARY_DOUBLE NOT NULL CHECK (taux_interet BETWEEN 0.5 AND 100),
+    FOREIGN KEY(id_client) REFERENCES CLIENT(id_client)
+)
+tablespace ora_data
+storage(initial 100K next 100K minextents 1 pctincrease 0);
+
+-- SEQUENCE COMPTE PRIMARY KEY
+CREATE SEQUENCE cmpt_seq START WITH 1;
+
+-- TRIGGER BEFORE INSERT ROW
+CREATE OR REPLACE TRIGGER cmpt_bir 
+BEFORE INSERT ON COMPTE 
+FOR EACH ROW
+BEGIN
+  SELECT cmpt_seq.NEXTVAL
+  INTO   :new.id_compte
+  FROM   dual;
+END;
+/
+/*
+ ----------------------------------------------------------------
+ --------------------- CREATION TABLE CREDIT --------------------
+ ----------------------------------------------------------------
+*/
+-- TABLE CREDIT
+CREATE TABLE CREDIT (
+	id_credit INTEGER PRIMARY KEY,
+	id_client INTEGER NOT NULL,
+	montant_init BINARY_DOUBLE NOT NULL,
+	mensualites BINARY_DOUBLE NOT NULL,
+	nb_mensualites_restantes INTEGER NOT NULL,
+	date_credit DATE DEFAULT SYSDATE NOT NULL,
+	taux_interet BINARY_DOUBLE NOT NULL CHECK (taux_interet BETWEEN 1 AND 100),
+	FOREIGN KEY (id_client) REFERENCES CLIENT(id_client)
+)
+tablespace ora_data
+storage(initial 100K next 100K minextents 1 pctincrease 0);
+
+-- SEQUENCE CREDIT PRIMARY KEY
+CREATE SEQUENCE crdt_seq START WITH 1;
+
+-- TRIGGER BEFORE INSERT ROW
+CREATE OR REPLACE TRIGGER crdt_bir
+BEFORE INSERT ON CREDIT
+FOR EACH ROW
+BEGIN
+	SELECT crdt_seq.NEXTVAL
+	INTO :new.id_credit
+	FROM dual;
+END;
+/
+
+
+/*
+ ----------------------------------------------------------------
+ ------------------------ CREATION INDEXES-----------------------
+ ----------------------------------------------------------------
+*/
+CREATE INDEX index_agence_banque ON AGENCE(id_banque)
+tablespace ora_index
+storage(initial 10K next 10K minextents 1 pctincrease 0);
+
+CREATE INDEX index_client_conseiller ON CLIENT(id_personne)
+tablespace ora_index
+storage(initial 10K next 10K minextents 1 pctincrease 0);
+
+CREATE INDEX index_client_agence ON CLIENT(id_agence)
+tablespace ora_index
+storage(initial 10K next 10K minextents 1 pctincrease 0);
+
+CREATE INDEX index_client_personne ON CLIENT(id_conseiller)
+tablespace ora_index
+storage(initial 10K next 10K minextents 1 pctincrease 0);
+
+CREATE INDEX index_compte_personne ON COMPTE(id_client)
+tablespace ora_index
+storage(initial 10K next 10K minextents 1 pctincrease 0);
+
+CREATE INDEX index_credit_personne ON CREDIT(id_client)
+tablespace ora_index
+storage(initial 10K next 10K minextents 1 pctincrease 0);
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! SPOOL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+CREATE TABLE réussi.
+CREATE SEQUENCE réussi.
+TRIGGER banq_bir Compilé.
+CREATE TABLE réussi.
+CREATE SEQUENCE réussi.
+TRIGGER agce_bir Compilé.
+CREATE TABLE réussi.
+CREATE SEQUENCE réussi.
+TRIGGER prsn_bir Compilé.
+CREATE TABLE réussi.
+CREATE SEQUENCE réussi.
+TRIGGER empl_bir Compilé.
+CREATE TABLE réussi.
+CREATE SEQUENCE réussi.
+TRIGGER clnt_bir Compilé.
+CREATE TABLE réussi.
+CREATE SEQUENCE réussi.
+TRIGGER cmpt_bir Compilé.
+CREATE TABLE réussi.
+CREATE SEQUENCE réussi.
+TRIGGER crdt_bir Compilé.
+CREATE INDEX réussi.
+CREATE INDEX réussi.
+CREATE INDEX réussi.
+CREATE INDEX réussi.
+CREATE INDEX réussi.
+CREATE INDEX réussi.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+***************************************************************************************************
+1.1.2.b Définir au moins un trigger pour assurer l’intégrité des données ne pouvant être
+prise en charge par les contraintes d’intégrités du modèle relationnel
+***************************************************************************************************
+
+Nous avons créé un trigger dont le rôle et de s'assurer qu'un client et son conseiller sont bien référencés dans la même agence
+et que l'employé référencé est bien un conseiller.
+
+-- TRIGGER BEFORE CREATE AND UPDATE ROW
+CREATE OR REPLACE TRIGGER clnt_coherency 
+BEFORE INSERT OR UPDATE ON CLIENT 
+FOR EACH ROW
+DECLARE
+  libelle EMPLOYE.libelle_poste%TYPE;
+  agence INTEGER;
+  Not_same_agency EXCEPTION;
+  Not_advisor EXCEPTION;
+BEGIN
+  SELECT libelle_poste INTO libelle FROM EMPLOYE WHERE id_employe = :new.id_conseiller;
+  IF(libelle != 'Conseiller')
+    THEN RAISE Not_advisor;
+  END IF;
+  
+  SELECT id_agence INTO agence FROM EMPLOYE WHERE id_employe = :new.id_conseiller;
+  IF(agence != :new.id_agence)
+    THEN RAISE Not_same_agency;
+  END IF;
+EXCEPTION
+WHEN Not_same_agency THEN
+    Raise_application_error(-20324,'Client and his advisor must belong to the same agency.');
+WHEN Not_advisor THEN
+    Raise_application_error(-20325,'Client''s advisor must be an advisor.');
+END;
+/
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! SPOOL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+TRIGGER clnt_coherency Compilé.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+***************************************************************************************************
+2.1 Quel est l'intérêt des tablespaces ?
+***************************************************************************************************
+Les tablespaces ont plusieurs intérêts.
+Tout d'abord, ils permettent de cloisonner les données.
+On peut ainsi créer divers tablespaces, ce que nous avons réalisé dans ce projet par ailleurs, afin de ne pas mélanger
+au même endroit des données de diverses tables, des indexes, ou tout autre élément.
+Ils peuvent aussi permettre de répartir les tables sur plusieurs disques et on peut imposer des contraintes d'espaces
+afin de mieux gérer la répartitioàn du stockage.
+
+
+
+***************************************************************************************************
+2.1.a Créer un tablespace pour stocker les données des tables.
+***************************************************************************************************
+CREATE TABLESPACE ora_data
+DATAFILE 'F:\Oracle\oradata\orcl\ORA_DATA01.DBF'
+size 10M
+Extent management local autoallocate;
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! SPOOL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+CREATE TABLESPACE réussi.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+***************************************************************************************************
+2.1.b Créer un tablespace pour stocker les données des indexes.
+***************************************************************************************************
+CREATE TABLESPACE ora_index 
+DATAFILE 'F:\Oracle\oradata\orcl\ORA_INDEX01.dbf' SIZE 10M
+EXTENT MANAGEMENT LOCAL UNIFORM SIZE 128K;
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! SPOOL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+CREATE TABLESPACE réussi.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+***************************************************************************************************
+2.1.c Créer un tablespace pour stocker les segments temporaires.
+***************************************************************************************************
+CREATE TEMPORARY TABLESPACE ora_temp
+TEMPFILE 'F:\Oracle\oradata\orcl\ORA_TEMP01.dbf' SIZE 100M
+AUTOEXTEND ON NEXT 50 M MAXSIZE 1G;
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! SPOOL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+CREATE TEMPORARY réussi.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+***************************************************************************************************
+2.2. Créer un utilisateur de votre choix qui sera propriétaire de votre application. Les
+segments temporaires doivent être localisés dans le tablespace approprié créé
+précédement. Vous devez lui donner les droits appropriés.
+***************************************************************************************************
+CREATE USER alexis IDENTIFIED BY alexis01 TEMPORARY TABLESPACE ora_temp;
+GRANT ALL PRIVILEGES TO alexis;
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! SPOOL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+CREATE USER réussi.
+GRANT ALL réussi.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+***************************************************************************************************
+2.3. Vous dimensionnerez de façon pertinente les segments. Pour cela vous devez
+utiliser le package DBMS_SPACE pour estimer la volumétrie de vos tables et
+de vos indexes afin de trouver le volume de données nécessaire dès la création
+de ces segments. Il est important d’estimer le nombre total de lignes de chacune
+de vos tables
+***************************************************************************************************
+
+
+
+
+
+***************************************************************************************************
+2.4. Insérer pour l’instant en moyenne une dizaine de lignes de test dans chacune des
+tables.
+***************************************************************************************************
+/*
+ ----------------------------------------------------------------
+ ------------------------ INSERTS BANQUE ------------------------
+ ----------------------------------------------------------------
+*/
+
+INSERT INTO BANQUE (nom_banque) VALUES ('societe generale');
+INSERT INTO BANQUE (nom_banque) VALUES ('banque populaire');
+INSERT INTO BANQUE (nom_banque) VALUES ('bnp');
+INSERT INTO BANQUE (nom_banque) VALUES ('lcl');
+INSERT INTO BANQUE (nom_banque) VALUES ('banque postale');
+INSERT INTO BANQUE (nom_banque) VALUES ('hsbc');
+
+/*
+ ----------------------------------------------------------------
+ ------------------------ INSERTS AGENCE ------------------------
+ ----------------------------------------------------------------
+*/
+
+INSERT INTO AGENCE (id_banque, adresse_agence, ville_agence, code_postal_agence)
+  VALUES (1, '2 rue du breuil', 'Vesoul', 70000);
+INSERT INTO AGENCE (id_banque, adresse_agence, ville_agence, code_postal_agence)
+  VALUES (1, '12 rue des lilas', 'Dijon', 21000);
+INSERT INTO AGENCE (id_banque, adresse_agence, ville_agence, code_postal_agence)
+  VALUES (1, '19 avenue de l''observatoire', 'Besancon', 25000);
+INSERT INTO AGENCE (id_banque, adresse_agence, ville_agence, code_postal_agence)
+  VALUES (2, '289 rue du champ clement', 'Pontcey', 70360);
+INSERT INTO AGENCE (id_banque, adresse_agence, ville_agence, code_postal_agence)
+  VALUES (3, '20 grande rue', 'Belfort', 90000);
+INSERT INTO AGENCE (id_banque, adresse_agence, ville_agence, code_postal_agence)
+  VALUES (3, '125 grande rue jean moulin', 'Montpellier', 34000);
+INSERT INTO AGENCE (id_banque, adresse_agence, ville_agence, code_postal_agence)
+  VALUES (4, '41 rue jobin', 'Paris', 75000);
+INSERT INTO AGENCE (id_banque, adresse_agence, ville_agence, code_postal_agence)
+  VALUES (5, '3 rue duhem', 'Lille', 59000);
+INSERT INTO AGENCE (id_banque, adresse_agence, ville_agence, code_postal_agence)
+  VALUES (5, '19 rue des augustins', 'Bordeaux', 33000);
+INSERT INTO AGENCE (id_banque, adresse_agence, ville_agence, code_postal_agence)
+  VALUES (5, '5 avenue bel air', 'Antibes', 06600);
+INSERT INTO AGENCE (id_banque, adresse_agence, ville_agence, code_postal_agence)
+  VALUES (6, '22 rue du landreau', 'Nantes', 44000);
+
+/*
+ ----------------------------------------------------------------
+ ----------------------- INSERTS PERSONNE -----------------------
+ ----------------------------------------------------------------
+*/
+
+INSERT INTO PERSONNE (
+  nom_personne, 
+  prenom_personne, 
+  adresse_personne,
+  ville_personne, 
+  code_postal_personne, 
+  telephone_personne
+) VALUES (
+  'gauthier',
+  'thomas',
+  '35 avenue du mont saint jean',
+  'antibes',
+  06600,
+  0470255552
+);
+INSERT INTO PERSONNE (
+  nom_personne, 
+  prenom_personne, 
+  adresse_personne,
+  ville_personne, 
+  code_postal_personne, 
+  telephone_personne
+) VALUES ( 
+  'couvreur',
+  'alexis',
+  '12 route des dolines',
+  'antibes',
+  06600,
+  0211933608
+);
+INSERT INTO PERSONNE (
+  nom_personne, 
+  prenom_personne, 
+  adresse_personne,
+  ville_personne, 
+  code_postal_personne, 
+  telephone_personne
+) VALUES (
+  'dupont',
+  'mathier',
+  '5 avenue charles tillon',
+  'antibes',
+  35000,
+  0131239428
+);
+INSERT INTO PERSONNE (
+  nom_personne, 
+  prenom_personne, 
+  adresse_personne,
+  ville_personne, 
+  code_postal_personne, 
+  telephone_personne
+) VALUES (
+  'martin',
+  'fredereic',
+  '3 rue alfred de vigny',
+  'le mans',
+  72000,
+  0416792104
+);
+INSERT INTO PERSONNE (
+  nom_personne, 
+  prenom_personne, 
+  adresse_personne,
+  ville_personne, 
+  code_postal_personne, 
+  telephone_personne
+) VALUES (
+  'aubry',
+  'caroline',
+  '30 rue des chaligny',
+  'nice',
+  06300,
+  0279089576
+);
+INSERT INTO PERSONNE (
+  nom_personne, 
+  prenom_personne, 
+  adresse_personne,
+  ville_personne, 
+  code_postal_personne, 
+  telephone_personne
+) VALUES (
+  'huard',
+  'therese',
+  '50 chemin du lavarin',
+  'caen',
+  14000,
+  0279962906
+);
+INSERT INTO PERSONNE (
+  nom_personne, 
+  prenom_personne, 
+  adresse_personne,
+  ville_personne, 
+  code_postal_personne, 
+  telephone_personne
+) VALUES (
+  'chauvet',
+  'bernard',
+  '3 place de la madeleine',
+  'paris',
+  75008,
+  0155257419
+);
+INSERT INTO PERSONNE (
+  nom_personne, 
+  prenom_personne, 
+  adresse_personne,
+  ville_personne, 
+  code_postal_personne, 
+  telephone_personne
+) VALUES (
+  'bossu',
+  'chloe',
+  '82 chemin des bateliers',
+  'angoulemes',
+  16000,
+  0534481044
+);
+INSERT INTO PERSONNE (
+  nom_personne, 
+  prenom_personne, 
+  adresse_personne,
+  ville_personne, 
+  code_postal_personne, 
+  telephone_personne
+) VALUES (
+  'bordeleau',
+  'olivier',
+  '0388553783',
+  'lomme',
+  59160,
+  0388553783
+);
+INSERT INTO PERSONNE (
+  nom_personne, 
+  prenom_personne, 
+  adresse_personne,
+  ville_personne, 
+  code_postal_personne, 
+  telephone_personne
+) VALUES (
+  'bisaillon',
+  'hortense',
+  '88 rue roussy',
+  'olivet',
+  45160,
+  0279854401
+);
+INSERT INTO PERSONNE (
+  nom_personne, 
+  prenom_personne, 
+  adresse_personne,
+  ville_personne, 
+  code_postal_personne, 
+  telephone_personne
+) VALUES (
+  'bourgeois',
+  'raphael',
+  '97 rue pierre de coubertin',
+  'toulouse',
+  31300,
+  0559002944
+);
+INSERT INTO PERSONNE (
+  nom_personne, 
+  prenom_personne, 
+  adresse_personne,
+  ville_personne, 
+  code_postal_personne, 
+  telephone_personne
+) VALUES (
+  'belanger',
+  'robin',
+  '62 rue de la pompe',
+  'mantes la jolie',
+  78200,
+  0279854401
+);
+INSERT INTO PERSONNE (
+  nom_personne, 
+  prenom_personne, 
+  adresse_personne,
+  ville_personne, 
+  code_postal_personne, 
+  telephone_personne
+) VALUES (
+  'normand',
+  'thibaud',
+  '25 quai des belges',
+  'meaux',
+  77100,
+  0131239428
+);
+INSERT INTO PERSONNE (
+  nom_personne, 
+  prenom_personne, 
+  adresse_personne,
+  ville_personne, 
+  code_postal_personne, 
+  telephone_personne
+) VALUES (
+  'chaloux',
+  'arnaud',
+  '37 rue hubert de lisle',
+  'lunel',
+  34400,
+  0448536913
+);
+INSERT INTO PERSONNE (
+  nom_personne, 
+  prenom_personne, 
+  adresse_personne,
+  ville_personne, 
+  code_postal_personne, 
+  telephone_personne
+) VALUES (
+  'montet',
+  'jules',
+  '47 rue ernest renan',
+  'choisy le roi',
+  94600,
+  01348879
+);
+INSERT INTO PERSONNE (
+  nom_personne, 
+  prenom_personne, 
+  adresse_personne,
+  ville_personne, 
+  code_postal_personne, 
+  telephone_personne
+) VALUES (
+  'sabourin',
+  'jacques',
+  '26 rue carles corbeau',
+  '27 evreux',
+  27000,
+  0239278161
+);
+INSERT INTO PERSONNE (
+  nom_personne, 
+  prenom_personne, 
+  adresse_personne,
+  ville_personne, 
+  code_postal_personne, 
+  telephone_personne
+) VALUES (
+  'dupuis',
+  'anais',
+  '16 boulevard albin durand',
+  'chalon sur saone',
+  71100,
+  0329617109
+);
+INSERT INTO PERSONNE (
+  nom_personne, 
+  prenom_personne, 
+  adresse_personne,
+  ville_personne, 
+  code_postal_personne, 
+  telephone_personne
+) VALUES (
+  'lafond',
+  'victoire',
+  '30 rue du president roosevelt',
+  'schiltigheim',
+  67300,
+  0350366385
+);
+INSERT INTO PERSONNE (
+  nom_personne, 
+  prenom_personne, 
+  adresse_personne,
+  ville_personne, 
+  code_postal_personne, 
+  telephone_personne
+) VALUES (
+  'menard',
+  'sophie',
+  '51 rue des coudriers',
+  'moulins',
+  03300,
+  0462409634
+);
+INSERT INTO PERSONNE (
+  nom_personne, 
+  prenom_personne, 
+  adresse_personne,
+  ville_personne, 
+  code_postal_personne, 
+  telephone_personne
+) VALUES (
+  'rocher',
+  'luc',
+  '77 place de la gare',
+  'colombes',
+  92300,
+  0188317701
+);
+INSERT INTO PERSONNE (
+  nom_personne, 
+  prenom_personne, 
+  adresse_personne,
+  ville_personne, 
+  code_postal_personne, 
+  telephone_personne
+) VALUES (
+  'garceau',
+  'anne',
+  '11 boulevard de la normandie',
+  'fontenay sous bois',
+  94120,
+  0135502847
+);
+INSERT INTO PERSONNE (
+  nom_personne, 
+  prenom_personne, 
+  adresse_personne,
+  ville_personne, 
+  code_postal_personne, 
+  telephone_personne
+) VALUES (
+  'lizotte',
+  'philippe',
+  '31 boulevard d''alsace ',
+  'velizy villacoublay',
+  78140,
+  0163086588
+);
+INSERT INTO PERSONNE (
+  nom_personne, 
+  prenom_personne, 
+  adresse_personne,
+  ville_personne, 
+  code_postal_personne, 
+  telephone_personne
+) VALUES (
+  'troie',
+  'margaud',
+  '6 rue goya',
+  'le moule',
+  97160,
+  05084216
+);
+INSERT INTO PERSONNE (
+  nom_personne, 
+  prenom_personne, 
+  adresse_personne,
+  ville_personne, 
+  code_postal_personne, 
+  telephone_personne
+) VALUES (
+  'caisse',
+  'clementine',
+  '67 rue de la paille',
+  'fort de france',
+  97234,
+  0568039614
+);
+
+/*
+ ----------------------------------------------------------------
+ ------------------------ INSERTS EMPLOYE -----------------------
+ ----------------------------------------------------------------
+*/
+
+INSERT INTO EMPLOYE (
+  id_personne,
+  id_agence,
+  libelle_poste
+) VALUES (
+  1,
+  1,
+  'Directeur'
+);
+INSERT INTO EMPLOYE (
+  id_personne,
+  id_agence,
+  libelle_poste
+) VALUES (
+  2,
+  2,
+  'Directeur'
+);
+INSERT INTO EMPLOYE (
+  id_personne,
+  id_agence,
+  libelle_poste
+) VALUES (
+  3,
+  3,
+  'Directeur'
+);
+INSERT INTO EMPLOYE (
+  id_personne,
+  id_agence,
+  libelle_poste
+) VALUES (
+  4,
+  4,
+  'Directeur'
+);
+INSERT INTO EMPLOYE (
+  id_personne,
+  id_agence,
+  libelle_poste
+) VALUES (
+  5,
+  5,
+  'Directeur'
+);
+INSERT INTO EMPLOYE (
+  id_personne,
+  id_agence,
+  libelle_poste
+) VALUES (
+  6,
+  6,
+  'Directeur'
+);
+INSERT INTO EMPLOYE (
+  id_personne,
+  id_agence,
+  libelle_poste
+) VALUES (
+  7,
+  1,
+  'Conseiller'
+);
+INSERT INTO EMPLOYE (
+  id_personne,
+  id_agence,
+  libelle_poste
+) VALUES (
+  8,
+  2,
+  'Conseiller'
+);
+INSERT INTO EMPLOYE (
+  id_personne,
+  id_agence,
+  libelle_poste
+) VALUES (
+  9,
+  3,
+  'Conseiller'
+);
+INSERT INTO EMPLOYE (
+  id_personne,
+  id_agence,
+  libelle_poste
+) VALUES (
+  10,
+  4,
+  'Conseiller'
+);
+INSERT INTO EMPLOYE (
+  id_personne,
+  id_agence,
+  libelle_poste
+) VALUES (
+  11,
+  5,
+  'Conseiller'
+);
+INSERT INTO EMPLOYE (
+  id_personne,
+  id_agence,
+  libelle_poste
+) VALUES (
+  12,
+  6,
+  'Conseiller'
+);
+INSERT INTO EMPLOYE (
+  id_personne,
+  id_agence,
+  libelle_poste
+) VALUES (
+  13,
+  1,
+  'Accueil'
+);
+INSERT INTO EMPLOYE (
+  id_personne,
+  id_agence,
+  libelle_poste
+) VALUES (
+  14,
+  2,
+  'Accueil'
+);
+INSERT INTO EMPLOYE (
+  id_personne,
+  id_agence,
+  libelle_poste
+) VALUES (
+  15,
+  3,
+  'Accueil'
+);
+INSERT INTO EMPLOYE (
+  id_personne,
+  id_agence,
+  libelle_poste
+) VALUES (
+  16,
+  4,
+  'Accueil'
+);
+INSERT INTO EMPLOYE (
+  id_personne,
+  id_agence,
+  libelle_poste
+) VALUES (
+  17,
+  5,
+  'Accueil'
+);
+INSERT INTO EMPLOYE (
+  id_personne,
+  id_agence,
+  libelle_poste
+) VALUES (
+  18,
+  6,
+  'Accueil'
+);
+
+/*
+ ----------------------------------------------------------------
+ ------------------------ INSERTS CLIENT ------------------------
+ ----------------------------------------------------------------
+*/
+
+INSERT INTO CLIENT (
+  id_personne,
+  id_agence,
+  id_conseiller
+) VALUES (
+  19,
+  1,
+  7
+);
+INSERT INTO CLIENT (
+  id_personne,
+  id_agence,
+  id_conseiller
+) VALUES (
+  20,
+  2,
+  8
+);
+INSERT INTO CLIENT (
+  id_personne,
+  id_agence,
+  id_conseiller
+) VALUES (
+  21,
+  3,
+  9
+);
+INSERT INTO CLIENT (
+  id_personne,
+  id_agence,
+  id_conseiller
+) VALUES (
+  22,
+  4,
+  10
+);
+INSERT INTO CLIENT (
+  id_personne,
+  id_agence,
+  id_conseiller
+) VALUES (
+  23,
+  5,
+  11
+);
+INSERT INTO CLIENT (
+  id_personne,
+  id_agence,
+  id_conseiller
+) VALUES (
+  24,
+  6,
+  12
+);
+
+/*
+ ----------------------------------------------------------------
+ ------------------------ INSERTS COMPTE ------------------------
+ ----------------------------------------------------------------
+*/
+
+INSERT INTO COMPTE (
+  id_client,
+  solde,
+  taux_interet
+) VALUES (
+  1,
+  5000,
+  2
+);
+INSERT INTO COMPTE (
+  id_client,
+  solde,
+  taux_interet
+) VALUES (
+  2,
+  200,
+  0.9
+);
+INSERT INTO COMPTE (
+  id_client,
+  solde,
+  taux_interet
+) VALUES (
+  3,
+  263150,
+  2.5
+);
+INSERT INTO COMPTE (
+  id_client,
+  solde,
+  taux_interet
+) VALUES (
+  4,
+  15000,
+  1.5
+);
+INSERT INTO COMPTE (
+  id_client,
+  solde,
+  taux_interet
+) VALUES (
+  5,
+  250,
+  0.5
+);
+INSERT INTO COMPTE (
+  id_client,
+  solde,
+  taux_interet
+) VALUES (
+  6,
+  79890,
+  1.21
+);
+
+/*
+ ----------------------------------------------------------------
+ ------------------------ INSERTS CREDIT ------------------------
+ ----------------------------------------------------------------
+*/
+
+INSERT INTO CREDIT (
+  id_client,
+  montant_init,
+  mensualites,
+  nb_mensualites_restantes,
+  date_credit,
+  taux_interet
+) VALUES (
+  1,
+  1000,
+  200,
+  3,
+  '05/12/2017',
+  4.5
+);
+INSERT INTO CREDIT (
+  id_client,
+  montant_init,
+  mensualites,
+  nb_mensualites_restantes,
+  date_credit,
+  taux_interet
+) VALUES (
+  2,
+  15000,
+  500,
+  29,
+  '10/01/2018',
+  7
+);
+INSERT INTO CREDIT (
+  id_client,
+  montant_init,
+  mensualites,
+  nb_mensualites_restantes,
+  date_credit,
+  taux_interet
+) VALUES (
+  3,
+  1000,
+  100,
+  1,
+  '26/05/2017',
+  3
+);
+INSERT INTO CREDIT (
+  id_client,
+  montant_init,
+  mensualites,
+  nb_mensualites_restantes,
+  date_credit,
+  taux_interet
+) VALUES (
+  4,
+  500,
+  50,
+  2,
+  '12/10/2017',
+  5
+);
+INSERT INTO CREDIT (
+  id_client,
+  montant_init,
+  mensualites,
+  nb_mensualites_restantes,
+  date_credit,
+  taux_interet
+) VALUES (
+  5,
+  24000,
+  1000,
+  1,
+  '09/02/2015',
+  8.2
+);
+INSERT INTO CREDIT (
+  id_client,
+  montant_init,
+  mensualites,
+  nb_mensualites_restantes,
+  date_credit,
+  taux_interet
+) VALUES (
+  6,
+  6000,
+  300,
+  10,
+  '19/03/2016',
+  3
+);
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! SPOOL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+1 lignes inseré
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+***************************************************************************************************
+3.1 Ecrire un script (fichier de contrôle SQLLOADER) qui permet de charger les lignes contenues
+dans un fichier CSV (ligne à construire dans EXCEL) vers une ou plusieurs de vos tables. Les
+données sont à préparer auparavant.
+***************************************************************************************************
+--Fichier personne_datas.csv
+druet,nicolas,3 rue victor hugo,compiegne,60200,0205236579
+masson,alain,73 rue de lille,arras,62000,0160116716
+nardy,etienne,57 rue des soeurs,la garde,83130,0490695431
+langelier,mireille,32 rue de strasbourg,clichy,92110,0160823963
+
+--Fichier personne_ctl.ctl
+LOAD DATA
+INFILE 'personne_datas.csv'
+INTO TABLE PERSONNE APPEND
+FIELDS TERMINATED BY ','
+(nom_personne,prenom_personne,adresse_personne,ville_personne,code_postal_personne,telephone_personne)
+
+--Commande SQLLoader : sqlldr user/password personne_ctl.ctl
+
+
+
+--Fichier banque_data.csv
+natixis;
+goldmann sax;
+lehman brothers;
+
+--Fichier banque_ctl.ctl
+LOAD DATA
+INFILE 'banque_datas.csv'
+INTO TABLE BANQUE APPEND
+FIELDS TERMINATED BY ';'
+(nom_banque)
+
+--Commande SQLLoader : sqlldr user/password banque_ctl.ctl
+
+
+
+
+
+***************************************************************************************************
+3.2.1 Ecrire une requête SQL qui permet de visualiser l’ensemble des fichiers qui
+composent votre base
+***************************************************************************************************
+SELECT NAME FROM V$DATAFILE;
+ou
+SELECT FILE_NAME FROM DBA_DATA_FILES;
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! SPOOL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+FILE_NAME                   ---------------------------------------------------------------------------------------------------- 
+F:\ORACLE\ORADATA\ORCL\USERS01.DBF      
+F:\ORACLE\ORADATA\ORCL\UNDOTBS01.DBF                                     
+F:\ORACLE\ORADATA\ORCL\SYSAUX01.DBF                                    
+F:\ORACLE\ORADATA\ORCL\SYSTEM01.DBF                                    
+F:\ORACLE\ORADATA\ORCL\EXAMPLE01.DBF                                    
+F:\ORACLE\ORADATA\ORCL\ORA_DATA01.DBF                                   
+F:\ORACLE\ORADATA\ORCL\ORA_INDEX01.DBF                                 
+
+7 rows selected
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+***************************************************************************************************
+3.2.2. Ecrire une requête SQL qui permet de lister en une requête l’ensembles des
+tablespaces avec leur fichiers. La taille de chaque fichier doit apparaître, le volume
+total de l’espace occupé par fichier ainsi que le volume total de l’espace libre par
+fichier
+***************************************************************************************************
+SELECT a.TABLESPACE_NAME, a.espace_alloue, b.espace_occupe, c.espace_libre 
+FROM (SELECT TABLESPACE_NAME, SUM(bytes)/1024/1024 AS espace_alloue FROM dba_data_files GROUP BY
+	 TABLESPACE_NAME) a, 
+     (SELECT TABLESPACE_NAME, SUM(bytes)/1024/1024 AS espace_occupe FROM dba_segments GROUP BY
+     TABLESPACE_NAME) b, 
+     (SELECT TABLESPACE_NAME, SUM(bytes)/1024/1024 AS espace_libre FROM dba_free_space GROUP BY
+     TABLESPACE_NAME) c 
+WHERE B.TABLESPACE_NAME = A.TABLESPACE_NAME 
+AND C.TABLESPACE_NAME = B.TABLESPACE_NAME;
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! SPOOL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+TABLESPACE_NAME                ESPACE_ALLOUE          ESPACE_OCCUPE          ESPACE_LIBRE           
+------------------------------ ---------------------- ---------------------- ---------------------- 
+ORA_DATA                       10                     6,25                   6,875                  
+SYSAUX                         580                    549,0625               29,9375                
+UNDOTBS1                       55                     24,25                  29,75                  
+ORA_INDEX                      10                     3                      8,25                   
+USERS                          5                      3,125                  0,875                  
+SYSTEM                         690                    686,5                  2,5                    
+EXAMPLE                        100                    77,4375                21,5625                
+
+7 rows selected
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+***************************************************************************************************
+3.2.3. Ecrire une requête SQL qui permet de lister les segments et leurs extensions de
+chacun des segments (tables ou indexes) de votre utilisateur
+***************************************************************************************************
+SELECT * 
+FROM DBA_SEGMENTS
+WHERE OWNER='THOMAS';
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! SPOOL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+OWNER                          SEGMENT_NAME                                                                      PARTITION_NAME                 SEGMENT_TYPE       SEGMENT_SUBTYPE TABLESPACE_NAME                HEADER_FILE            HEADER_BLOCK           BYTES                  BLOCKS                 EXTENTS                INITIAL_EXTENT         NEXT_EXTENT            MIN_EXTENTS            MAX_EXTENTS            MAX_SIZE               RETENTION MINRETENTION           PCT_INCREASE           FREELISTS              FREELIST_GROUPS        RELATIVE_FNO           BUFFER_POOL FLASH_CACHE CELL_FLASH_CACHE 
+------------------------------ --------------------------------------------------------------------------------- ------------------------------ ------------------ --------------- ------------------------------ ---------------------- ---------------------- ---------------------- ---------------------- ---------------------- ---------------------- ---------------------- ---------------------- ---------------------- ---------------------- --------- ---------------------- ---------------------- ---------------------- ---------------------- ---------------------- ----------- ----------- ---------------- 
+THOMAS                         BIN$eo80AlXZSlexp3fHp2dNrg==$0                                                                                   TABLE              ASSM            ORA_DATA                       6                      1242                   131072                 16                     2                      106496                 106496                 1                      2147483645             2147483645                                                                                                                   6                      DEFAULT     DEFAULT     DEFAULT          
+THOMAS                         BANQUE                                                                                                           TABLE              ASSM            ORA_DATA                       6                      1266                   131072                 16                     2                      106496                 106496                 1                      2147483645             2147483645                                                                                                                   6                      DEFAULT     DEFAULT     DEFAULT          
+THOMAS                         AGENCE                                                                                                           TABLE              ASSM            ORA_DATA                       6                      274                    131072                 16                     2                      106496                 106496                 1                      2147483645             2147483645                                                                                                                   6                      DEFAULT     DEFAULT     DEFAULT          
+THOMAS                         PERSONNE                                                                                                         TABLE              ASSM            ORA_DATA                       6                      298                    131072                 16                     2                      106496                 106496                 1                      2147483645             2147483645                                                                                                                   6                      DEFAULT     DEFAULT     DEFAULT          
+THOMAS                         EMPLOYE                                                                                                          TABLE              ASSM            ORA_DATA                       6                      322                    131072                 16                     2                      106496                 106496                 1                      2147483645             2147483645                                                                                                                   6                      DEFAULT     DEFAULT     DEFAULT          
+THOMAS                         CLIENT                                                                                                           TABLE              ASSM            ORA_DATA                       6                      346                    131072                 16                     2                      106496                 106496                 1                      2147483645             2147483645                                                                                                                   6                      DEFAULT     DEFAULT     DEFAULT          
+THOMAS                         COMPTE                                                                                                           TABLE              ASSM            ORA_DATA                       6                      370                    131072                 16                     2                      106496                 106496                 1                      2147483645             2147483645                                                                                                                   6                      DEFAULT     DEFAULT     DEFAULT          
+THOMAS                         CREDIT                                                                                                           TABLE              ASSM            ORA_DATA                       6                      394                    131072                 16                     2                      106496                 106496                 1                      2147483645             2147483645                                                                                                                   6                      DEFAULT     DEFAULT     DEFAULT          
+THOMAS                         BIN$FSpbAzPXQOqsM87flleD1A==$0                                                                                   TABLE              ASSM            ORA_DATA                       6                      130                    131072                 16                     2                      106496                 106496                 1                      2147483645             2147483645                                                                                                                   6                      DEFAULT     DEFAULT     DEFAULT          
+THOMAS                         BIN$JRfm6wNsQIGZsQouja6NOA==$0                                                                                   TABLE              ASSM            ORA_DATA                       6                      170                    131072                 16                     2                      106496                 106496                 1                      2147483645             2147483645                                                                                                                   6                      DEFAULT     DEFAULT     DEFAULT          
+
+...
+
+84 rows selected
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+***************************************************************************************************
+3.2.4. Ecrire une requête qui permet pour chacun de vos segments de donner le nombre
+total de blocs du segment, le nombre de blocs utilisés et le nombre de blocs libres
+***************************************************************************************************
+SELECT TABLESPACE_NAME, BLOCK_ID, BYTES
+FROM dba_free_space;
+
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! SPOOL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+***************************************************************************************************
+3.2.5. Ecrire une requête SQL qui permet de compacter et réduire un segment
+***************************************************************************************************
+Si on veut réaliser cette opération sur la table personne, on doit rentrer ces deux commandes :
+ALTER TABLE PERSONNE
+SHRINK SPACE COMPACT;
+Le row movement doit être activé pour réaliser cette commande, si ce n'est pas le cas il faut utiliser :
+ALTER TABLE PERSONNE ENABLE ROW MOVEMENT;
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! SPOOL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+--Pour le SHRINK SPACE COMPACT
+ALTER TABLE PERSONNE réussi.
+
+--Pour le ENABLE RAW MOVEMENT
+ALTER TABLE PERSONNE réussi.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+***************************************************************************************************
+3.2.6. Ecrire une requête qui permet d’afficher l’ensemble des utilisateurs de votre base et
+leurs droits
+***************************************************************************************************
+SELECT GRANTEE, PRIVILEGE FROM DBA_SYS_PRIVS;
+
+
+
+
+
+***************************************************************************************************
+3.2.7. Proposer trois requêtes libres au choix de recherche d’objets dans le dictionnaire
+Oracle
+***************************************************************************************************
+/*On sélectionne toutes les vues du dictionnaire*/
+SELECT TABLE_NAME
+FROM dict
+WHERE TABLE_NAME LIKE
+'V$%'
+ORDER BY TABLE_NAME;
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! SPOOL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+TABLE_NAME                     
+------------------------------ 
+V$ACCESS                       
+V$ACTIVE_INSTANCES             
+V$ACTIVE_SERVICES              
+V$ACTIVE_SESSION_HISTORY       
+V$ACTIVE_SESS_POOL_MTH         
+V$ADVISOR_PROGRESS             
+V$ALERT_TYPES                  
+V$AQ                           
+V$AQ1                          
+V$ARCHIVE                      
+V$ARCHIVE_DEST                 
+V$ARCHIVE_DEST_STATUS          
+V$ARCHIVED_LOG                 
+V$ARCHIVE_GAP                  
+V$ARCHIVE_PROCESSES            
+V$ASH_INFO          
+...
+
+600 rows selected
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+/*On sélectionne toutes les vues dont le nom commence par DBA*/
+SELECT TABLE_NAME
+FROM dict
+WHERE TABLE_NAME LIKE
+'DBA%'
+ORDER BY TABLE_NAME;
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! SPOOL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+TABLE_NAME                     
+------------------------------ 
+DBA_ADDM_FDG_BREAKDOWN         
+DBA_ADDM_FINDINGS              
+DBA_ADDM_INSTANCES             
+DBA_ADDM_SYSTEM_DIRECTIVES     
+DBA_ADDM_TASK_DIRECTIVES       
+DBA_ADDM_TASKS                 
+DBA_ADVISOR_ACTIONS            
+DBA_ADVISOR_COMMANDS           
+DBA_ADVISOR_DEFINITIONS        
+DBA_ADVISOR_DEF_PARAMETERS     
+DBA_ADVISOR_DIR_DEFINITIONS    
+DBA_ADVISOR_DIR_INSTANCES      
+DBA_ADVISOR_DIR_TASK_INST      
+DBA_ADVISOR_EXEC_PARAMETERS    
+DBA_ADVISOR_EXECUTIONS         
+DBA_ADVISOR_EXECUTION_TYPES    
+DBA_ADVISOR_FDG_BREAKDOWN      
+DBA_ADVISOR_FINDING_NAMES      
+DBA_ADVISOR_FINDINGS           
+DBA_ADVISOR_JOURNAL            
+DBA_ADVISOR_LOG                
+DBA_ADVISOR_OBJECTS            
+DBA_ADVISOR_OBJECT_TYPES       
+DBA_ADVISOR_PARAMETERS         
+DBA_ADVISOR_PARAMETERS_PROJ    
+DBA_ADVISOR_RATIONALE          
+DBA_ADVISOR_RECOMMENDATIONS    
+DBA_ADVISOR_SQLA_COLVOL        
+DBA_ADVISOR_SQLA_REC_SUM       
+DBA_ADVISOR_SQLA_TABLES        
+DBA_ADVISOR_SQLA_TABVOL        
+DBA_ADVISOR_SQLA_WK_MAP        
+DBA_ADVISOR_SQLA_WK_STMTS      
+DBA_ADVISOR_SQLA_WK_SUM  
+...
+
+705 rows selected
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+/*On récupère tous les noms de colonne de la table DBA_HIST_LATCH*/
+SELECT COLUMN_NAME 
+FROM DICT_COLUMNS
+WHERE TABLE_NAME = 'DBA_HIST_LATCH';
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! SPOOL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+COLUMN_NAME                    
+------------------------------ 
+SNAP_ID                        
+DBID                           
+INSTANCE_NUMBER                
+LATCH_HASH                     
+LATCH_NAME                     
+LEVEL#                         
+GETS                           
+MISSES                         
+SLEEPS                         
+IMMEDIATE_GETS                 
+IMMEDIATE_MISSES               
+SPIN_GETS                      
+SLEEP1                         
+SLEEP2                         
+SLEEP3                         
+SLEEP4                         
+WAIT_TIME                      
+
+17 rows selected
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+***************************************************************************************************
+3.3. Mettez en place une stratégie de sauvegarde et restauration, basée sur le mode avec
+archives. Votre stratégie doit décrire la politique de sauvegarde et restauration des fichiers
+suivant leur type(périodicité des backups des fichiers de données / du spfile / des fichiers
+d’archives / du fichier de contrôle, duplications des fichiers de contrôles ou rédo, etc).
+Utililser l’outil Oracle Recovery Manager pour la mettre en œuvre.
+Ecrirte pour cela un script de sauvegarde qui permet sous RMAN :
+- D’arrêter la base
+- De sauvegarder les fichiers de données
+- De sauvergarder les fichiers d’archives
+- De sauvegarder le SPFILE
+- De sauvegarder les fichiers de contrôle
+***************************************************************************************************
+
+1. On crée
+SQL> create tablespace rman
+  2  datafile 'U:\app\alexisc\oradata\orcl\rman01.dbf'
+  3  size 10m autoextend on next 5m;
+Tablespace créé.
+
+SQL> create user rman identified by rmanpwd default tablespace rman;
+Utilisateur créé.
+
+SQL> grant connect, resource, recovery_catalog_owner to rman;
+Autorisation de privilèges (GRANT) acceptée.
+
+2. Activer le mode archive :
+Lancer SQL plus
+SQL> alter system set log_archive_dest_1='LOCATION=ton path\oradata\orcl\arch' scope both;
+SQL> shutdown immediate;
+SQL> startup mount;
+SQL> alter database archivelog;
+SQL> alter database open;
+
+2. RMAN
+Dans une conseole :
+ On se connecte au catalog de l'utilisateur rman
+->> rman catalog rman/rmanpwd@orcl
+->> create catalog;
+
+Ensuite :
+RMAN> CONNECT TARGET rman/rmanpwd@orcl
+
+connecté à la base de données cible : ORCL (DBID=1493959035)
+
+RMAN> connect catalog rman/rmanpwd@orcl
+
+connecté à la base de données du catalogue de récupération
+
+RMAN> register database;
+
+base de données inscrite dans le catalogue de récupération
+lancement de la resynchronisation complète du catalogue de récupération
+resynchronisation complète terminée
+
+RMAN> show all;
+
+les paramètres de configuration RMAN de la base de données ayant le db_unique_name ORCL sont les suivants :
+CONFIGURE RETENTION POLICY TO REDUNDANCY 1; # default
+CONFIGURE BACKUP OPTIMIZATION OFF; # default
+CONFIGURE DEFAULT DEVICE TYPE TO DISK; # default
+CONFIGURE CONTROLFILE AUTOBACKUP OFF; # default
+CONFIGURE CONTROLFILE AUTOBACKUP FORMAT FOR DEVICE TYPE DISK TO '%F'; # default
+CONFIGURE DEVICE TYPE DISK PARALLELISM 1 BACKUP TYPE TO BACKUPSET; # default
+CONFIGURE DATAFILE BACKUP COPIES FOR DEVICE TYPE DISK TO 1; # default
+CONFIGURE ARCHIVELOG BACKUP COPIES FOR DEVICE TYPE DISK TO 1; # default
+CONFIGURE MAXSETSIZE TO UNLIMITED; # default
+CONFIGURE ENCRYPTION FOR DATABASE OFF; # default
+CONFIGURE ENCRYPTION ALGORITHM 'AES128'; # default
+CONFIGURE COMPRESSION ALGORITHM 'BASIC' AS OF RELEASE 'DEFAULT' OPTIMIZE FOR LOAD TRUE ; # default
+CONFIGURE ARCHIVELOG DELETION POLICY TO NONE; # default
+CONFIGURE SNAPSHOT CONTROLFILE NAME TO 'U:\APP\ALEXISC\PRODUCT\11.2.0\DBHOME_1\DATABASE\SNCFORCL.ORA'; # default
+
+On va changer ces paramètres pour avoir des paramètres plus corrects :
+
+* Pour que les sauvegardes datannt de plus de 7 jours soient obselètes.
+RMAN> configure retention policy to recovery windows of 7 days ;
+
+* Sauvegarde exclusive du fichier de contrôle !
+RMAN> configure controlfile autobackup on ;
+RMAN> configure controlfile autobackup format for device type disk to ‘U:\app\alexisc\oradata\orcl\backup\cf%F’ ;
+
+Ensuite on execute un backup complet
+
+On se connecte à rman
+RMAN> CONNECT TARGET rman/rmanpwd@orcl
+RMAN> backup validate database archivelog all ;
+
+Démarrage de backup dans 31/01/18
+canal affecté : ORA_DISK_1
+canal ORA_DISK_1 : SID=189 type d'unité=DISK
+canal ORA_DISK_1: démarrage de l'ensemble de sauvegarde du journal d'archivage
+canal ORA_DISK_1 : insertion du(des) journal(aux) d'archivage dans l'ensemble de sauvegarde
+thread de journal d'archivage d'entrée=1 séquence=22 RECID=1 STAMP=966543139
+thread de journal d'archivage d'entrée=1 séquence=23 RECID=2 STAMP=966543190
+thread de journal d'archivage d'entrée=1 séquence=24 RECID=3 STAMP=966550472
+thread de journal d'archivage d'entrée=1 séquence=25 RECID=4 STAMP=966594998
+thread de journal d'archivage d'entrée=1 séquence=26 RECID=5 STAMP=966609856
+thread de journal d'archivage d'entrée=1 séquence=27 RECID=6 STAMP=966621656
+thread de journal d'archivage d'entrée=1 séquence=28 RECID=7 STAMP=966638660
+thread de journal d'archivage d'entrée=1 séquence=29 RECID=8 STAMP=966648813
+thread de journal d'archivage d'entrée=1 séquence=30 RECID=9 STAMP=966675731
+thread de journal d'archivage d'entrée=1 séquence=31 RECID=10 STAMP=966700755
+thread de journal d'archivage d'entrée=1 séquence=32 RECID=11 STAMP=966788010
+thread de journal d'archivage d'entrée=1 séquence=33 RECID=12 STAMP=966808824
+thread de journal d'archivage d'entrée=1 séquence=34 RECID=13 STAMP=966810221
+thread de journal d'archivage d'entrée=1 séquence=35 RECID=14 STAMP=966819781
+thread de journal d'archivage d'entrée=1 séquence=36 RECID=15 STAMP=966819858
+thread de journal d'archivage d'entrée=1 séquence=37 RECID=16 STAMP=966821534
+canal ORA_DISK_1 : ensemble de sauvegarde terminé, temps écoulé : 00:00:15
+Liste des journaux archivés
+=====================
+Thrd Seq     Status Blocks Failing Blocks Examined Name
+---- ------- ------ -------------- --------------- ---------------
+1    22      OK     0              21609           U:\APP\ALEXISC\ORADATA\ORCL\ARCH\ARC0000000022_0966178301.0001
+1    23      OK     0              227             U:\APP\ALEXISC\ORADATA\ORCL\ARCH\ARC0000000023_0966178301.0001
+1    24      OK     0              59554           U:\APP\ALEXISC\ORADATA\ORCL\ARCH\ARC0000000024_0966178301.0001
+1    25      OK     0              46566           U:\APP\ALEXISC\ORADATA\ORCL\ARCH\ARC0000000025_0966178301.0001
+1    26      OK     0              73681           U:\APP\ALEXISC\ORADATA\ORCL\ARCH\ARC0000000026_0966178301.0001
+1    27      OK     0              59692           U:\APP\ALEXISC\ORADATA\ORCL\ARCH\ARC0000000027_0966178301.0001
+1    28      OK     0              65199           U:\APP\ALEXISC\ORADATA\ORCL\ARCH\ARC0000000028_0966178301.0001
+1    29      OK     0              59469           U:\APP\ALEXISC\ORADATA\ORCL\ARCH\ARC0000000029_0966178301.0001
+1    30      OK     0              59552           U:\APP\ALEXISC\ORADATA\ORCL\ARCH\ARC0000000030_0966178301.0001
+1    31      OK     0              59511           U:\APP\ALEXISC\ORADATA\ORCL\ARCH\ARC0000000031_0966178301.0001
+1    32      OK     0              85014           U:\APP\ALEXISC\ORADATA\ORCL\ARCH\ARC0000000032_0966178301.0001
+1    33      OK     0              65342           U:\APP\ALEXISC\ORADATA\ORCL\ARCH\ARC0000000033_0966178301.0001
+1    34      OK     0              63684           U:\APP\ALEXISC\ORADATA\ORCL\ARCH\ARC0000000034_0966178301.0001
+1    35      OK     0              35972           U:\APP\ALEXISC\ORADATA\ORCL\ARCH\ARC0000000035_0966178301.0001
+1    36      OK     0              360             U:\APP\ALEXISC\ORADATA\ORCL\ARCH\ARC0000000036_0966178301.0001
+1    37      OK     0              49506           U:\APP\ALEXISC\ORADATA\ORCL\ARCH\ARC0000000037_0966178301.0001
+canal ORA_DISK_1 : démarrage de l'ensemble de sauvegarde de tous les fichiers de données
+canal ORA_DISK_1 : insertion du(des) fichier(s) de données dans l'ensemble de sauvegarde
+fichier de données en entrée, numéro=00001, nom=U:\APP\ALEXISC\ORADATA\ORCL\SYSTEM01.DBF
+fichier de données en entrée, numéro=00002, nom=U:\APP\ALEXISC\ORADATA\ORCL\SYSAUX01.DBF
+fichier de données en entrée, numéro=00005, nom=U:\APP\ALEXISC\ORADATA\ORCL\EXAMPLE01.DBF
+fichier de données en entrée, numéro=00003, nom=U:\APP\ALEXISC\ORADATA\ORCL\UNDOTBS01.DBF
+fichier de données en entrée, numéro=00006, nom=U:\APP\ALEXISC\ORADATA\ORCL\ORA_DATA01.DBF
+fichier de données en entrée, numéro=00007, nom=U:\APP\ALEXISC\ORADATA\ORCL\RMAN01.DBF
+fichier de données en entrée, numéro=00004, nom=U:\APP\ALEXISC\ORADATA\ORCL\USERS01.DBF
+canal ORA_DISK_1 : ensemble de sauvegarde terminé, temps écoulé : 00:00:25
+Liste des fichiers de données
+=================
+File Status Marked Corrupt Empty Blocks Blocks Examined High SCN
+---- ------ -------------- ------------ --------------- ----------
+1    OK     0              14919        90887           1652037
+  Nom de fichier : U:\APP\ALEXISC\ORADATA\ORCL\SYSTEM01.DBF
+  Block Type Blocks Failing Blocks Processed
+  ---------- -------------- ----------------
+  Data       0              60567
+  Index      0              12616
+  Other      0              2778
+
+File Status Marked Corrupt Empty Blocks Blocks Examined High SCN
+---- ------ -------------- ------------ --------------- ----------
+2    OK     0              19448        74294           1651902
+  Nom de fichier : U:\APP\ALEXISC\ORADATA\ORCL\SYSAUX01.DBF
+  Block Type Blocks Failing Blocks Processed
+  ---------- -------------- ----------------
+  Data       0              16296
+  Index      0              12064
+  Other      0              26432
+
+File Status Marked Corrupt Empty Blocks Blocks Examined High SCN
+---- ------ -------------- ------------ --------------- ----------
+3    OK     0              385          7040            1652035
+  Nom de fichier : U:\APP\ALEXISC\ORADATA\ORCL\UNDOTBS01.DBF
+  Block Type Blocks Failing Blocks Processed
+  ---------- -------------- ----------------
+  Data       0              0
+  Index      0              0
+  Other      0              6655
+
+File Status Marked Corrupt Empty Blocks Blocks Examined High SCN
+---- ------ -------------- ------------ --------------- ----------
+4    OK     0              247          640             1031446
+  Nom de fichier : U:\APP\ALEXISC\ORADATA\ORCL\USERS01.DBF
+  Block Type Blocks Failing Blocks Processed
+  ---------- -------------- ----------------
+  Data       0              91
+  Index      0              46
+  Other      0              256
+
+File Status Marked Corrupt Empty Blocks Blocks Examined High SCN
+---- ------ -------------- ------------ --------------- ----------
+5    OK     0              1702         12803           1030872
+  Nom de fichier : U:\APP\ALEXISC\ORADATA\ORCL\EXAMPLE01.DBF
+  Block Type Blocks Failing Blocks Processed
+  ---------- -------------- ----------------
+  Data       0              6583
+  Index      0              1261
+  Other      0              3254
+
+File Status Marked Corrupt Empty Blocks Blocks Examined High SCN
+---- ------ -------------- ------------ --------------- ----------
+6    OK     0              1153         1280            1104676
+  Nom de fichier : U:\APP\ALEXISC\ORADATA\ORCL\ORA_DATA01.DBF
+  Block Type Blocks Failing Blocks Processed
+  ---------- -------------- ----------------
+  Data       0              0
+  Index      0              0
+  Other      0              127
+
+File Status Marked Corrupt Empty Blocks Blocks Examined High SCN
+---- ------ -------------- ------------ --------------- ----------
+7    OK     0              693          1280            1651892
+  Nom de fichier : U:\APP\ALEXISC\ORADATA\ORCL\RMAN01.DBF
+  Block Type Blocks Failing Blocks Processed
+  ---------- -------------- ----------------
+  Data       0              145
+  Index      0              59
+  Other      0              383
+
+canal ORA_DISK_1 : démarrage de l'ensemble de sauvegarde de tous les fichiers de données
+canal ORA_DISK_1 : insertion du(des) fichier(s) de données dans l'ensemble de sauvegarde
+insertion du fichier de contrôle en cours dans l'ensemble de sauvegarde
+insertion du fichier SPFILE en cours dans l'ensemble de sauvegarde
+canal ORA_DISK_1 : ensemble de sauvegarde terminé, temps écoulé : 00:00:01
+Liste des fichiers de contrôle et des fichiers SPFILE
+===============================
+File Type    Status Blocks Failing Blocks Examined
+------------ ------ -------------- ---------------
+SPFILE       OK     0              2
+Control File OK     0              594
+Fin de backup dans 31/01/18
+
+
+***************************************************************************************************
+3.4. Provoquer deux pannes au moins et y remedier grâce à votre stratégie de sauvegarde. Les
+pannes peuvent être :
+- La perte de fichiers de données
+- La perte de fichiers de contrôles.
+***************************************************************************************************
+
+* Après suppression fichier de contrôle : 
+MAN> restore validate database;
+
+Démarrage de restore dans 31/01/18
+utilisation du canal ORA_DISK_1
+
+le fichier de données 7 sera créé automatiquement au cours de la restauration
+canal ORA_DISK_1 : démarrage de la validation de l'ensemble de sauvegarde des fichiers de données
+canal ORA_DISK_1 : lecture de l'élément de sauvegarde U:\APP\ALEXISC\FLASH_RECOVERY_AREA\ORCL\BACKUPSET\2018_01_31\O1_MF_NNNDF_TAG20180131T010329_F721YLWS_.BKP
+canal ORA_DISK_1 : descripteur d'élément=U:\APP\ALEXISC\FLASH_RECOVERY_AREA\ORCL\BACKUPSET\2018_01_31\O1_MF_NNNDF_TAG20180131T010329_F721YLWS_.BKP balise=TAG20180131T010329
+canal ORA_DISK_1 : restauration de l'élément de sauvegarde 1
+canal ORA_DISK_1 : validation terminée, temps écoulé : 00:00:25
+récupération effectuée à partir d'une sauvegarde précédente
+
+le fichier de données 7 sera créé automatiquement au cours de la restauration
+Fin de restore dans 31/01/18
+
+* Après suppression fichiers de données :
+
+MAN> restore validate database;
+
+Démarrage de restore dans 31/01/18
+utilisation du canal ORA_DISK_1
+
+le fichier de données 7 sera créé automatiquement au cours de la restauration
+canal ORA_DISK_1 : démarrage de la validation de l'ensemble de sauvegarde des fichiers de données
+canal ORA_DISK_1 : lecture de l'élément de sauvegarde U:\APP\ALEXISC\FLASH_RECOVERY_AREA\ORCL\BACKUPSET\2018_01_31\O1_MF_NNNDF_TAG20180131T010329_F721YLWS_.BKP
+canal ORA_DISK_1 : descripteur d'élément=U:\APP\ALEXISC\FLASH_RECOVERY_AREA\ORCL\BACKUPSET\2018_01_31\O1_MF_NNNDF_TAG20180131T010329_F721YLWS_.BKP balise=TAG20180131T010329
+canal ORA_DISK_1 : restauration de l'élément de sauvegarde 1
+canal ORA_DISK_1 : validation terminée, temps écoulé : 00:00:25
+récupération effectuée à partir d'une sauvegarde précédente
+
+le fichier de données 7 sera créé automatiquement au cours de la restauration
+Fin de restore dans 31/01/18
+
+
+
+
+***************************************************************************************************
+3.5. Vous devez transporter les données d’un de vos utilisateurs d’une base vers une autre. Les
+deux bases peuvent être la même. Faire le nécessaire en utilisant export et import afin que cela
+fonctionne. 
+***************************************************************************************************
+On commence par se connecter avec sqlplus sur notre BD en tant qu'administrateur, puis on rentre les commandes suivantes :
+
+CREATE DIRECTORY DUMP_DIR AS 'F:\Oracle\oradata\orcl\DUMP';
+--> SPOOL : Répertoire créé.
+Note : Le répertoire doit exister "physiquement".
+
+GRANT READ, WRITE ON DIRECTORY DUMP_DIR TO thomas;
+--> SPOOL : Autorisation de privilèges (GRANT) acceptée.
+
+Avec l'invite de commande, on lance la commande expdp :
+expdp thomas/thomas01@ORCL DUMPFILE=thomas.dmp SCHEMAS=thomas DIRECTORY=DUMP_DIR LOGFILE=thomas.log
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! SPOOL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Export: Release 11.2.0.1.0 - Production on Lun. Janv. 29 22:22:01 2018
+
+Copyright (c) 1982, 2009, Oracle and/or its affiliates.  All rights reserved.
+
+Connecté à : Oracle Database 11g Enterprise Edition Release 11.2.0.1.0 - 64bit Production
+With the Partitioning, OLAP, Data Mining and Real Application Testing options
+Démarrage de "THOMAS"."SYS_EXPORT_SCHEMA_01" : thomas/********@ORCL DUMPFILE=thomas.dmp SCHEMAS=thomas DIRECTORY=DUMP_DIR LOGFILE=thomas.log
+Estimation en cours à l'aide de la mÚthode BLOCKS ...
+Traitement du type d'objet SCHEMA_EXPORT/TABLE/TABLE_DATA
+Estimation totale à l'aide le la méthode BLOCKS : 896 KB
+Traitement du type d'objet SCHEMA_EXPORT/PRE_SCHEMA/PROCACT_SCHEMA
+Traitement du type d'objet SCHEMA_EXPORT/SEQUENCE/SEQUENCE
+Traitement du type d'objet SCHEMA_EXPORT/TABLE/TABLE
+Traitement du type d'objet SCHEMA_EXPORT/TABLE/INDEX/INDEX
+Traitement du type d'objet SCHEMA_EXPORT/TABLE/CONSTRAINT/CONSTRAINT
+Traitement du type d'objet SCHEMA_EXPORT/TABLE/INDEX/STATISTICS/INDEX_STATISTICS
+Traitement du type d'objet SCHEMA_EXPORT/TABLE/COMMENT
+Traitement du type d'objet SCHEMA_EXPORT/TABLE/CONSTRAINT/REF_CONSTRAINT
+Traitement du type d'objet SCHEMA_EXPORT/TABLE/TRIGGER
+Traitement du type d'objet SCHEMA_EXPORT/TABLE/STATISTICS/TABLE_STATISTICS
+. . export : "THOMAS"."AGENCE"                           7.140 KB      11 lignes
+. . export : "THOMAS"."BANQUE"                           5.531 KB       6 lignes
+. . export : "THOMAS"."CLIENT"                           6.367 KB       6 lignes
+. . export : "THOMAS"."COMPTE"                           6.406 KB       6 lignes
+. . export : "THOMAS"."CREDIT"                           7.757 KB       6 lignes
+. . export : "THOMAS"."EMPLOYE"                          6.664 KB      18 lignes
+. . export : "THOMAS"."PERSONNE"                         9.125 KB      24 lignes
+Table ma¯tre "THOMAS"."SYS_EXPORT_SCHEMA_01" chargée/déchargée avec succès
+******************************************************************************
+L'ensemble de fichiers de vidage de THOMAS.SYS_EXPORT_SCHEMA_01 est :
+  F:\ORACLE\ORADATA\ORCL\DUMP\THOMAS.DMP
+L'exécution du travail "THOMAS"."SYS_EXPORT_SCHEMA_01" a abouti à 22:22:23
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+Avec l'invite de commande, on lance la commande impdp :
+impdp alexis/alexis01@ORCL DUMPFILE=thomas.dmp SCHEMAS=thomas DIRECTORY=DUMP_DIR LOGFILE=alexis.log
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! SPOOL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Import: Release 11.2.0.1.0 - Production on Mar. Janv. 30 18:08:49 2018
+
+Copyright (c) 1982, 2009, Oracle and/or its affiliates.  All rights reserved.
+
+Connecté à : Oracle Database 11g Enterprise Edition Release 11.2.0.1.0 - 64bit Production
+With the Partitioning, OLAP, Data Mining and Real Application Testing options
+Table maitre "ALEXIS"."SYS_IMPORT_SCHEMA_01" chargée/déchargée avec succÞs
+Démarrage de "ALEXIS"."SYS_IMPORT_SCHEMA_01" : alexis/********@ORCL DUMPFILE=thomas.dmp SCHEMAS=thomas DIRECTORY=DUMP_DIR LOGFILE=alexis.log
+Traitement du type d'objet SCHEMA_EXPORT/PRE_SCHEMA/PROCACT_SCHEMA
+Traitement du type d'objet SCHEMA_EXPORT/SEQUENCE/SEQUENCE
+Traitement du type d'objet SCHEMA_EXPORT/TABLE/TABLE
+Traitement du type d'objet SCHEMA_EXPORT/TABLE/TABLE_DATA
+. . import : "THOMAS"."AGENCE"                           7.140 KB      11 lignes
+. . import : "THOMAS"."BANQUE"                           5.531 KB       6 lignes
+. . import : "THOMAS"."CLIENT"                           6.367 KB       6 lignes
+. . import : "THOMAS"."COMPTE"                           6.406 KB       6 lignes
+. . import : "THOMAS"."CREDIT"                           7.757 KB       6 lignes
+. . import : "THOMAS"."EMPLOYE"                          6.664 KB      18 lignes
+. . import : "THOMAS"."PERSONNE"                         9.125 KB      24 lignes
+Traitement du type d'objet SCHEMA_EXPORT/TABLE/INDEX/INDEX
+Traitement du type d'objet SCHEMA_EXPORT/TABLE/CONSTRAINT/CONSTRAINT
+Traitement du type d'objet SCHEMA_EXPORT/TABLE/INDEX/STATISTICS/INDEX_STATISTICS
+Traitement du type d'objet SCHEMA_EXPORT/TABLE/CONSTRAINT/REF_CONSTRAINT
+Traitement du type d'objet SCHEMA_EXPORT/TABLE/TRIGGER
+Traitement du type d'objet SCHEMA_EXPORT/TABLE/STATISTICS/TABLE_STATISTICS
+L'exécution du travail "ALEXIS"."SYS_IMPORT_SCHEMA_01" a abouti à 18:08:53
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Il est important de noter que l'utilisateur qui réalise l'importation doit avoir le droit IMP_FULL_DATABASE pour réaliser
+cette opération. Si ce n'est psa le cas, on utilise la requête suivante :
+GRANT IMP_FULL_DATABASE TO alexis;
+--> SPOOL : "GRANT IMP_FULL_DATABASE réussi."
+
+
+
+
+
+
+
+
+
+
+
