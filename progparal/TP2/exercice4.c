@@ -4,35 +4,26 @@
 #include <sys/time.h>
 #include <omp.h>
 
-
-void carre(long*, int);
-
-// Var globales
-int nbthread;
+void tri_fusion(long* tab, int size);
 
 int main(int argc, char* argv[]){
-
-	if(argc == 3){
-		omp_set_num_threads(atoi(argv[2]));
-	} else if(argc != 2){
-		return 1;
-	}
 
 	int size = atoi(argv[1]);
 
 	long* tab = malloc(sizeof(long) * size);
 	srand(time(NULL) % 10 + 1);
 
-	for(int i = 0; i < size; i++){
-		tab[i] = rand();
+	for(int i = size -1; i > 0; i++){
+		//tab[i] = rand();
+
 	}
 
 	// Calcul du temps en fonction de la taille du tableau
 	struct timeval t1, t2;
 
 	gettimeofday (&t1, NULL);
-	
-	carre(tab, size);
+
+	tri_fusion(tab, size);
 
 	gettimeofday (&t2, NULL);
 
@@ -43,7 +34,7 @@ int main(int argc, char* argv[]){
 	printf("%d %d %f\n", size, nbthread, texec);
 }
 
-void carre(long* tab, int size){
+void tri_fusion(long* tab, int size){
 
 	for(int i = 0; i < size; i++){
 		tab[i] = tab[i] * tab[i];
