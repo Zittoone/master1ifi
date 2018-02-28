@@ -53,7 +53,9 @@ void descente(struct tablo * a, struct tablo * b) {
 }
 
 void final(struct tablo * a, struct tablo *b) {
-  // TODO : phase finale
+  for(int i = pow(2, log2(b->size) - 1); i <= pow(2, log2(b->size)+1) - 1; i++){
+		b->tab[i] = b->tab[i] + a->tab[i];
+	}
 }
 
 void generateArray(struct tablo * s) {
