@@ -1,0 +1,7 @@
+# TP3 (OpenMP et Préfixe Parallèle)
+
+## Exercice 1
+
+1. On remarque que lorsque l'on change le nombre de threads, une région parallèle est executée n fois (n étant le nombre de threads).
+
+2. 
