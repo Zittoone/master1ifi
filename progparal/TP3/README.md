@@ -6,4 +6,4 @@
 
 2. On remarque que le section parallèle ne prends pas en compte la boucle for suivante.
 
-
+3. On remarque maintenant que cela s'applique à tout le bloc.

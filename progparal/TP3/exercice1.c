@@ -4,6 +4,7 @@
 
 void parallelRegion(void);
 void paralleRegionForOutside(void);
+void parallelRegionForInside(void);
 
 int main(int argc, char* argv[]){
 
@@ -12,7 +13,8 @@ int main(int argc, char* argv[]){
 	}
 
 	// parallelRegion();
-	paralleRegionForOutside();
+	// paralleRegionForOutside();
+	parallelRegionForInside();
 	
 	return 0;
 }
@@ -31,4 +33,16 @@ void paralleRegionForOutside(void){
 	for(int i = 0; i < 4; i++){
 		printf("Execution de la méthode paralleRegionForOutside2\n");
 	}	
+}
+
+void parallelRegionForInside(void){
+	
+	#pragma omp parallel
+	{
+		printf("Execution de la méthode parallelRegionForInside1\n");
+
+	for(int i = 0; i < 4; i++){
+		printf("Execution de la méthode parallelRegionForInside2\n");
+	}	
+	}
 }
