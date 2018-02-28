@@ -48,4 +48,4 @@
 
 2. Le fait de déclarer la variable comme étant privée dans le bloc n'affectera pas la vraie variable globale pour toutes modifications éffectuées.
 
-3. 
+3. La portée du private est une portée lexicale, elle ne va pas en profondeur dans les fonctions (la variable globale est bien modifiée par la méthode `void privateScope2_sub(void)` appelée dans `void privateScope2(void)`.
