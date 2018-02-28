@@ -4,4 +4,6 @@
 
 1. On remarque que lorsque l'on change le nombre de threads, une région parallèle est executée n fois (n étant le nombre de threads).
 
-2. 
+2. On remarque que le section parallèle ne prends pas en compte la boucle for suivante.
+
+
