@@ -44,4 +44,8 @@
 
 ## Exercice 2 (Portée lexicale et dynamique)
 
-1. 
+1. La valeur globale en sortie est aléatoire, l'accès concurrent à la même valeur par plusieurs threads pose cette erreur.
+
+2. Le fait de déclarer la variable comme étant privée dans le bloc n'affectera pas la vraie variable globale pour toutes modifications éffectuées.
+
+3. 
