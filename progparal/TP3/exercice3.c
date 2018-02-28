@@ -12,7 +12,7 @@ void printArray(struct tablo * tmp) {
   printf("---- Array of size %i ---- \n", tmp->size);
   int size = tmp->size;
   int i;
-  for (i = 0; i < size; ++i) {
+  for (i = 1; i < size; ++i) {
     printf("%i ", tmp->tab[i]);
   }
   printf("\n");
@@ -26,17 +26,30 @@ struct tablo * allocateTablo(int size) {
 }
 
 void montee(struct tablo * source, struct tablo * destination) {
-  //TODO : remplissage du tableau destination de taille 2*n en
-  // copiant les données du tableau source dans destination, 
-  // à la bonne position
-  // on suppose que le malloc de destination a été fait avant
+	for(int i = 0; i < source->size; i++){
+		destination->tab[source->size + i] = source->tab[i];
+	}
    
-         
-  // TODO: Boucle de calcul pour la montée dans l'arbre/tableau
+	for(int l = log2(source->size) - 1 ; l >= 0; l--){
+		printf("l = %d\n", l);
+		for(int i = (int) pow(2, l) - 1; i <= ((int) pow(2, l+1)) - 1; i++){
+			destination->tab[i] = destination->tab[2 * i] + destination->tab[2 * i+1];
+		}
+	}
 }
 
 void descente(struct tablo * a, struct tablo * b) {
-  // TODO : implementation de la phase de descente
+
+	b->tab[1] = 0;
+	for(int k = 1; k <= log2(a->size) - 1; k++){
+		for(int i = pow(2, k); i <=	pow(2, k+1) - 1; i++){
+			if(i%2 == 0){
+				b->tab[i] = b->tab[i/2];
+			} else {
+				b->tab[i] = b->tab[i/2] + a->tab[i-1];
+			}
+		}
+	}
 }
 
 void final(struct tablo * a, struct tablo *b) {
