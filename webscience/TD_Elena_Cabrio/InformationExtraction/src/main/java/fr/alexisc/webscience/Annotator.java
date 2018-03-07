@@ -14,22 +14,16 @@ public class Annotator {
     /**
      * The name of the given entity
      */
-    private String entityName;
-    private File corpus;
+    private Entity entity;
     private PrintWriter writer;
     private BufferedReader reader;
-    private URI entityURI;
 
     /**
      * Instantiates a new Annotator.
      *
-     * @param entityName the entity name
-     * @param corpus     the corpus
      */
-    public Annotator(String entityName, File corpus, URI entityURI) {
-        this.corpus = corpus;
-        this.entityName = entityName;
-        this.entityURI = entityURI;
+    public Annotator(Entity entity) {
+        this.entity = entity;
     }
 
     /**
@@ -37,30 +31,21 @@ public class Annotator {
      */
     public void annotate() throws IOException {
 
-        writer = new PrintWriter(App.CORPUSES_ANNOTATED_PATH + corpus.getName().split("\\.")[0] + "_annotated.txt");
-        reader = new BufferedReader(new FileReader(App.CORPUSES_PATH + corpus.getName()));
+        writer = new PrintWriter(App.CORPUSES_ANNOTATED_PATH + entity.getCorpusFile().getName().split("\\.")[0] + "_annotated.txt");
+        reader = new BufferedReader(new FileReader(App.CORPUSES_PATH + entity.getCorpusFile().getName()));
 
-        String[] decomposedEntity = entityName.split(" ");
+        String[] decomposedEntity = entity.getDecomposedName(" ");
 
         // Naive matching of the entity
         StringBuilder regexp = new StringBuilder();
-        regexp.append("(").append(entityName);
+        regexp.append("(").append(entity.getName());
         Arrays.stream(decomposedEntity).forEach( part -> regexp.append("|").append(part));
         regexp.append(")");
 
-        Pattern pattern = Pattern.compile(regexp.toString());
         String line;
 
         while((line = reader.readLine()) != null){
-
-            Matcher matcher = pattern.matcher(line);
-            StringBuffer sb = new StringBuffer();
-
-            while(matcher.find()){
-                matcher.appendReplacement(sb, "<entity name=\"" + entityURI.toString() + "\">" + matcher.group() + "</entity>");
-            }
-
-            writer.append(sb);
+            writer.println(line.replaceAll(regexp.toString(), "<entity name=\"" + entity.getURI().toString() + "\">$1</entity>"));
         }
 
         reader.close();
