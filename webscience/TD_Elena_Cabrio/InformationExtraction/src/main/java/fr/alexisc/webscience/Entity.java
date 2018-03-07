@@ -30,10 +30,6 @@ public class Entity {
         return name.split(delimiter);
     }
 
-    public String[] getEntityRecongnizers(){
-        return null;
-    }
-
     public File getCorpusFile() {
         return corpus;
     }
