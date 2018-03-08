@@ -1,8 +1,9 @@
 package fr.alexisc.webscience;
 
 import java.io.*;
-import java.net.URI;
-import java.util.Arrays;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,7 +37,6 @@ public class Annotator {
 
         String[] decomposedEntity = entity.getDecomposedName(" ");
 
-        // Naive matching of the entity
         StringBuilder regexp = new StringBuilder();
         regexp.append("(").append(entity.getName());
         Arrays.stream(decomposedEntity).forEach( part -> regexp.append("|").append(part));
@@ -52,4 +52,39 @@ public class Annotator {
         writer.close();
     }
 
+
+    public String getBirthDateTriple(Entity entity) throws IOException {
+
+        reader = new BufferedReader(new FileReader(App.CORPUSES_PATH + entity.getCorpusFile().getName()));
+
+        String regex = "([0-9]?[0-9]) ([A-Za-z]+) ([0-9][0-9][0-9][0-9])";
+
+        // The date of birth is almost always inside the first sentence so fo this version we will only check the first sentence
+        String line = reader.readLine();
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(line);
+
+        reader.close();
+
+        if(matcher.find()){
+            Date date = null;
+            try {
+                date = new SimpleDateFormat("dd MMMM yyyy", new Locale("en,EN")).parse(matcher.group());
+            } catch (ParseException e) {
+                e.printStackTrace();
+                return null;
+            }
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(date);
+
+            return "<\"" + entity.getURI().toString() + "\", \"hasDate\"" + ", \"" + cal.get(Calendar.YEAR) + "-" + cal.get(Calendar.MONTH) + "-" + cal.get(Calendar.DAY_OF_MONTH) + "\">";
+        } else {
+            return null;
+        }
+    }
+
+    public List<String> getTypeTriples(Entity entity) {
+
+        return null;
+    }
 }
