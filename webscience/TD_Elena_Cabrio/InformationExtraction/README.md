@@ -39,7 +39,7 @@ __<"http://en.wikipedia.org/wiki/Catherine_Deneuve", "hasDate", "1943-9-22">__
 
 ## Exercise 3
 
-For this exercise i wanted something stronger than a regular expression, so i used the [The Stanford Parser](https://nlp.stanford.edu/software/lex-parser.shtml), thanks to this i'm able to produce __Part of Speech__ tagging and **chunking** sentences.  
+For this exercise i wanted something stronger than a regular expression, so i used the [The Stanford Parser](https://nlp.stanford.edu/software/lex-parser.shtml), thanks to this i'm able to produce __Part of Speech__ tagging and **chunked** sentences.  
 To extract an information about a given entity i will use the following pattern :
 
 1. break down the file into sentences ;
