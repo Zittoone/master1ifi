@@ -50,7 +50,7 @@ public class App {
                 }
 
                 if(!typeTriple.isEmpty()){
-                    typeTriple.forEach(triple -> System.out.println("Triple <type> found : " + typeTriple));
+                    typeTriple.forEach(triple -> System.out.println("Triple <type> found : " + triple));
                 } else {
                     System.out.println("No triple <type> found.");
                 }

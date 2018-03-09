@@ -1,11 +1,20 @@
 package fr.alexisc.webscience;
 
+import com.sun.deploy.net.protocol.chrome.ChromeURLConnection;
+import edu.stanford.nlp.ling.HasWord;
+import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
+import edu.stanford.nlp.process.DocumentPreprocessor;
+import edu.stanford.nlp.trees.Tree;
+
 import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by Alexis Couvreur on 05/03/2018.
@@ -35,17 +44,12 @@ public class Annotator {
         writer = new PrintWriter(App.CORPUSES_ANNOTATED_PATH + entity.getCorpusFile().getName().split("\\.")[0] + "_annotated.txt");
         reader = new BufferedReader(new FileReader(App.CORPUSES_PATH + entity.getCorpusFile().getName()));
 
-        String[] decomposedEntity = entity.getDecomposedName(" ");
-
-        StringBuilder regexp = new StringBuilder();
-        regexp.append("(").append(entity.getName());
-        Arrays.stream(decomposedEntity).forEach( part -> regexp.append("|").append(part));
-        regexp.append(")");
+        List<String> decomposedEntity = entity.getRecognizers();
 
         String line;
 
         while((line = reader.readLine()) != null){
-            writer.println(line.replaceAll(regexp.toString(), "<entity name=\"" + entity.getURI().toString() + "\">$1</entity>"));
+            writer.println(line.replaceAll(entity.getRegex(), "<entity name=\"" + entity.getURI().toString() + "\">$0</entity>"));
         }
 
         reader.close();
@@ -83,8 +87,100 @@ public class Annotator {
         }
     }
 
-    public List<String> getTypeTriples(Entity entity) {
+    public List<String> getTypeTriples(Entity entity) throws IOException {
 
-        return null;
+        reader = new BufferedReader(new FileReader(App.CORPUSES_PATH + entity.getCorpusFile().getName()));
+
+        LexicalizedParser lp =
+                LexicalizedParser.loadModel("E:\\Users\\zToon\\Downloads\\stanford-english-corenlp-2018-02-27-models\\edu\\stanford\\nlp\\models\\lexparser\\englishPCFG.ser.gz");
+
+        List<String> objects = new ArrayList<>();
+
+        for(List<HasWord> sentence : new DocumentPreprocessor(reader)){
+            Tree parse = lp.apply(sentence);
+            Optional<String> infoTriple = extractInformation(parse, entity);
+
+            infoTriple.ifPresent(objects::add);
+            // parse.pennPrint();
+        }
+
+        reader.close();
+
+        return objects;
     }
+
+    private Optional<String> extractInformation(Tree root, Entity entity) {
+        if(!Objects.equals(root.value(), "ROOT")){
+            return Optional.empty();
+        }
+
+        Tree current = root.firstChild();
+        if(!Objects.equals(current.value(), "S")){
+            return Optional.empty();
+        }
+
+        Tree[] children = current.children();
+        if(children.length < 2){
+            return Optional.empty();
+        }
+
+        if(isEntityInNounPhrase(entity, children[0]) ){
+            return extractObject(entity, children[1]);
+        }
+
+        return Optional.empty();
+    }
+
+    private Optional<String> extractObject(Entity entity, Tree tree) {
+        if(tree.value().equals("VP")){
+            Tree[] children = tree.children();
+
+            // VB* and NP only
+            if(children.length == 2){
+                String vc0 = children[0].value();
+                String vc01 = children[0].yield().get(0).value();
+                // System.out.println(vc0 + " : " + vc01);
+                if(vc0.startsWith("VB") && (vc01.equals("is") || vc01.equals("was"))){
+                    return extractObject(entity, children[1]);
+                }
+            }
+        } else if(tree.value().equals("NP")){
+            if(tree.children()[0].value().equals("NP")){
+                return extractObject(entity, tree.children()[0]);
+            }
+
+            List<Tree> found = tree.getChildrenAsList().stream()
+                    .filter(t -> t.value().startsWith("JJ") || t.value().startsWith("NN")).collect(Collectors.toList());
+            StringBuilder sb = new StringBuilder();
+
+            if(found.isEmpty())
+                return Optional.empty();
+
+            found.forEach(t -> {
+                sb.append(t.yield()).append(" ");
+            });
+            sb.deleteCharAt(sb.length() - 1);
+            return Optional.of("<\"" + entity.getURI() + "\", \"type\", \"" +
+                    sb.toString().replaceAll("\\[", "").replaceAll("\\]","") + "\">");
+        }
+
+        return Optional.empty();
+    }
+
+    private boolean isEntityInNounPhrase(Entity entity, Tree tree) {
+
+        String v = tree.value();
+        if (!(v.equals("NP") || v.equals("NNP"))) {
+            return false;
+        }
+
+        String v2 = tree.yield().toString();
+
+        Pattern pattern = Pattern.compile(entity.getRegex());
+        Matcher matcher = pattern.matcher(v2);
+
+        return matcher.find() /*|| !tree.getChildrenAsList().stream().filter(node -> isEntityInNounPhrase(entity, node)).collect(Collectors.toList()).isEmpty()*/;
+    }
+
+
 }
