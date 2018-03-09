@@ -111,10 +111,11 @@ public class Annotator {
     public List<String> getTypeTriples(Entity entity) throws IOException {
 
         reader = new BufferedReader(new FileReader(App.CORPUSES_PATH + entity.getCorpusFile().getName()));
-
         List<String> objects = new ArrayList<>();
 
+
         for(List<HasWord> sentence : new DocumentPreprocessor(reader)){
+
             Tree parse = lp.apply(sentence);
             Optional<String> infoTriple = extractInformation(parse, entity);
 
@@ -150,6 +151,7 @@ public class Annotator {
     }
 
     private Optional<String> extractObject(Entity entity, Tree tree) {
+
         if(tree.value().equals("VP")){
             Tree[] children = tree.children();
 
@@ -181,6 +183,8 @@ public class Annotator {
             sb.deleteCharAt(sb.length() - 1);
             return Optional.of("<\"" + entity.getURI() + "\", \"type\", \"" +
                     sb.toString().replaceAll("\\[", "").replaceAll("\\]","") + "\">");
+        } else {
+            // Find the first vp
         }
 
         return Optional.empty();
@@ -210,7 +214,22 @@ public class Annotator {
      * @param uriMap the uri map
      * @return the relation triples
      */
-    public List<String> getRelationTriples(Entity entity, Map<String, URI> uriMap) {
-        return null;
+    public List<String> getRelationTriples(Entity entity, Map<String, URI> uriMap) throws IOException {
+
+        reader = new BufferedReader(new FileReader(App.CORPUSES_PATH + entity.getCorpusFile().getName()));
+
+        List<String> objects = new ArrayList<>();
+
+        for (List<HasWord> sentence : new DocumentPreprocessor(reader)) {
+            /*Tree parse = lp.apply(sentence);
+            Optional<String> infoTriple = extractInformation(parse, entity);
+
+            infoTriple.ifPresent(objects::add);
+            parse.pennPrint();*/
+        }
+
+        reader.close();
+
+        return objects;
     }
 }

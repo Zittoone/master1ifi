@@ -76,9 +76,7 @@ public class Entity {
 
             try {
 
-                String myKey = "QZxwMorsEARZadRGse";
-
-                URL url = new URL("https://gender-api.com/get?key=" + myKey + "&name=" + name);
+                URL url = new URL("https://gender-api.com/get?key=" + App.apiKey + "&name=" + name);
 
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 

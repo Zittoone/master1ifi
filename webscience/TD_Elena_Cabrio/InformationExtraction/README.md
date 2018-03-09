@@ -16,7 +16,7 @@ Each time our regular expression match we add the entity tag.
 3. We produce the annotated file :  
 "__Catherine_Deneuve_annotated.txt__" under the directory "__annotated__" inside the corpuses.
 
-Pronouns are defined thanks to [the Gender-API](https://gender-api.com).
+Pronouns are defined thanks to [the Gender-API](https://gender-api.com) thus you need to get an API Key fore free through the site (you need to create an account).
 
 ## Exercise 2  
 
@@ -35,7 +35,7 @@ __Example : Catherine_Deneuve.txt__
 > Catherine Deneuve (French: [katʁin dənœv]; born __22 October 1943__) is a French actress who gained recognition for her portrayal of aloof, mysterious beauties for various directors, including Luis Buñuel and Roman Polanski.
 
 3. We produce the triple :  
-__<"http://en.wikipedia.org/wiki/Catherine_Deneuve", "hasDate", "1943-9-22">__
+__<"http://en.wikipedia.org/wiki/Catherine_Deneuve", "hasDate", "1943-9-22">__ into the console output directly.
 
 ## Exercise 3
 
@@ -74,16 +74,32 @@ Thus we can extract these triples from the whole text :
 * <"http://en.wikipedia.org/wiki/Alessandro_Papetti", "type", "Italian painter">
 * <"http://en.wikipedia.org/wiki/Alessandro_Papetti", "type", "self-taught artist">
 
+These triples are shown inside the console output.
+
 > This is not perfect because it only match one pattern for the moment, but it can be easily improved.
 
 ## Exercise 4
 
+To extract a relation between a given entity and another i will use the following pattern :
+
+1. break down the file into sentences ;
+2. for each sentences check the grammatical structure :
+    * use [The Stanford Parser](https://nlp.stanford.edu/software/lex-parser.shtml) to tag the text ;
+    * use [The Stanford Parser](https://nlp.stanford.edu/software/lex-parser.shtml) to parse the text and result in a Tree ;
+    * the tree gives the grammatical category ;
+    * if the sentence (tagged __S__) has the entity as a subject, a __verb__ that will be the *relation* and then a noun phrase that has an __entity__.
+3. we then can build the triple from the retrieved sentence.
 
 
-## Start the program
+## Run the program
 
-## Improvments
+Following steps :
 
-For sure resolving coreferences would improve the program a lot beaucause every pronouns would now be replaced by the entity name and would extract the information
-
-Stanford nlp
+1. create a new project using your favorite **IDE** (i recommend using [IntelliJ](https://www.jetbrains.com/idea/download/)) :
+    * create a project from the **pom.xml** file and then have a **Maven** project ;
+    * load the maven dependencies (check how to do it within your **IDE**) ;
+2. download the [Stanford English CoreNLP](https://nlp.stanford.edu/software/stanford-english-corenlp-2018-02-27-models.jar) :
+    * unzip the **.jar** and extract the **EnglishPCFG.ser.gz** located at `edu/stanford/nlp/models/lexparser/` wherever you want ;
+    * copy the path to this file
+3. run the program with the path to the **EnglishPCFG.ser.gz** file as 1st argument and the [Gender API](https://gender-api.com/) key as second argument ;
+4. read the output under `src/main/java/resources/corpuses/annotated/` and the console directly.

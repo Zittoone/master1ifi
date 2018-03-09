@@ -18,13 +18,15 @@ public class App {
     public static final String CORPUSES_PATH = "src/main/resources/corpuses/";
     public static final String CORPUSES_ANNOTATED_PATH = "src/main/resources/corpuses/annotated/";
     public static final String ENTITY_LIST_PATH = "src/main/resources/entity_list.txt";
+    public static String apiKey;
     public static LexicalizedParser lp;
 
     public static void main(String[] args) {
 
-        if (args.length != 1) {
-            System.err.println("You must specify the path to the lexparser.");
+        if (args.length == 0 || args.length > 2) {
+            System.err.println("Usage : main <pathToLexparser> <apiKey>");
         }
+        apiKey = args[1];
 
         lp = LexicalizedParser.loadModel(args[0]);
 
