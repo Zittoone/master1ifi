@@ -1,6 +1,7 @@
 package fr.alexisc.webscience;
 
 import edu.stanford.nlp.ling.HasWord;
+import edu.stanford.nlp.ling.Label;
 import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
 import edu.stanford.nlp.process.DocumentPreprocessor;
 import edu.stanford.nlp.trees.Tree;
@@ -9,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URI;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
  */
 public class Annotator {
 
+    LexicalizedParser lp;
     /**
      * The name of the given entity
      */
@@ -31,13 +34,17 @@ public class Annotator {
     /**
      * Instantiates a new Annotator.
      *
+     * @param entity the entity
      */
     public Annotator(Entity entity) {
         this.entity = entity;
+        lp = App.lp;
     }
 
     /**
      * Annotate the file and creates a new one.
+     *
+     * @throws IOException the io exception
      */
     public void annotate() throws IOException {
 
@@ -57,6 +64,13 @@ public class Annotator {
     }
 
 
+    /**
+     * Gets birth date triple.
+     *
+     * @param entity the entity
+     * @return the birth date triple
+     * @throws IOException the io exception
+     */
     public String getBirthDateTriple(Entity entity) throws IOException {
 
         reader = new BufferedReader(new FileReader(App.CORPUSES_PATH + entity.getCorpusFile().getName()));
@@ -87,12 +101,16 @@ public class Annotator {
         }
     }
 
+    /**
+     * Gets type triples.
+     *
+     * @param entity the entity
+     * @return the type triples
+     * @throws IOException the io exception
+     */
     public List<String> getTypeTriples(Entity entity) throws IOException {
 
         reader = new BufferedReader(new FileReader(App.CORPUSES_PATH + entity.getCorpusFile().getName()));
-
-        LexicalizedParser lp =
-                LexicalizedParser.loadModel("E:\\Users\\zToon\\Downloads\\stanford-english-corenlp-2018-02-27-models\\edu\\stanford\\nlp\\models\\lexparser\\englishPCFG.ser.gz");
 
         List<String> objects = new ArrayList<>();
 
@@ -101,7 +119,7 @@ public class Annotator {
             Optional<String> infoTriple = extractInformation(parse, entity);
 
             infoTriple.ifPresent(objects::add);
-            // parse.pennPrint();
+            parse.pennPrint();
         }
 
         reader.close();
@@ -139,12 +157,13 @@ public class Annotator {
             if(children.length == 2){
                 String vc0 = children[0].value();
                 String vc01 = children[0].yield().get(0).value();
-                // System.out.println(vc0 + " : " + vc01);
-                if(vc0.startsWith("VB") && (vc01.equals("is") || vc01.equals("was"))){
+                // System.out.println(tree.yield() + " => " + vc0 + " : " + vc01);
+                if (vc0.startsWith("VB") && (vc01.equals("is") || vc01.equals("was") || vc01.equals("has"))) {
                     return extractObject(entity, children[1]);
                 }
             }
         } else if(tree.value().equals("NP")){
+
             if(tree.children()[0].value().equals("NP")){
                 return extractObject(entity, tree.children()[0]);
             }
@@ -170,11 +189,12 @@ public class Annotator {
     private boolean isEntityInNounPhrase(Entity entity, Tree tree) {
 
         String v = tree.value();
-        if (!(v.equals("NP") || v.equals("NNP"))) {
+        if (!(v.startsWith("NP") || v.startsWith("NN") || v.startsWith("PR"))) {
             return false;
         }
 
-        String v2 = tree.yield().toString();
+        // Join the elements with spaces to match the regex easily
+        String v2 = String.join(" ", tree.yield().stream().map(Label::value).collect(Collectors.toList()));
 
         Pattern pattern = Pattern.compile(entity.getRegex());
         Matcher matcher = pattern.matcher(v2);
@@ -183,4 +203,14 @@ public class Annotator {
     }
 
 
+    /**
+     * Gets relation triples.
+     *
+     * @param entity the entity
+     * @param uriMap the uri map
+     * @return the relation triples
+     */
+    public List<String> getRelationTriples(Entity entity, Map<String, URI> uriMap) {
+        return null;
+    }
 }

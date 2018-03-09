@@ -52,7 +52,33 @@ To extract an information about a given entity i will use the following pattern 
 
 I tried to be a bit more complex by extracting recursively information from a noun phrase, because when the sentence does not end after the information we want to extract, this noun phrase is wrapped inside a bigger noun phrase, so until there is a noun phrase children i extract the information from this one.  See `private Optional<String> extractObject(Entity entity, Tree tree) ` method inside `Annotator` class.
 
+__Example : Alessandro_Papetti.txt__
+
+This is the tree that [The Stanford Parser](https://nlp.stanford.edu/software/lex-parser.shtml) gives us, and we can extract one data here with our algorithm : Alessandro Papetti is an Italian painter.
+```
+(ROOT
+  (S
+    (NP <--- Noun Phrase detected as a start so we check into for the entity
+      (NP (NNP Alessandro) (NNP Papetti))  <--- The entity is recongnized
+      (PRN (-LRB- -LRB-)
+        (VP (VBN born)
+          (NP (CD 1958))
+          (PP (IN in)
+            (NP (NNP Milan))))
+        (-RRB- -RRB-)))
+    (VP (VBZ is) <--- Verbal phrase as a second argument recongnized and it's the verb "be"
+      (NP (DT an) (JJ Italian) (NN painter))) <--- We look deeper inside and can extract adjectives and nouns.
+    (. .)))
+```
+Thus we can extract these triples from the whole text :  
+* <"http://en.wikipedia.org/wiki/Alessandro_Papetti", "type", "Italian painter">
+* <"http://en.wikipedia.org/wiki/Alessandro_Papetti", "type", "self-taught artist">
+
+> This is not perfect because it only match one pattern for the moment, but it can be easily improved.
+
 ## Exercise 4
+
+
 
 ## Start the program
 

@@ -1,10 +1,10 @@
 package fr.alexisc.webscience;
 
+import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
+
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -18,8 +18,15 @@ public class App {
     public static final String CORPUSES_PATH = "src/main/resources/corpuses/";
     public static final String CORPUSES_ANNOTATED_PATH = "src/main/resources/corpuses/annotated/";
     public static final String ENTITY_LIST_PATH = "src/main/resources/entity_list.txt";
+    public static LexicalizedParser lp;
 
     public static void main(String[] args) {
+
+        if (args.length != 1) {
+            System.err.println("You must specify the path to the lexparser.");
+        }
+
+        lp = LexicalizedParser.loadModel(args[0]);
 
         File annotated = new File(CORPUSES_ANNOTATED_PATH);
         if (!annotated.exists()) {
@@ -42,6 +49,7 @@ public class App {
                 System.out.println(entityName + " annotated.");
                 String hasDateTriple = annotator.getBirthDateTriple(entity);
                 List<String> typeTriple = annotator.getTypeTriples(entity);
+                List<String> relationTriple = annotator.getRelationTriples(entity, uriMap);
 
                 if(hasDateTriple != null){
                     System.out.println("Triple <hasDate> found : " + hasDateTriple);
