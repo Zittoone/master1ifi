@@ -55,13 +55,17 @@ int main(int argc, char* argv[]){
 	generateArray(&Q); // TODO: replace this with file's input
 	sum_prefix(&Q, &PSUM);
 
+	printf("Tableau sum-prefix:\n");
 	printArray(&PSUM);
 	
 	/*
 	 * 2. Calculer le sum-suffix de Q et les mettre dans un tableau SSUM
 	 */
 	struct tablo SSUM;
-	sum_suffix(&Q, &PSUM);
+	sum_suffix(&Q, &SSUM);
+
+	printf("Tableau sum-suffix:\n");
+	printArray(&SSUM);
 
 	/*
 	 * 3. Calculer le max-suffix de PSUM et le mettre dans SMAX
@@ -120,20 +124,25 @@ struct tablo * allocateTablo(int size) {
   return tmp;
 }
 
-void montee(struct tablo * source, struct tablo * destination) {
+/*
+ * PREFIX
+ */
+
+void montee_prefix(struct tablo * source, struct tablo * destination) {
 	for(int i = 0; i < source->size; i++){
 		destination->tab[source->size + i] = source->tab[i];
 	}
    
 	for(int l = log2(source->size) - 1 ; l >= 0; l--){
 		//printf("l = %d\n", l);
+	#pragma omp parralel for
 		for(int i = (int) pow(2, l) - 1; i <= ((int) pow(2, l+1)) - 1; i++){
 			destination->tab[i] = destination->tab[2 * i] + destination->tab[2 * i+1];
 		}
 	}
 }
 
-void descente(struct tablo * a, struct tablo * b) {
+void descente_prefix(struct tablo * a, struct tablo * b) {
 
 	b->tab[1] = 0;
 	for(int k = 1; k <= log2(a->size) - 1; k++){
@@ -146,6 +155,10 @@ void descente(struct tablo * a, struct tablo * b) {
 		}
 	}
 }
+
+/*
+ * SUFFIX
+ */
 
 void montee_suffix(struct tablo * source, struct tablo * destination) {
 	for(int i = 0; i < source->size; i++){
@@ -162,7 +175,7 @@ void montee_suffix(struct tablo * source, struct tablo * destination) {
 void descente_suffix(struct tablo * a, struct tablo * b) {
 
 	b->tab[1] = 0;
-	for(int k = 1; k <= log2(a->size/2) - 1; k++){
+	for(int k = 1; k <= log2(a->size) - 1; k++){
 		for(int i = pow(2, k); i <=	pow(2, k+1) - 1; i++){
 			if(i%2 == 0){
 				b->tab[i] = b->tab[i/2];
@@ -172,6 +185,20 @@ void descente_suffix(struct tablo * a, struct tablo * b) {
 		}
 	}
 }
+
+void inverser_tablo(struct tablo * a){
+	int i = a->size - 1;
+	int j = 0;
+  	while(i > j) {
+		int temp = a->tab[i];
+	    a->tab[i] = a->tab[j];
+	    a->tab[j] = temp;
+    	i--;
+	    j++;
+  	}
+}
+
+
 
 void final(struct tablo * a, struct tablo *b) {
 
@@ -183,11 +210,11 @@ void final(struct tablo * a, struct tablo *b) {
 
 void sum_prefix(struct tablo * source, struct tablo * destination){
 	struct tablo * a = allocateTablo(source->size*2);
-	montee(source, a);
+	montee_prefix(source, a);
 	// printArray(a);
 
 	struct tablo * b = allocateTablo(source->size*2);
-	descente(a, b);
+	descente_prefix(a, b);
 	// printArray(b);
    
 	final(a,b);
@@ -195,6 +222,10 @@ void sum_prefix(struct tablo * source, struct tablo * destination){
 }
 
 void sum_suffix(struct tablo * source, struct tablo * destination){
+
+	// TODO: inverser tableau
+	inverser_tablo(source);
+
 	struct tablo * a = allocateTablo(source->size*2);
 	montee_suffix(source, a);
 	// printArray(a);
@@ -204,6 +235,9 @@ void sum_suffix(struct tablo * source, struct tablo * destination){
 	// printArray(b);
    
 	final(a,b);
+	// reinverser tableau
+	inverser_tablo(b);
+
 	*destination = *b;
 }
 

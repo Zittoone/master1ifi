@@ -16,3 +16,5 @@
   2. Mp[i] = SMAX[i] - PSUM[i] + Q[i]
   3. M[i] = Ms[i] + Mp[i] - Q[i]
 6. Trouver la valeur maximal dans M 
+
+use valgrind
