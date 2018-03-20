@@ -40,12 +40,12 @@ public class Main {
                 S[i] = Stream.of(br.readLine().split(" ")).mapToDouble(Double::parseDouble).toArray();
             }
 
-            System.out.println(printMatrix(S));
+            // System.out.println(printMatrix(S));
 
             /* compute G */
             double[][] G = getG(S, delta, getE(nbPage), nbPage);
 
-            System.out.println(printMatrix(G));
+            // System.out.println(printMatrix(G));
 
             /* compute Pi */
             double[][] vector = new double[1][nbPage];
@@ -53,19 +53,20 @@ public class Main {
             // Pi = vector * G^0
             Arrays.fill(vector[0], 1. / nbPage);
 
-            System.out.printf("Pi(%d) : \n", 0);
-            System.out.println(printMatrix(vector));
+            // System.out.printf("Pi(%d) : \n", 0);
+            // System.out.println(printMatrix(vector));
 
             int t = 1;
 
             do {
                 vector = multiplyByMatrix(vector, powerMatrix(G, t));
 
-                System.out.printf("Pi(%d) : \n", t);
-                System.out.println(printMatrix(vector));
+                // System.out.printf("Pi(%d) : \n", t);
+                // System.out.println(printMatrix(vector));
                 t++;
             } while(t < maxIterations);
 
+            System.out.println(printMatrix(vector));
 
         } catch (FileNotFoundException e) {
             System.err.println("The file \"" + args[0] + "\" was not found.");
