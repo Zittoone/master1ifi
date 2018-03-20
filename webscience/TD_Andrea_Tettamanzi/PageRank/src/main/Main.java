@@ -49,6 +49,7 @@ public class Main {
 
             /* compute Pi */
             double[][] vector = new double[1][nbPage];
+            double[][] result;
 
             // Pi = vector * G^0
             Arrays.fill(vector[0], 1. / nbPage);
@@ -59,14 +60,17 @@ public class Main {
             int t = 1;
 
             do {
-                vector = multiplyByMatrix(vector, powerMatrix(G, t));
+
+                // Same as Pi t-1 * G
+                result = multiplyByMatrix(vector, powerMatrix(G, t));
 
                 // System.out.printf("Pi(%d) : \n", t);
-                // System.out.println(printMatrix(vector));
+                // System.out.println(printMatrix(result));
                 t++;
             } while(t < maxIterations);
 
-            System.out.println(printMatrix(vector));
+            System.out.println("Pi(" + (t-1) + ") : \n");
+            System.out.println(printMatrix(result));
 
         } catch (FileNotFoundException e) {
             System.err.println("The file \"" + args[0] + "\" was not found.");
