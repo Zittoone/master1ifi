@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <omp.h>
 #include <string.h>
+#include <time.h>
 
 
 struct tablo {
@@ -83,14 +84,21 @@ void generateReverseSortedArray(struct tablo *s, int size) {
 
 int main(int argc, char **argv) {
 	struct tablo * tmp = malloc(sizeof(struct tablo));
-	int threads =1;
-	if (argc>1) {	
-	  
+	int threads = 1;
+	int size = 100000;
+	if (argc == 2) {	
 		threads= atoi(argv[1]);
-
+	} else if(argc == 3){
+		threads= atoi(argv[1]);
+		size = atoi(argv[2]);
 	}
 	
-	generateReverseSortedArray(tmp, 100000);
+	generateReverseSortedArray(tmp, size);
+	clock_t begin = clock();
 	quicksort(tmp,0, tmp->size);
+	clock_t end = clock();
+
+	double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+	printf("%f %d\n", time_spent, size);
 
 }
