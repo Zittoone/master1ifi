@@ -98,12 +98,16 @@ int main(int argc, char **argv) {
 	struct tablo * tmp = malloc(sizeof(struct tablo));
 	int threads = 1;
 	int size = 100000;
+	// omp_set_nested(0);
+
 	if (argc == 2) {	
 		threads= atoi(argv[1]);
 	} else if(argc == 3){
 		threads= atoi(argv[1]);
 		size = atoi(argv[2]);
 	}
+
+	omp_set_num_threads(threads);
 	
 	generateReverseSortedArray(tmp, size);
 	clock_t begin = clock();
