@@ -28,8 +28,20 @@ void quicksort(struct tablo * ta, int index_min, int index_max) {
 		t = ta->tab[i]; ta->tab[i] = ta->tab[j]; ta->tab[j]=t;
 	}
 	t=ta->tab[i-1];ta->tab[i-1]=ta->tab[index_min]; ta->tab[index_min]=t;
-	quicksort(ta, index_min, i);
-	quicksort(ta, i, index_max );
+
+	#pragma omp parallel sections
+	{
+		#pragma omp section
+		{
+			quicksort(ta, index_min, i);
+		}
+
+		#pragma omp section
+		{
+			quicksort(ta, i, index_max );
+		}
+	}
+	
 }
 
 void printArray(struct tablo * tmp) {
