@@ -1,6 +1,7 @@
 window.onload = init;
 
 let canvas, ctx;
+let audioCtx = new AudioContext();
 
 function init() {
   console.log("page chargee DOM ready");
@@ -14,12 +15,27 @@ function init() {
   ctx = canvas.getContext("2d");
   
   // On peut maintenant dessiner  
-  drawRectanglePlein(100, 200, 100, 100, "green");
-  drawRectanglePlein(50, 50, 100, 100, "rgba(255, 0, 0, 0.5)");
+  //drawRectanglePlein(100, 200, 100, 100, "green");
+  //drawRectanglePlein(50, 50, 100, 100, "rgba(255, 0, 0, 0.5)");
 
-  ctx.strokeStyle = "blue";
-  ctx.lineWidth = 5;
-  ctx.strokeRect(200, 200, 70, 60);
+  //ctx.strokeStyle = "blue";
+  //ctx.lineWidth = 5;
+  //ctx.strokeRect(200, 200, 70, 60);
+  
+  osc1 = audioCtx.createOscillator();
+  osc1.connect(audioCtx.destination); // Haut parleur
+  //osc1.start();
+  
+  lfo = audioCtx.createOscillator();
+  lfo.frequency.value = 20;
+  
+  let g = audioCtx.createGain();
+  g.gain.value = 300;
+  
+  lfo.connect(g);
+  
+  g.connect(osc1.frequency);
+  lfo.start();
   
   // On lance l'animation a 60 images/s
   requestAnimationFrame(animation);
@@ -62,6 +78,10 @@ function animation(time) {
   // 3 On deplace les objets
   rect3.move();
   testeCollisionsAvecMurs(rect3);
+  
+  // On anime le son, la frequence va dependre
+  // de la position en x
+  osc1.frequency.value = rect3.x*10;
   
   // 4 On rappelle la boucle d'animation par defaut 60 fois par seconde
   requestAnimationFrame(animation);
