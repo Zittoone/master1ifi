@@ -1,6 +1,6 @@
 window.onload = init;
 
-let canvas, ctx;
+let canvas, ctx, b;
 let audioCtx = new AudioContext();
 
 function init() {
@@ -40,6 +40,39 @@ function init() {
     // On lance l'animation a 60 images/s
     requestAnimationFrame(animation);
     //setInterval(animation, 10)
+
+    /* EventListeners HERE ;) */
+    b = document.querySelector("#leBouton");
+
+    /*
+    Un seul écouteur max avec ça
+    b.onclick = function(evt) {
+        // ...
+    }
+
+    Plusieurs evt ES5
+    b.addEventListener("click", function(evt){
+        // ...
+    });
+
+    Plusieurs evt ES6 lambda*/
+    b.addEventListener("click", (evt) => {
+        // ...
+        changeTitre(evt);
+    });
+    
+    window.onkeydown = function(evt){
+        console.log("down")
+    }
+
+    window.onkeyup = function(evt){
+        console.log("up")
+    }
+
+    window.onkeypress = function(evt) {
+        console.log("press")
+    }
+
 }
 
 function drawRectanglePlein(x, y, l, h, couleur) {
@@ -170,6 +203,17 @@ class RectangleES6 {
         // this.y += this.vitesse * Math.sin(this.angle)
 
     }
+}
+
+function changeTitre(evt){
+    let titre = document.querySelector("#titre");
+    titre.innerHTML = "bravo t'as cliqué t'es content ?";
+
+    let elementQuiAGenereLevent = evt.target;
+    if(elementQuiAGenereLevent === b){
+        console.log("le bouton a généré l'event")
+    }
+
 }
 
 var rect3 = new RectangleES6(100, 100, 100, 100, "red");
