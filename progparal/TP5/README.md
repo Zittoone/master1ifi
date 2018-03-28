@@ -212,4 +212,4 @@ Pour éxecuter : __`mpirun ./exo1`__
     Je suis 0 et j'ai reçu la valeur 4 du processus 9 (tour terminé).
     ```
 
-4. 
+4. Fait.

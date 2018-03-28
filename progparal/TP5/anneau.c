@@ -15,11 +15,7 @@ void main(int argc, char* argv[]){
 
     p = 0;
     int * data = malloc(sizeof(int) * numprocs);
-    MPI_Status status;
-
-    /* On remplit notre tableau avec la date */
-    data[rank] = (unsigned)time(NULL);
-    
+    MPI_Status status;   
 
     /* Je suis l'émetteur
      * On suppose que le premier est le processus 0, 
@@ -29,7 +25,11 @@ void main(int argc, char* argv[]){
         /* L'émetteur envoie l'information en premier, tandis que tous les autres reoivent d'abord.
          * Puis il recoit le dernier message
          */
-        MPI_Send(&data, numprocs, MPI_INT, getSuccesseur(rank, numprocs), 0, MPI_COMM_WORLD);
+        
+        /* On remplit notre tableau avec la date */
+        data[rank] = (int)time(NULL);
+
+        MPI_Send(data, numprocs, MPI_INT, getSuccesseur(rank, numprocs), 0, MPI_COMM_WORLD);
         MPI_Recv(data, numprocs, MPI_INT, getPredecesseur(rank, numprocs), 0, MPI_COMM_WORLD, &status);
         
         afficherTableau(data, numprocs);
@@ -37,7 +37,10 @@ void main(int argc, char* argv[]){
     } else {
 
         MPI_Recv(data, numprocs, MPI_INT, getPredecesseur(rank, numprocs), 0, MPI_COMM_WORLD, &status);
-        MPI_Send(&data, numprocs, MPI_INT, getSuccesseur(rank, numprocs), 0, MPI_COMM_WORLD);
+
+        /* On remplit notre tableau avec la date */
+        data[rank] = (int)time(NULL);
+        MPI_Send(data, numprocs, MPI_INT, getSuccesseur(rank, numprocs), 0, MPI_COMM_WORLD);
     }
 
     MPI_Finalize();
