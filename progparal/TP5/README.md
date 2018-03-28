@@ -196,3 +196,18 @@ Pour éxecuter : __`mpirun ./exo1`__
     Je suis le proc 9, mon prédécesseur est le 8.
     Je suis le proc 0, mon prédécesseur est le 9.
     ```
+
+3. Passage d'une valeur sur un tour d'anneau
+    ```C
+    $ mpirun -np 10 ./anneau
+    Je suis 1 et j'ai reçu la valeur 4, je la transmets au processus 2.
+    Je suis 2 et j'ai reçu la valeur 4, je la transmets au processus 3.
+    Je suis 3 et j'ai reçu la valeur 4, je la transmets au processus 4.
+    Je suis 4 et j'ai reçu la valeur 4, je la transmets au processus 5.
+    Je suis 5 et j'ai reçu la valeur 4, je la transmets au processus 6.
+    Je suis 6 et j'ai reçu la valeur 4, je la transmets au processus 7.
+    Je suis 7 et j'ai reçu la valeur 4, je la transmets au processus 8.
+    Je suis 8 et j'ai reçu la valeur 4, je la transmets au processus 9.
+    Je suis 9 et j'ai reçu la valeur 4, je la transmets au processus 0.
+    Je suis 0 et j'ai reçu la valeur 4 du processus 9 (tour terminé).
+    ```

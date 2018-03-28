@@ -12,7 +12,7 @@ void main(int argc, char* argv[]){
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     p = 0;
-    int * rangPredecesseur = malloc(sizeof(int));
+    int * data_received = malloc(sizeof(int));
     MPI_Status status;
 
     /* Je suis l'émetteur
@@ -23,17 +23,17 @@ void main(int argc, char* argv[]){
         /* L'émetteur envoie l'information en premier, tandis que tous les autres reoivent d'abord.
          * Puis il recoit le dernier message
          */
-        MPI_Send(&rank, sizeof(int), MPI_INT, getSuccesseur(rank, numprocs), 0, MPI_COMM_WORLD);
-        MPI_Recv(rangPredecesseur, sizeof(int), MPI_INT, getPredecesseur(rank, numprocs), 0, MPI_COMM_WORLD, &status);
+        int data = 4;
+        MPI_Send(&data, sizeof(int), MPI_INT, getSuccesseur(rank, numprocs), 0, MPI_COMM_WORLD);
+        MPI_Recv(data_received, sizeof(int), MPI_INT, getPredecesseur(rank, numprocs), 0, MPI_COMM_WORLD, &status);
+        printf("Je suis %d et j'ai reçu la valeur %d du processus %d (tour terminé).\n",rank, *data_received, getPredecesseur(rank, numprocs));
 
     } else {
 
-        MPI_Recv(rangPredecesseur, sizeof(int), MPI_INT, getPredecesseur(rank, numprocs), 0, MPI_COMM_WORLD, &status);
-        MPI_Send(&rank, sizeof(int), MPI_INT, getSuccesseur(rank, numprocs), 0, MPI_COMM_WORLD);
-
+        MPI_Recv(data_received, sizeof(int), MPI_INT, getPredecesseur(rank, numprocs), 0, MPI_COMM_WORLD, &status);
+        MPI_Send(data_received, sizeof(int), MPI_INT, getSuccesseur(rank, numprocs), 0, MPI_COMM_WORLD);
+        printf("Je suis %d et j'ai reçu la valeur %d, je la transmets au processus %d.\n",rank, *data_received, getSuccesseur(rank, numprocs));
     }
-
-    printf("Je suis le proc %d, mon prédécesseur est le %d.\n", rank, *rangPredecesseur);
 
     MPI_Finalize();
 
