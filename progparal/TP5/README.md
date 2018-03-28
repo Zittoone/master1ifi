@@ -113,6 +113,8 @@ Pour éxecuter : __`mpirun ./exo1`__
 
 ## Ping Pong
 
+**/!\ Note : Pas à jour, le sujet à changer entre temps** 
+
 1. Exercice 1 :
     ```C
     #include <mpi.h>
@@ -213,3 +215,8 @@ Pour éxecuter : __`mpirun ./exo1`__
     ```
 
 4. Fait.
+
+##  Deadlock
+
+1. Deadlock à partir de 2000, les valeurs 20, 100, et 1000 ne posent pas de problème.
+2. Voir doc avec buffer d'arrivé, donc dès que le buffer d'arrivé n'est pas assez grand pour contenir les données => deadlock.
