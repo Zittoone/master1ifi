@@ -146,4 +146,18 @@ Pour éxecuter : __`mpirun ./exo1`__
     ```
 
 2. Exercice 2 :
-    
+    ```
+    $ mpirun -np 10 ./ping_pong
+    Proc 7 deceived : 4 !!
+    Proc 2 deceived : 4 !!
+    Proc 3 deceived : 4 !!
+    Proc 1 deceived : 4 !!
+    Proc 9 deceived : 4 !!
+    Proc 6 deceived : 4 !!
+    Proc 5 deceived : 4 !!
+    Proc 4 deceived : 4 !!
+    Proc 8 deceived : 4 !!
+    ```
+
+## Pipeline
+ 

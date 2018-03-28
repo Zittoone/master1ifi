@@ -9,13 +9,17 @@ void main(int argc, char* argv[]){
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     if(rank == 0){
+        // Maître
         int data = 4;
-        MPI_Send(&data, sizeof(int), MPI_INT, 1, 0, MPI_COMM_WORLD);
-    } else if (rank == 1) {
+        for(int i = 1; i < numprocs; i++){
+            MPI_Send(&data, sizeof(int), MPI_INT, i, 0, MPI_COMM_WORLD);
+        }
+        
+    } else {
         int* data = malloc(sizeof(int));
         MPI_Status status;
         MPI_Recv(data, sizeof(int), MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
-        printf("Received : %d !!\n", *data);
+        printf("Proc %d deceived : %d !!\n", rank, *data);
     }
 
     MPI_Finalize();
