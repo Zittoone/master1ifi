@@ -1,0 +1,102 @@
+# TP5 (MPI)
+
+## MPI ?
+
+### Une norme implémentée dans plein de bibliothèques
+
+* Une API
+* des outils pour compiler/exécuter
+
+Une application MPI == un unique exécutable démarré sur plusieurs machines
+
+### Exemple
+
+#### Initialisation 
+
+```C
+#include <mpi.h>
+
+void main(int argc, char* argv[]){
+    int numprocs, rank;
+    MPI_Init(&argc, &argv);
+    MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+}
+
+```
+
+#### Méthodes de communication
+
+```C
+int MPI_Send(void *buf, int count, MPI_Datatype type, int dest, int tag, MPI_Comm com);
+```
+
+* __`void *buf`__ : pointeur vers les données à envoyer
+* __`int count`__ : nombre d'éléments
+* __`MPI_Datatype type`__ : type de données
+* __`int dest`__ : destination
+* __`int tag`__ : identifiant de message
+* __`MPI_Comm com`__ : portée
+* __valeur de retour__ : statut d'erreur, par exemple ->
+    * __MPI_SUCCESS__
+    * __MPI_ERR_RANK__ 
+
+```C
+int MPI_Recv(void *buf, int count, MPI_Datatype type, int source, int tag, MPI_Comm com, MPI_Status *status);
+```
+
+* __`void *bud`__ : le malloc doit avoir été fait **AVANT**
+* __`int count`__ : nombre d'éléments
+* __`MPI_Datatype type`__ : type de données
+* __`int source`__ : source
+* __`int tag`__ : identifiant de message (permet de régler le pb si deux processes envoient un même msg), on peut mettre **MPI_Any**
+* __`MPI_Comm com`__ : portée
+* __`MPI_Status status`__ : 
+
+```C
+void MPI_Finalize();
+```
+
+* A faire obligatoirement à la fin du prog
+
+### Compilation & éxecution
+
+Pour compiler il faut utiliser la syntaxe suivante : __`mpicc -o exo1 -lm`__
+
+Pour éxecuter : __`mpirun ./exo1`__
+
+## Hello world en MPI 
+
+1. 
+    * Sans préciser de processus :
+    ```
+    Mon rang est : 1
+    Mon rang est : 0
+    ```
+
+    * Avec 4 processus :
+    ```
+    mpirun -np 4 ./hello_world
+    Mon rang est : 0
+    Mon rang est : 1
+    Mon rang est : 2
+    Mon rang est : 3
+    ``` 
+
+    * Avec 10 processus :
+    ```
+    mpirun -np 10 ./hello_world
+    Mon rang est : 7
+    Mon rang est : 8
+    Mon rang est : 4
+    Mon rang est : 9
+    Mon rang est : 3
+    Mon rang est : 6
+    Mon rang est : 2
+    Mon rang est : 5
+    Mon rang est : 1
+    Mon rang est : 0
+    ```
+
+2. 
