@@ -1,9 +1,11 @@
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 int getSuccesseur(int rank, int numprocs);
 int getPredecesseur(int rank, int numprocs);
+void afficherTableau(int* tab, int length);
 
 void main(int argc, char* argv[]){
     int numprocs, rank, p;
@@ -12,8 +14,12 @@ void main(int argc, char* argv[]){
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     p = 0;
-    int * data_received = malloc(sizeof(int));
+    int * data = malloc(sizeof(int) * numprocs);
     MPI_Status status;
+
+    /* On remplit notre tableau avec la date */
+    data[rank] = (unsigned)time(NULL);
+    
 
     /* Je suis l'émetteur
      * On suppose que le premier est le processus 0, 
@@ -23,16 +29,15 @@ void main(int argc, char* argv[]){
         /* L'émetteur envoie l'information en premier, tandis que tous les autres reoivent d'abord.
          * Puis il recoit le dernier message
          */
-        int data = 4;
-        MPI_Send(&data, sizeof(int), MPI_INT, getSuccesseur(rank, numprocs), 0, MPI_COMM_WORLD);
-        MPI_Recv(data_received, sizeof(int), MPI_INT, getPredecesseur(rank, numprocs), 0, MPI_COMM_WORLD, &status);
-        printf("Je suis %d et j'ai reçu la valeur %d du processus %d (tour terminé).\n",rank, *data_received, getPredecesseur(rank, numprocs));
+        MPI_Send(&data, numprocs, MPI_INT, getSuccesseur(rank, numprocs), 0, MPI_COMM_WORLD);
+        MPI_Recv(data, numprocs, MPI_INT, getPredecesseur(rank, numprocs), 0, MPI_COMM_WORLD, &status);
+        
+        afficherTableau(data, numprocs);
 
     } else {
 
-        MPI_Recv(data_received, sizeof(int), MPI_INT, getPredecesseur(rank, numprocs), 0, MPI_COMM_WORLD, &status);
-        MPI_Send(data_received, sizeof(int), MPI_INT, getSuccesseur(rank, numprocs), 0, MPI_COMM_WORLD);
-        printf("Je suis %d et j'ai reçu la valeur %d, je la transmets au processus %d.\n",rank, *data_received, getSuccesseur(rank, numprocs));
+        MPI_Recv(data, numprocs, MPI_INT, getPredecesseur(rank, numprocs), 0, MPI_COMM_WORLD, &status);
+        MPI_Send(&data, numprocs, MPI_INT, getSuccesseur(rank, numprocs), 0, MPI_COMM_WORLD);
     }
 
     MPI_Finalize();
@@ -45,4 +50,11 @@ int getSuccesseur(int rank, int numprocs){
 
 int getPredecesseur(int rank, int numprocs){
     return (rank - 1 + numprocs) % numprocs;
+}
+
+void afficherTableau(int* tab, int length){
+
+    for(int i = 0; i < length; i++){
+        printf("data[%d] = %d\n", i, tab[i]);
+    }
 }

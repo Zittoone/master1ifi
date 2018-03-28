@@ -12,13 +12,13 @@ void main(int argc, char* argv[]){
         // Maître
         int data = 4;
         for(int i = 1; i < numprocs; i++){
-            MPI_Send(&data, sizeof(int), MPI_INT, i, 0, MPI_COMM_WORLD);
+            MPI_Send(&data, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
         }
         
     } else {
         int* data = malloc(sizeof(int));
         MPI_Status status;
-        MPI_Recv(data, sizeof(int), MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
+        MPI_Recv(data, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
         printf("Proc %d deceived : %d !!\n", rank, *data);
     }
 

@@ -16,7 +16,7 @@ void main(int argc, char* argv[]){
      */
     if(rank == p) { 
         int data = 4;
-        MPI_Send(&data, sizeof(int), MPI_INT, (rank + 1) % numprocs, 0, MPI_COMM_WORLD);
+        MPI_Send(&data, 1, MPI_INT, (rank + 1) % numprocs, 0, MPI_COMM_WORLD);
         printf("Proc %d sent initial data to %d\n", p, (rank + 1) % numprocs);
     } 
     /*  Je suis le dernier
@@ -26,7 +26,7 @@ void main(int argc, char* argv[]){
     else if(rank == ((p - 1 + numprocs) % numprocs)) { 
         int* data = malloc(sizeof(int));
         MPI_Status status;
-        MPI_Recv(data, sizeof(int), MPI_INT, (rank - 1) % numprocs, 0, MPI_COMM_WORLD, &status);
+        MPI_Recv(data, 1, MPI_INT, (rank - 1) % numprocs, 0, MPI_COMM_WORLD, &status);
         printf("Proc %d received : %d (final state)!!\n", rank, *data);
     }
     /*  Cas général
@@ -37,8 +37,8 @@ void main(int argc, char* argv[]){
         int* data = malloc(sizeof(int));
         MPI_Status status;
 
-        MPI_Recv(data, sizeof(int), MPI_INT, (rank - 1) % numprocs, 0, MPI_COMM_WORLD, &status);
-        MPI_Send(data, sizeof(int), MPI_INT, (rank + 1) % numprocs, 0, MPI_COMM_WORLD);
+        MPI_Recv(data, 1, MPI_INT, (rank - 1) % numprocs, 0, MPI_COMM_WORLD, &status);
+        MPI_Send(data, 1, MPI_INT, (rank + 1) % numprocs, 0, MPI_COMM_WORLD);
         printf("Proc %d received : %d !!\n", rank, *data);
     }
 
