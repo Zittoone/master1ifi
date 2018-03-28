@@ -71,13 +71,14 @@ Pour éxecuter : __`mpirun ./exo1`__
 1. 
     * Sans préciser de processus :
     ```
+    $ mpirun ./hello_world
     Mon rang est : 1
     Mon rang est : 0
     ```
 
     * Avec 4 processus :
     ```
-    mpirun -np 4 ./hello_world
+    $ mpirun -np 4 ./hello_world
     Mon rang est : 0
     Mon rang est : 1
     Mon rang est : 2
@@ -86,7 +87,7 @@ Pour éxecuter : __`mpirun ./exo1`__
 
     * Avec 10 processus :
     ```
-    mpirun -np 10 ./hello_world
+    $ mpirun -np 10 ./hello_world
     Mon rang est : 7
     Mon rang est : 8
     Mon rang est : 4
@@ -99,4 +100,13 @@ Pour éxecuter : __`mpirun ./exo1`__
     Mon rang est : 0
     ```
 
-2. 
+2. Comme on a pu le voir sur les éxecutions précedentes, le rang n'est pas forément respecté, il peut être aléatoire. On a donc l'effet suivant avec plus de 2 processus :
+    ```
+    $ mpirun -np 10 ./hello_world
+    Hello !
+    Bye !!
+
+    $ mpirun -np 10 ./hello_world
+    Bye !!
+    Hello !
+    ```

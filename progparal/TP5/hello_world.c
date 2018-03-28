@@ -7,7 +7,11 @@ void main(int argc, char* argv[]){
     MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    printf("Mon rang est : %d\n", rank);
+    if(rank == 0){
+        printf("Hello !\n");
+    } else if (rank == 1) {
+        printf("Bye !!\n");
+    }
 
     MPI_Finalize();
 
