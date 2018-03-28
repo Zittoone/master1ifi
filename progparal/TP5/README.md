@@ -160,4 +160,18 @@ Pour éxecuter : __`mpirun ./exo1`__
     ```
 
 ## Pipeline
- 
+
+1. Regarder __`pipeline.c`__
+    ```
+    $ mpirun -np 10 ./pipeline
+    Proc 0 sent initial data to 1
+    Proc 1 received : 4 !!
+    Proc 2 received : 4 !!
+    Proc 3 received : 4 !!
+    Proc 4 received : 4 !!
+    Proc 5 received : 4 !!
+    Proc 6 received : 4 !!
+    Proc 7 received : 4 !!
+    Proc 8 received : 4 !!
+    Proc 9 received : 4 (final state)!!
+    ```
