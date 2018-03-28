@@ -70,14 +70,14 @@ Pour éxecuter : __`mpirun ./exo1`__
 
 1. 
     * Sans préciser de processus :
-    ```
+    ```C
     $ mpirun ./hello_world
     Mon rang est : 1
     Mon rang est : 0
     ```
 
     * Avec 4 processus :
-    ```
+    ```C
     $ mpirun -np 4 ./hello_world
     Mon rang est : 0
     Mon rang est : 1
@@ -86,7 +86,7 @@ Pour éxecuter : __`mpirun ./exo1`__
     ``` 
 
     * Avec 10 processus :
-    ```
+    ```C
     $ mpirun -np 10 ./hello_world
     Mon rang est : 7
     Mon rang est : 8
@@ -101,7 +101,7 @@ Pour éxecuter : __`mpirun ./exo1`__
     ```
 
 2. Comme on a pu le voir sur les éxecutions précedentes, le rang n'est pas forément respecté, il peut être aléatoire. On a donc l'effet suivant avec plus de 2 processus :
-    ```
+    ```C
     $ mpirun -np 10 ./hello_world
     Hello !
     Bye !!
@@ -140,13 +140,13 @@ Pour éxecuter : __`mpirun ./exo1`__
     }
     ```
     Après compilation et éxecution : 
-    ```
+    ```C
     $ mpirun ./ping_pong
     Received : 4 !!
     ```
 
 2. Exercice 2 :
-    ```
+    ```C
     $ mpirun -np 10 ./ping_pong
     Proc 7 deceived : 4 !!
     Proc 2 deceived : 4 !!
@@ -162,7 +162,7 @@ Pour éxecuter : __`mpirun ./exo1`__
 ## Pipeline
 
 1. Regarder __`pipeline.c`__
-    ```
+    ```C
     $ mpirun -np 10 ./pipeline
     Proc 0 sent initial data to 1
     Proc 1 received : 4 !!
@@ -174,4 +174,25 @@ Pour éxecuter : __`mpirun ./exo1`__
     Proc 7 received : 4 !!
     Proc 8 received : 4 !!
     Proc 9 received : 4 (final state)!!
+    ```
+
+## Anneau
+
+1. Si un processus a comme rang rank sur un anneau de size processus : 
+    * prédécesseur : `(rank - 1) % numprocs`
+    * successeur : `(rank + 1) % numprocs`
+
+2. Demande du numéro du prédécesseur
+    ```C
+    $ mpirun -np 10 ./anneau
+    Je suis le proc 1, mon prédécesseur est le 0.
+    Je suis le proc 2, mon prédécesseur est le 1.
+    Je suis le proc 3, mon prédécesseur est le 2.
+    Je suis le proc 4, mon prédécesseur est le 3.
+    Je suis le proc 5, mon prédécesseur est le 4.
+    Je suis le proc 6, mon prédécesseur est le 5.
+    Je suis le proc 7, mon prédécesseur est le 6.
+    Je suis le proc 8, mon prédécesseur est le 7.
+    Je suis le proc 9, mon prédécesseur est le 8.
+    Je suis le proc 0, mon prédécesseur est le 9.
     ```
