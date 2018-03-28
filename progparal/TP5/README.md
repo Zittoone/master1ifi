@@ -33,7 +33,7 @@ int MPI_Send(void *buf, int count, MPI_Datatype type, int dest, int tag, MPI_Com
 ```
 
 * __`void *buf`__ : pointeur vers les données à envoyer
-* __`int count`__ : nombre d'éléments
+* __`int count`__ : nombre d'éléments du type ! 
 * __`MPI_Datatype type`__ : type de données
 * __`int dest`__ : destination
 * __`int tag`__ : identifiant de message
@@ -47,7 +47,7 @@ int MPI_Recv(void *buf, int count, MPI_Datatype type, int source, int tag, MPI_C
 ```
 
 * __`void *bud`__ : le malloc doit avoir été fait **AVANT**
-* __`int count`__ : nombre d'éléments
+* __`int count`__ : nombre d'éléments du type !
 * __`MPI_Datatype type`__ : type de données
 * __`int source`__ : source
 * __`int tag`__ : identifiant de message (permet de régler le pb si deux processes envoient un même msg), on peut mettre **MPI_Any**
@@ -211,3 +211,5 @@ Pour éxecuter : __`mpirun ./exo1`__
     Je suis 9 et j'ai reçu la valeur 4, je la transmets au processus 0.
     Je suis 0 et j'ai reçu la valeur 4 du processus 9 (tour terminé).
     ```
+
+4. 
