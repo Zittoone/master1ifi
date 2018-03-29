@@ -113,7 +113,7 @@ Pour éxecuter : __`mpirun ./exo1`__
 
 ## Ping Pong
 
-**/!\ Note : Pas à jour, le sujet à changer entre temps** 
+**/!\ Note : Pas à jour, le sujet a changé entre temps** 
 
 1. Exercice 1 :
     ```C
