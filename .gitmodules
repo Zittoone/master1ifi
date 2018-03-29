@@ -4,3 +4,6 @@
 [submodule "genielogiciel/Projet2"]
 	path = genielogiciel/Projet2
 	url = https://github.com/GenieLogiciel17-18/tp-long-2-gazon/
+[submodule "TER"]
+	path = TER
+	url = https://github.com/ThomasGauthierr/TER
