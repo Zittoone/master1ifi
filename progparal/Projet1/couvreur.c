@@ -31,7 +31,7 @@ void montee_max(struct tablo *, struct tablo *);
 void descente_max(struct tablo *, struct tablo *);
 void final_max(struct tablo *, struct tablo *);
 
-void generateArray(struct tablo *);
+void generateArray(struct tablo *, char*, int);
 void printArray(struct tablo *);
 struct tablo *allocateTablo(int);
 void inverser_tablo(struct tablo *);
@@ -41,35 +41,36 @@ int main(int argc, char *argv[])
 {
 
 	/* args check */
-	/*if(argc != 2){
+	if(argc != 2){
 		fprintf(stderr, "Usage : prog <file_name>");
 		exit(EXIT_FAILURE);
-	}*/
+	}
 
 	/* file check */
-	/*File* f = fopen(argv[1], "r");
+	File* f = fopen(argv[1], "r");
 	if(f == NULL){
 		fprintf(stderr, "The file \"%s\" doesn't exist.", argv[1]);
 		exit(EXIT_FAILURE);
-	}*/
+	}
 
 	/* file reading */
-	/*char* inputs = NULL;
-	if(getline(&inputs, NULL, f) == -1){
+	char* inputs = NULL;
+	int length;
+	if((length = getline(&inputs, NULL, f)) == -1){
 		fprintf(stderr, "An error occured reading the file \"%s\".", argv[1]);
 		exit(EXIT_FAILURE);
-	}*/
+	}
 
 	/* close file */
-	//fclose(f);
+	fclose(f);
 
-	/* compute */
+	
 
 	/*
 	 * 1. Calculer les sum-prefix de Q et les mettre dans un tableau PSUM
 	 */
 	struct tablo Q;
-	generateArray(&Q); // TODO: replace this with file's input
+	generateArray(&Q, inputs, length); // TODO: replace this with file's input
 	printf("Tableau Q:\n");
 	printArray(&Q);
 
@@ -360,9 +361,19 @@ void inverser_tablo(struct tablo *a)
 	}
 }
 
-void generateArray(struct tablo *s)
+void generateArray(struct tablo *s, char* inputs, int length)
 {
+	int size = 0;
+	int pos = 0;
+	int curr;
+
+	char buf[2048];
+
+	while(pos < length){
+		// TODO: read the input 
+	}
 	//construction d'un tableau pour tester
+	/*
 	s->size = 16;
 	s->tab = malloc(s->size * sizeof(int));
 	s->tab[0] = 3;
@@ -381,6 +392,7 @@ void generateArray(struct tablo *s)
 	s->tab[13] = -3;
 	s->tab[14] = 0;
 	s->tab[15] = 2;
+	*/
 }
 
 void printArray(struct tablo *tmp)

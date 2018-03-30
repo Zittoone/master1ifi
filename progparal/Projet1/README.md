@@ -27,10 +27,12 @@ use valgrind
 * rendre générique les fonctions de calcul prefixe et suffixe (choisir le sens de lecture)
 * sum_prefix ou sum_suffix à partir d'int peut produire un overflow, ne pas oublier de chnger ceux-ci en long int
 
-## Goals
+## TODO
 
-* Algo fonctionnel
-* Optimisation temps d'exec
+* Algo fonctionnel OK
+* Lecture fichier -> si taille trop grande, chunker le fichier ?
+* transformation int en long
+* mieux opti héhé
 
 ## Valgrind
 
@@ -61,3 +63,5 @@ use valgrind
     ==2853==    still reachable: 2,320 bytes in 4 blocks
     ==2853==         suppressed: 0 bytes in 0 blocks
     ```
+
+    no real changes with free
