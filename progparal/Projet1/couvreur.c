@@ -17,6 +17,9 @@
        __typeof__ (b) _b = (b); \
      _a > _b ? _a : _b; })
 
+struct Compare { long val; int index; };
+#pragma omp declare reduction(maximum : struct Compare : omp_out = omp_in.val > omp_out.val ? omp_in : omp_out)
+
 /* Structures */
 struct tablo
 {
@@ -89,7 +92,7 @@ int main(int argc, char *argv[])
 	fclose(fp);
 
 	/*
-	 * 1. Calculer les sum-prefix de Q et les mettre dans un tableau PSUM
+	 * 0. Création tableau innitial
 	 */
 	struct tablo Q;
 	generateArray(&Q, buffer); // TODO: replace this with file's input
@@ -100,47 +103,58 @@ int main(int argc, char *argv[])
 		printArray(&Q);
 	}
 
+	/*
+	 * 1. Calculer les sum-prefix de Q et les mettre dans un tableau PSUM
+	 *
+	 * 2. Calculer le sum-suffix de Q et les mettre dans un tableau SSUM
+	 */
 	struct tablo *PSUM = allocateTablo(Q.size);
-	sum(&Q, PSUM, PREFIX);
+	struct tablo *SSUM = allocateTablo(Q.size);
+
+	//#pragma omp parallel sections
+	{
+		//#pragma omp section
+		{
+			sum(&Q, PSUM, PREFIX);
+		}
+		//#pragma omp section
+		{
+			sum(&Q, SSUM, SUFFIX);
+		}
+	}
 
 	if(DEBUG)
 	{
 		printf("Tableau PSUM:\n");
 		printArray(PSUM);
-	}
-	/*
-	 * 2. Calculer le sum-suffix de Q et les mettre dans un tableau SSUM
-	 */
-	struct tablo *SSUM = allocateTablo(Q.size);
-	sum(&Q, SSUM, SUFFIX);
-
-	if(DEBUG)
-	{
 		printf("Tableau SSUM:\n");
 		printArray(SSUM);
 	}
 
 	/*
 	 * 3. Calculer le max-suffix de PSUM et le mettre dans SMAX
+	 *
+	 * 4. Calculer le max-prefix de SSUM et le mettre dans PMAX
 	 */
 	struct tablo *SMAX = allocateTablo(Q.size);
-	maximum(PSUM, SMAX, SUFFIX);
+	struct tablo *PMAX = allocateTablo(Q.size);
+
+	//#pragma omp parallel sections
+	{
+		//#pragma omp section
+		{
+			maximum(PSUM, SMAX, SUFFIX);
+		}
+		//#pragma omp section
+		{
+			maximum(SSUM, PMAX, PREFIX);
+		}
+	}
 
 	if(DEBUG)
 	{
 		printf("Tableau SMAX:\n");
 		printArray(SMAX);
-	}
-
-	/*
-	 * 4. Calculer le max-prefix de SSUM et le mettre dans PMAX
-	 */
-	struct tablo *PMAX;
-	PMAX = allocateTablo(Q.size);
-	maximum(SSUM, PMAX, PREFIX);
-
-	if(DEBUG)
-	{
 		printf("Tableau PMAX:\n");
 		printArray(PMAX);
 	}
@@ -170,54 +184,33 @@ int main(int argc, char *argv[])
 		printArray(M);
 	}
 
-	long int max_val = M->tab[0];
-	int start = 0;
-	int end = 0;
+	struct Compare max_val;
+	max_val.val = M->tab[0];
 
-	#pragma omp parallel for reduction(max : max_val)
+	#pragma omp parallel reduction(maximum : max_val)
 	for (int i = 1; i < M->size; i++)
 	{
-		if (M->tab[i] > max_val)
+		if (M->tab[i] > max_val.val)
 		{
-			max_val = M->tab[i];
+			max_val.val = M->tab[i];
+			max_val.index = i;
 		}
-	}
-
-	for (int i = 0; i < M->size; i++)
-	{
-		if (M->tab[i] == max_val)
-		{
-			start = i;
-			break;
-		}
-	}
-
-	for (int i = start; i < M->size; i++)
-	{
-		if (M->tab[i] == max_val)
-		{
-			end = i;
-		} else {
-			break;
-		}
-	}
-
-	if(DEBUG)
-	{
-		printf("Max value is : %ld within [%d, %d]\n", max_val, start + 1, end + 1);
 	}
 
 	/*
 	 *
 	 * Affichage final
 	*/
-	printf("%ld ", max_val);
-	for (int i = start; i < end; i++)
+	printf("%ld ", max_val.val);
+	for (int i = max_val.index; i < M->size; i++)
 	{
-		printf("%ld ", Q.tab[i]);
+		if (M->tab[i] == max_val.val)
+		{
+			printf("%ld ", Q.tab[i]);
+		} else {
+			break;
+		}
 	}
-
-	printf("%ld\n", Q.tab[end]);
 }
 
 /*---- SUM ---------------------------------------*/
