@@ -241,6 +241,7 @@ void sum(struct tablo *source, struct tablo *destination, int mode)
 	final_sum(a, b /*, mode*/);
 
 	// Tab b is source size * 2 so
+	#pragma omp parallel for
 	for (int i = 0; i < source->size; i++)
 	{
 		destination->tab[i] = b->tab[source->size + i];
@@ -258,6 +259,7 @@ void sum(struct tablo *source, struct tablo *destination, int mode)
 
 void montee_sum(struct tablo *source, struct tablo *destination)
 {
+	#pragma omp parallel for
 	for (int i = 0; i < source->size; i++)
 	{
 		destination->tab[source->size + i] = source->tab[i];
@@ -265,8 +267,9 @@ void montee_sum(struct tablo *source, struct tablo *destination)
 
 	for (int l = log2(source->size) - 1; l >= 0; l--)
 	{
-#pragma omp parallel for
-		for (int i = (int)pow(2, l) - 1; i <= ((int)pow(2, l + 1)) - 1; i++)
+		int c1 = ((int)pow(2, l + 1)) - 1; // Without compilaion optimizations, maybe this is recomputed every iterations
+		#pragma omp parallel for
+		for (int i = (int)pow(2, l) - 1; i <= c1; i++)
 		{
 			destination->tab[i] = destination->tab[2 * i] + destination->tab[2 * i + 1];
 		}
@@ -279,8 +282,9 @@ void descente_sum(struct tablo *a, struct tablo *b)
 	b->tab[1] = 0;
 	for (int k = 1; k <= log2(a->size) - 1; k++)
 	{
-#pragma omp parallel for
-		for (int i = pow(2, k); i <= (int)pow(2, k + 1) - 1; i++)
+		int c1 = (int)pow(2, k + 1) - 1;
+		#pragma omp parallel for
+		for (int i = pow(2, k); i <= c1; i++)
 		{
 			if (i % 2 == 0)
 			{
@@ -298,8 +302,9 @@ void final_sum(struct tablo *a, struct tablo *b)
 {
 
 	int m = log2(b->size / 2);
-#pragma omp parallel for
-	for (int i = pow(2, m - 1); i <= (int)pow(2, m + 1) - 1; i++)
+	int c1 = (int)pow(2, m + 1) - 1;
+	#pragma omp parallel for
+	for (int i = pow(2, m - 1); i <= c1; i++)
 	{
 		b->tab[i] = b->tab[i] + a->tab[i];
 	}
@@ -328,6 +333,7 @@ void maximum(struct tablo *source, struct tablo *destination, int mode)
 	//destination = allocateTablo(source->size);
 
 	// Tab b is source size * 2 so
+	#pragma omp parallel for
 	for (int i = 0; i < source->size; i++)
 	{
 		destination->tab[i] = b->tab[source->size + i];
@@ -345,6 +351,7 @@ void maximum(struct tablo *source, struct tablo *destination, int mode)
 
 void montee_max(struct tablo *source, struct tablo *destination)
 {
+	#pragma omp parallel for
 	for (int i = 0; i < source->size; i++)
 	{
 		destination->tab[source->size + i] = source->tab[i];
@@ -352,8 +359,9 @@ void montee_max(struct tablo *source, struct tablo *destination)
 
 	for (int l = log2(source->size) - 1; l >= 0; l--)
 	{
-#pragma omp parallel for
-		for (int i = (int)pow(2, l) - 1; i <= ((int)pow(2, l + 1)) - 1; i++)
+		int c1 = ((int)pow(2, l + 1)) - 1;
+		#pragma omp parallel for
+		for (int i = (int)pow(2, l) - 1; i <= c1; i++)
 		{
 			destination->tab[i] = max(destination->tab[2 * i], destination->tab[2 * i + 1]);
 		}
@@ -365,8 +373,9 @@ void descente_max(struct tablo *a, struct tablo *b)
 	b->tab[1] = INT_MIN;
 	for (int k = 1; k <= log2(a->size) - 1; k++)
 	{
-#pragma omp parallel for
-		for (int i = pow(2, k); i <= (int)pow(2, k + 1) - 1; i++)
+		int c1 = (int)pow(2, k + 1) - 1;
+		#pragma omp parallel for
+		for (int i = pow(2, k); i <= c1; i++)
 		{
 			if (i % 2 == 0)
 			{
@@ -382,9 +391,9 @@ void descente_max(struct tablo *a, struct tablo *b)
 void final_max(struct tablo *a, struct tablo *b)
 {
 	int m = log2(b->size / 2);
-
-#pragma omp parallel for
-	for (int i = pow(2, m - 1); i <= (int)pow(2, m + 1) - 1; i++)
+	int c1 = (int)pow(2, m + 1) - 1;
+	#pragma omp parallel for
+	for (int i = pow(2, m - 1); i <= c1; i++)
 	{
 		b->tab[i] = max(b->tab[i], a->tab[i]);
 	}
@@ -412,7 +421,7 @@ void generateArray(struct tablo *s, char* buffer)
 	long* array = (long*) malloc(sizeof(long) * size);
 	if(array == NULL)
 	{
-		fprintf(stderr, "An error occured allocatinng memory\n");
+		fprintf(stderr, "An error occured allocating memory.\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -423,11 +432,11 @@ void generateArray(struct tablo *s, char* buffer)
 		token = strtok(NULL , " ");
 
 		if(size < count){
-			size = size * 2;
+			size = size * 2; // 2^n so, everytime we realloc with power up ;)
 			array = (long*) realloc(array, sizeof(long) * size);
 			if(array == NULL)
 			{
-				fprintf(stderr, "An error occured re-allocating memory\n");
+				fprintf(stderr, "An error occured re-allocating memory.\n");
 				exit(EXIT_FAILURE);
 			}
 		}
@@ -461,7 +470,7 @@ struct tablo *allocateTablo(int size)
 	tmp->tab = malloc(size * sizeof(long));
 	if(tmp->tab == NULL)
 	{
-		fprintf(stderr, "An error occured allocatinng memory..\n");
+		fprintf(stderr, "An error occured allocatinng memory.\n");
 		exit(EXIT_FAILURE);
 	}
 	return tmp;
