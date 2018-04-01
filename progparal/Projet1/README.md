@@ -6,62 +6,46 @@
 
 `gcc -Wall -std=c99 couvreur.c -o couvreur -lm -fopenmp`
 
-## TODO:
+## Méthodes
 
-1. Calculer les sum-prefix de Q et les mettre dans un tableau PSUM
-2. Calculer le sum-suffix de Q et les mettre dans un tableau SSUM
-3. Calculer le max-suffix de PSUM et le mettre dans SMAX
-4. Calculer le max-prefix de SSUM et le mettre dans PMAX
-5. pour  1 <= i <= n faire en parallel
-    1. Ms[i] = PMAX[i] - SSUM[i] + Q[i]
-    2. Mp[i] = SMAX[i] - PSUM[i] + Q[i]
-    3. M[i] = Ms[i] + Mp[i] - Q[i]
-6. Trouver la valeur maximal dans M
-
-use valgrind
-
-## Tips
-
-* Chunk reading files
-* ~~fscanf pour éviter la conversion~~ utiliser atoi() apparemment
-* rendre générique les fonctions de calcul prefixe et suffixe (choisir le sens de lecture)
-* sum_prefix ou sum_suffix à partir d'int peut produire un overflow, ne pas oublier de chnger ceux-ci en long int
+* *lecture du fichier* __non parallelisée__
+* *`void generateArray(struct tablo *, char*)`* __non parallelisée__
+* *`void sum(struct tablo *, struct tablo *, int mode)`*
+  * *`void montee_sum(struct tablo *, struct tablo *)`* __parallelisée__
+  * *`void descente_sum(struct tablo *, struct tablo *)`* __parallelisée__
+  * *`void final_sum(struct tablo *, struct tablo *)`* __parallelisée__
+* *`void maximum(struct tablo *, struct tablo *, int mode)`*
+  * *`void montee_max(struct tablo *, struct tablo *)`* __parallelisée__
+  * *`void descente_max(struct tablo *, struct tablo *)`* __parallelisée__
+  * *`void final_max(struct tablo *, struct tablo *)`* __parallelisée__
+* *`void printArray(struct tablo *)`* __non parallelisée__
+* *`struct tablo *allocateTablo(int)`* __non parallelisée__
+* *`void inverser_tablo(struct tablo *)`* __non parallelisée__
 
 ## TODO
 
-* Algo fonctionnel OK
-* Lecture fichier -> si taille trop grande, chunker le fichier ?
-* transformation int en long
-* mieux opti héhé
+* supprimer l'inversion de tableau (très couteuse)
+* faire une étude sur la lecture de fichier par chunk et paralléliser la conversion en long puis mise en mémoire
+* optimiser la recherche des bornes de la sous séquence max
 
-## Valgrind
+## Résultats avec un fichier de 2^24 nombres (sur VM peut être cause problème ?)
 
-* Without free tmp tabs :
-    ```
-    HEAP SUMMARY:
-    ==2720==     in use at exit: 4,960 bytes in 38 blocks
-    ==2720==   total heap usage: 77 allocs, 39 frees, 115,760 bytes allocated
-    ==2720==
-    ==2720== LEAK SUMMARY:
-    ==2720==    definitely lost: 304 bytes in 16 blocks
-    ==2720==    indirectly lost: 1,472 bytes in 15 blocks
-    ==2720==      possibly lost: 864 bytes in 3 blocks
-    ==2720==    still reachable: 2,320 bytes in 4 blocks
-    ==2720==         suppressed: 0 bytes in 0 blocks
-    ```
+* Avec openmp
+  ```
+  real	0m2.166s
+  user	0m3.508s
+  sys	0m0.948s
+  ```
 
-* With free :
-    ```
-    HEAP SUMMARY:
-    ==2853==     in use at exit: 4,832 bytes in 30 blocks
-    ==2853==   total heap usage: 77 allocs, 47 frees, 115,760 bytes allocated
-    ==2853==
-    ==2853== LEAK SUMMARY:
-    ==2853==    definitely lost: 1,200 bytes in 16 blocks
-    ==2853==    indirectly lost: 448 bytes in 7 blocks
-    ==2853==      possibly lost: 864 bytes in 3 blocks
-    ==2853==    still reachable: 2,320 bytes in 4 blocks
-    ==2853==         suppressed: 0 bytes in 0 blocks
-    ```
+* Sans openmp
 
-    no real changes with free
+  ```
+  real	0m3.325s
+  user	0m2.608s
+  sys	0m0.572s
+  ```
+
+### Remarques
+
+* fichier de 3.6 Go -> problèmes de mémoire
+* Avec ou sans openmp, pas trop de différences ... il faut paralléliser l'inversion de tableau ...
