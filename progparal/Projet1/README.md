@@ -24,9 +24,9 @@
 
 ## TODO
 
-* supprimer l'inversion de tableau (très couteuse)
+* supprimer l'inversion de tableau (très couteuse) DONE
 * faire une étude sur la lecture de fichier par chunk et paralléliser la conversion en long puis mise en mémoire
-* optimiser la recherche des bornes de la sous séquence max
+* optimiser la recherche des bornes de la sous séquence max TODO
 
 ## Résultats avec un fichier de 2^24 nombres (sur VM peut être cause problème ?)
 

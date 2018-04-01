@@ -7,8 +7,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#define PREFIX 0
 #define SUFFIX 1
-#define PREFIX 2
 
 #define DEBUG 0
 
@@ -27,12 +27,12 @@ struct tablo
 /* Headers */
 
 void sum(struct tablo *, struct tablo *, int mode);
-void montee_sum(struct tablo *, struct tablo *);
+void montee_sum(struct tablo *, struct tablo *, int mode);
 void descente_sum(struct tablo *, struct tablo *);
 void final_sum(struct tablo *, struct tablo *);
 
 void maximum(struct tablo *, struct tablo *, int mode);
-void montee_max(struct tablo *, struct tablo *);
+void montee_max(struct tablo *, struct tablo *, int mode);
 void descente_max(struct tablo *, struct tablo *);
 void final_max(struct tablo *, struct tablo *);
 
@@ -225,44 +225,39 @@ int main(int argc, char *argv[])
 void sum(struct tablo *source, struct tablo *destination, int mode)
 {
 
-	// TODO: inverser tableau
-	if (mode == SUFFIX)
-	{
-		inverser_tablo(source);
-	}
-
 	struct tablo *a = allocateTablo(source->size * 2);
-	// TODO: do not reverse the array, iterate reverse way
-	montee_sum(source, a /*, mode*/);
+	montee_sum(source, a , mode);
 
 	struct tablo *b = allocateTablo(source->size * 2);
-	descente_sum(a, b /*, mode*/);
+	descente_sum(a, b);
 
-	final_sum(a, b /*, mode*/);
+	final_sum(a, b);
 
-	// Tab b is source size * 2 so
 	#pragma omp parallel for
 	for (int i = 0; i < source->size; i++)
 	{
-		destination->tab[i] = b->tab[source->size + i];
-	}
-
-	if (mode == SUFFIX)
-	{
-		inverser_tablo(source);
-		inverser_tablo(destination);
+		if(mode == SUFFIX){
+			destination->tab[i] = b->tab[source->size + (source->size - 1) - i];
+		} else {
+			destination->tab[i] = b->tab[source->size + i];
+		}
 	}
 
 	free(a);
 	free(b);
 }
 
-void montee_sum(struct tablo *source, struct tablo *destination)
+void montee_sum(struct tablo *source, struct tablo *destination, int mode)
 {
+
 	#pragma omp parallel for
 	for (int i = 0; i < source->size; i++)
 	{
-		destination->tab[source->size + i] = source->tab[i];
+		if(mode == SUFFIX){
+			destination->tab[source->size + i] = source->tab[(source->size - 1) - i];
+		} else {
+			destination->tab[source->size + i] = source->tab[i];
+		}
 	}
 
 	for (int l = log2(source->size) - 1; l >= 0; l--)
@@ -315,46 +310,38 @@ void final_sum(struct tablo *a, struct tablo *b)
 void maximum(struct tablo *source, struct tablo *destination, int mode)
 {
 
-	// TODO: inverser tableau
-	if (mode == SUFFIX)
-	{
-		inverser_tablo(source);
-	}
-
 	struct tablo *a = allocateTablo(source->size * 2);
-	// TODO: do not reverse the array, iterate reverse way
-	montee_max(source, a /*, mode*/);
+	montee_max(source, a, mode);
 
 	struct tablo *b = allocateTablo(source->size * 2);
 	descente_max(a, b /*, mode*/);
 
 	final_max(a, b /*, mode*/);
 
-	//destination = allocateTablo(source->size);
-
-	// Tab b is source size * 2 so
 	#pragma omp parallel for
 	for (int i = 0; i < source->size; i++)
 	{
-		destination->tab[i] = b->tab[source->size + i];
-	}
-
-	if (mode == SUFFIX)
-	{
-		inverser_tablo(source);
-		inverser_tablo(destination);
+		if(mode == SUFFIX){
+			destination->tab[i] = b->tab[source->size + (source->size - 1) - i];
+		} else {
+			destination->tab[i] = b->tab[source->size + i];
+		}
 	}
 
 	free(a);
 	free(b);
 }
 
-void montee_max(struct tablo *source, struct tablo *destination)
+void montee_max(struct tablo *source, struct tablo *destination, int mode)
 {
 	#pragma omp parallel for
 	for (int i = 0; i < source->size; i++)
 	{
-		destination->tab[source->size + i] = source->tab[i];
+		if(mode == SUFFIX){
+			destination->tab[source->size + i] = source->tab[(source->size - 1) - i];
+		} else {
+			destination->tab[source->size + i] = source->tab[i];
+		}
 	}
 
 	for (int l = log2(source->size) - 1; l >= 0; l--)
@@ -400,20 +387,6 @@ void final_max(struct tablo *a, struct tablo *b)
 }
 
 /*---- Utils ---------------------------------------*/
-void inverser_tablo(struct tablo *a)
-{
-	int i = a->size - 1;
-	int j = 0;
-	while (i > j)
-	{
-		int temp = a->tab[i];
-		a->tab[i] = a->tab[j];
-		a->tab[j] = temp;
-		i--;
-		j++;
-	}
-}
-
 void generateArray(struct tablo *s, char* buffer)
 {
 	int count = 0;
