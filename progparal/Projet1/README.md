@@ -31,7 +31,8 @@
 ## Résultats avec un fichier de 2^24 nombres (sur VM peut être cause problème ?)
 
 * Avec openmp
-  ```
+
+  ```Bash
   real	0m2.166s /!\
   user	0m3.508s
   sys	0m0.948s
@@ -39,13 +40,40 @@
 
 * Sans openmp
 
-  ```
+  ```Bash
   real	0m3.325s /!\
   user	0m2.608s
   sys	0m0.572s
+  ```
+
+  * Avec l'ajout des sections parallèles on a, pas trop de différences, peut être le fichier est trop petit pour le voir
+
+  ```Bash
+  real	0m2.340s
+  user	0m2.808s
+  sys	0m0.780s
   ```
 
 ### Remarques
 
 * fichier de 3.6 Go -> problèmes de mémoire
 * Avec openmp, on a un gain d'une seconde ... il faut paralléliser l'inversion de tableau ...
+
+> Algorithm: Maximum Subarray Sum
+>
+> Input: Array A[1::n; 1::n] of numbers (positive and negative).
+>
+> Output: Maximum Subarray Sum of A.
+>
+> Begin Algorithm
+> 1. Replace each row of A by its prex sums.
+> 2. Add a column of zeroes as the zeroth column of A.
+> 3. For all *1 <= g <= h <= n* __do in parallel__
+> Compute the sequence Cgh :
+>  For all 1  i  n do in parallel
+> Cgh[i] := A[i][h]
+> A[i][g - 1]
+> (b) Compute the maximum subsequence sum of Cgh into Mgh.
+> 4. Find the maximum of all Mgh *1 <= g <= h <= n* into MSA.
+> 5. Output M SA.
+> End Algorith

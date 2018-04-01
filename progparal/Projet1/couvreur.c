@@ -40,6 +40,7 @@ void generateArray(struct tablo *, char*);
 void printArray(struct tablo *);
 struct tablo *allocateTablo(int);
 void inverser_tablo(struct tablo *);
+struct tablo* inverser_tablo_copy(struct tablo *);
 
 /*  */
 int main(int argc, char *argv[])
@@ -89,7 +90,7 @@ int main(int argc, char *argv[])
 	fclose(fp);
 
 	/*
-	 * 1. Calculer les sum-prefix de Q et les mettre dans un tableau PSUM
+	 * 0. Créer le tableau initial à partir du fichier
 	 */
 	struct tablo Q;
 	generateArray(&Q, buffer); // TODO: replace this with file's input
@@ -100,47 +101,59 @@ int main(int argc, char *argv[])
 		printArray(&Q);
 	}
 
+
+	/*
+	 * 1. Calculer les sum-prefix de Q et les mettre dans un tableau PSUM
+	 *
+	 * 2. Calculer le sum-suffix de Q et les mettre dans un tableau SSUM
+	 */
 	struct tablo *PSUM = allocateTablo(Q.size);
-	sum(&Q, PSUM, PREFIX);
+	struct tablo *SSUM = allocateTablo(Q.size);
+	#pragma omp parallel sections
+	{
+		#pragma omp section
+		{
+			sum(&Q, PSUM, PREFIX);
+		}
+		#pragma omp section
+		{
+			sum(&Q, SSUM, SUFFIX);
+		}
+	}
 
 	if(DEBUG)
 	{
 		printf("Tableau PSUM:\n");
 		printArray(PSUM);
-	}
-	/*
-	 * 2. Calculer le sum-suffix de Q et les mettre dans un tableau SSUM
-	 */
-	struct tablo *SSUM = allocateTablo(Q.size);
-	sum(&Q, SSUM, SUFFIX);
-
-	if(DEBUG)
-	{
 		printf("Tableau SSUM:\n");
 		printArray(SSUM);
 	}
 
 	/*
 	 * 3. Calculer le max-suffix de PSUM et le mettre dans SMAX
+	 *
+	 * 4. Calculer le max-prefix de SSUM et le mettre dans PMAX
 	 */
 	struct tablo *SMAX = allocateTablo(Q.size);
-	maximum(PSUM, SMAX, SUFFIX);
+	struct tablo *PMAX = allocateTablo(Q.size);
+
+	#pragma omp parallel sections
+	{
+		#pragma omp section
+		{
+			maximum(PSUM, SMAX, SUFFIX);
+		}
+		#pragma omp section
+		{
+			maximum(SSUM, PMAX, PREFIX);
+		}
+	}
+
 
 	if(DEBUG)
 	{
 		printf("Tableau SMAX:\n");
 		printArray(SMAX);
-	}
-
-	/*
-	 * 4. Calculer le max-prefix de SSUM et le mettre dans PMAX
-	 */
-	struct tablo *PMAX;
-	PMAX = allocateTablo(Q.size);
-	maximum(SSUM, PMAX, PREFIX);
-
-	if(DEBUG)
-	{
 		printf("Tableau PMAX:\n");
 		printArray(PMAX);
 	}
@@ -225,32 +238,37 @@ int main(int argc, char *argv[])
 void sum(struct tablo *source, struct tablo *destination, int mode)
 {
 
-	// TODO: inverser tableau
+	// prevent shared pointers
+	struct tablo *sourceCpy;
 	if (mode == SUFFIX)
 	{
-		inverser_tablo(source);
+		sourceCpy = inverser_tablo_copy(source);
+	} else
+	{
+		sourceCpy = source;
 	}
 
-	struct tablo *a = allocateTablo(source->size * 2);
-	// TODO: do not reverse the array, iterate reverse way
-	montee_sum(source, a /*, mode*/);
+	struct tablo *a = allocateTablo(sourceCpy->size * 2);
 
-	struct tablo *b = allocateTablo(source->size * 2);
+	montee_sum(sourceCpy, a /*, mode*/);
+
+
+	struct tablo *b = allocateTablo(sourceCpy->size * 2);
 	descente_sum(a, b /*, mode*/);
 
 	final_sum(a, b /*, mode*/);
 
 	// Tab b is source size * 2 so
 	#pragma omp parallel for
-	for (int i = 0; i < source->size; i++)
+	for (int i = 0; i < sourceCpy->size; i++)
 	{
-		destination->tab[i] = b->tab[source->size + i];
+		destination->tab[i] = b->tab[sourceCpy->size + i];
 	}
 
 	if (mode == SUFFIX)
 	{
-		inverser_tablo(source);
 		inverser_tablo(destination);
+		free(sourceCpy);
 	}
 
 	free(a);
@@ -276,11 +294,11 @@ void montee_sum(struct tablo *source, struct tablo *destination)
 	}
 }
 
-void descente_sum(struct tablo *a, struct tablo *b)
+void descente_sum(struct tablo *source, struct tablo *destination)
 {
 
-	b->tab[1] = 0;
-	for (int k = 1; k <= log2(a->size) - 1; k++)
+	destination->tab[1] = 0;
+	for (int k = 1; k <= log2(source->size) - 1; k++)
 	{
 		int c1 = (int)pow(2, k + 1) - 1;
 		#pragma omp parallel for
@@ -288,25 +306,25 @@ void descente_sum(struct tablo *a, struct tablo *b)
 		{
 			if (i % 2 == 0)
 			{
-				b->tab[i] = b->tab[i / 2];
+				destination->tab[i] = destination->tab[i / 2];
 			}
 			else
 			{
-				b->tab[i] = b->tab[i / 2] + a->tab[i - 1];
+				destination->tab[i] = destination->tab[i / 2] + source->tab[i - 1];
 			}
 		}
 	}
 }
 
-void final_sum(struct tablo *a, struct tablo *b)
+void final_sum(struct tablo *source, struct tablo *destination)
 {
 
-	int m = log2(b->size / 2);
+	int m = log2(destination->size / 2);
 	int c1 = (int)pow(2, m + 1) - 1;
 	#pragma omp parallel for
 	for (int i = pow(2, m - 1); i <= c1; i++)
 	{
-		b->tab[i] = b->tab[i] + a->tab[i];
+		destination->tab[i] = destination->tab[i] + source->tab[i];
 	}
 }
 
@@ -315,34 +333,36 @@ void final_sum(struct tablo *a, struct tablo *b)
 void maximum(struct tablo *source, struct tablo *destination, int mode)
 {
 
-	// TODO: inverser tableau
+	// prevent shared pointers
+	struct tablo *sourceCpy;
 	if (mode == SUFFIX)
 	{
-		inverser_tablo(source);
+		sourceCpy = inverser_tablo_copy(source);
+	} else
+	{
+		sourceCpy = source;
 	}
 
-	struct tablo *a = allocateTablo(source->size * 2);
-	// TODO: do not reverse the array, iterate reverse way
-	montee_max(source, a /*, mode*/);
+	struct tablo *a = allocateTablo(sourceCpy->size * 2);
+	montee_max(sourceCpy, a /*, mode*/);
 
-	struct tablo *b = allocateTablo(source->size * 2);
+
+	struct tablo *b = allocateTablo(sourceCpy->size * 2);
 	descente_max(a, b /*, mode*/);
 
 	final_max(a, b /*, mode*/);
 
-	//destination = allocateTablo(source->size);
-
 	// Tab b is source size * 2 so
 	#pragma omp parallel for
-	for (int i = 0; i < source->size; i++)
+	for (int i = 0; i < sourceCpy->size; i++)
 	{
-		destination->tab[i] = b->tab[source->size + i];
+		destination->tab[i] = b->tab[sourceCpy->size + i];
 	}
 
 	if (mode == SUFFIX)
 	{
-		inverser_tablo(source);
 		inverser_tablo(destination);
+		free(sourceCpy);
 	}
 
 	free(a);
@@ -368,10 +388,10 @@ void montee_max(struct tablo *source, struct tablo *destination)
 	}
 }
 
-void descente_max(struct tablo *a, struct tablo *b)
+void descente_max(struct tablo *source, struct tablo *destination)
 {
-	b->tab[1] = INT_MIN;
-	for (int k = 1; k <= log2(a->size) - 1; k++)
+	destination->tab[1] = INT_MIN;
+	for (int k = 1; k <= log2(source->size) - 1; k++)
 	{
 		int c1 = (int)pow(2, k + 1) - 1;
 		#pragma omp parallel for
@@ -379,23 +399,23 @@ void descente_max(struct tablo *a, struct tablo *b)
 		{
 			if (i % 2 == 0)
 			{
-				b->tab[i] = b->tab[i / 2];
+				destination->tab[i] = destination->tab[i / 2];
 			}
 			else
 			{
-				b->tab[i] = max(b->tab[i / 2], a->tab[i - 1]);
+				destination->tab[i] = max(destination->tab[i / 2], source->tab[i - 1]);
 			}
 		}
 	}
 }
-void final_max(struct tablo *a, struct tablo *b)
+void final_max(struct tablo *source, struct tablo *destination)
 {
-	int m = log2(b->size / 2);
+	int m = log2(destination->size / 2);
 	int c1 = (int)pow(2, m + 1) - 1;
 	#pragma omp parallel for
 	for (int i = pow(2, m - 1); i <= c1; i++)
 	{
-		b->tab[i] = max(b->tab[i], a->tab[i]);
+		destination->tab[i] = max(destination->tab[i], source->tab[i]);
 	}
 }
 
@@ -412,6 +432,18 @@ void inverser_tablo(struct tablo *a)
 		i--;
 		j++;
 	}
+}
+
+struct tablo *inverser_tablo_copy(struct tablo *a)
+{
+	struct tablo* b = allocateTablo(a->size);
+
+	#pragma omp parallel for
+	for(int i = 0; i < a->size; i++)
+	{
+		b->tab[i] = a->tab[(a->size - 1) - i];
+	}
+	return b;
 }
 
 void generateArray(struct tablo *s, char* buffer)
