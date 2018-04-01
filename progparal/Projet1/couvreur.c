@@ -3,9 +3,14 @@
 #include <omp.h>
 #include <math.h>
 #include <limits.h>
+#include <string.h>
 
 #define SUFFIX 1
 #define PREFIX 2
+
+#define DEBUG 0
+
+#define BUFFER_SIZE (1 * 1024 * 1024)
 
 #define max(a, b) \
 	({ __typeof__ (a) _a = (a); \
@@ -15,8 +20,9 @@
 /* Structures */
 struct tablo
 {
-	int *tab;
-	int size;
+	long int *tab;
+	int used;
+  	int size;
 };
 
 /* Headers */
@@ -42,52 +48,71 @@ int main(int argc, char *argv[])
 
 	/* args check */
 	if(argc != 2){
-		fprintf(stderr, "Usage : prog <file_name>");
+		fprintf(stderr, "Usage : couvreur <file_name>\n");
 		exit(EXIT_FAILURE);
 	}
 
 	/* file check */
-	File* f = fopen(argv[1], "r");
-	if(f == NULL){
-		fprintf(stderr, "The file \"%s\" doesn't exist.", argv[1]);
+	FILE* fp = fopen(argv[1], "r");
+	if(fp == NULL){
+		fprintf(stderr, "The file \"%s\" doesn't exist.\n", argv[1]);
 		exit(EXIT_FAILURE);
 	}
 
 	/* file reading */
-	char* inputs = NULL;
-	int length;
-	if((length = getline(&inputs, NULL, f)) == -1){
-		fprintf(stderr, "An error occured reading the file \"%s\".", argv[1]);
+	char buffer[BUFFER_SIZE]; // 1 MiB buffer
+
+	// Might reconsider this ... https://faq.cprogramming.com/cgi-bin/smartfaq.cgi?answer=1046476070&id=1043284351
+	// while(!feof(fp))
+
+	/*while(fread(buffer, BUFFER_SIZE, 1, fp) > 0)
+	{
+		// INT_MIN is -2147483648 -> 11 bytes long
+
+	}*/
+	// Naive reading
+	if(fgets(buffer, BUFFER_SIZE, fp) == NULL)
+	{
+		fprintf(stderr, "An error occured reading the file \"%s\"\n", argv[1]);
 		exit(EXIT_FAILURE);
 	}
 
 	/* close file */
-	fclose(f);
+	fclose(fp);
 
-	
+
 
 	/*
 	 * 1. Calculer les sum-prefix de Q et les mettre dans un tableau PSUM
 	 */
 	struct tablo Q;
-	generateArray(&Q, inputs, length); // TODO: replace this with file's input
-	printf("Tableau Q:\n");
-	printArray(&Q);
+	generateArray(&Q, buffer, strlen(buffer)); // TODO: replace this with file's input
+
+	if(DEBUG)
+	{
+		printf("Tableau Q:\n");
+		printArray(&Q);
+	}
 
 	struct tablo *PSUM = allocateTablo(Q.size);
 	sum(&Q, PSUM, PREFIX);
 
-	printf("Tableau PSUM:\n");
-	printArray(PSUM);
-
+	if(DEBUG)
+	{
+		printf("Tableau PSUM:\n");
+		printArray(PSUM);
+	}
 	/*
 	 * 2. Calculer le sum-suffix de Q et les mettre dans un tableau SSUM
 	 */
 	struct tablo *SSUM = allocateTablo(Q.size);
 	sum(&Q, SSUM, SUFFIX);
 
-	printf("Tableau SSUM:\n");
-	printArray(SSUM);
+	if(DEBUG)
+	{
+		printf("Tableau SSUM:\n");
+		printArray(SSUM);
+	}
 
 	/*
 	 * 3. Calculer le max-suffix de PSUM et le mettre dans SMAX
@@ -95,8 +120,12 @@ int main(int argc, char *argv[])
 	struct tablo *SMAX = allocateTablo(Q.size);
 	maximum(PSUM, SMAX, SUFFIX);
 
-	printf("Tableau SMAX:\n");
-	printArray(SMAX);
+	if(DEBUG)
+	{
+		printf("Tableau SMAX:\n");
+		printArray(SMAX);
+	}
+
 	/*
 	 * 4. Calculer le max-prefix de SSUM et le mettre dans PMAX
 	 */
@@ -104,8 +133,11 @@ int main(int argc, char *argv[])
 	PMAX = allocateTablo(Q.size);
 	maximum(SSUM, PMAX, PREFIX);
 
-	printf("Tableau PMAX:\n");
-	printArray(PMAX);
+	if(DEBUG)
+	{
+		printf("Tableau PMAX:\n");
+		printArray(PMAX);
+	}
 
 	/*
 	 * 5. pour  1 <= i <= n faire en parallel
@@ -126,10 +158,13 @@ int main(int argc, char *argv[])
 		M->tab[i] = Ms->tab[i] + Mp->tab[i] - Q.tab[i];
 	}
 
-	printf("Tableau M:\n");
-	printArray(M);
+	if(DEBUG)
+	{
+		printf("Tableau M:\n");
+		printArray(M);
+	}
 
-	int max_val = M->tab[0];
+	long int max_val = M->tab[0];
 	int start = 0;
 	int end = 0;
 
@@ -154,26 +189,30 @@ int main(int argc, char *argv[])
 
 	for (int i = start; i < M->size; i++)
 	{
-		if (M->tab[i] != max_val)
+		if (M->tab[i] == max_val)
 		{
-			end = i - 1;
+			end = i;
+		} else {
 			break;
 		}
 	}
 
-	printf("Max value is : %d within [%d, %d]\n", max_val, start + 1, end + 1);
+	if(DEBUG)
+	{
+		printf("Max value is : %ld within [%d, %d]\n", max_val, start + 1, end + 1);
+	}
 
 	/*
 	 *
 	 * Affichage final
 	*/
-	printf("%d ", max_val);
+	printf("%ld ", max_val);
 	for (int i = start; i < end; i++)
 	{
-		printf("%d ", Q.tab[i]);
+		printf("%ld ", Q.tab[i]);
 	}
 
-	printf("%d\n", Q.tab[end]);
+	printf("%ld\n", Q.tab[end]);
 }
 
 /*---- SUM ---------------------------------------*/
@@ -363,15 +402,26 @@ void inverser_tablo(struct tablo *a)
 
 void generateArray(struct tablo *s, char* inputs, int length)
 {
-	int size = 0;
-	int pos = 0;
-	int curr;
+	char* token;
+	int count = 0;
+	int size = 64;
+	long* array = malloc(sizeof(long) * size);
 
-	char buf[2048];
+	token = strtok(inputs , " ");
+	while(token != NULL)
+	{
+		array[count++] = atol(token);
+		token = strtok(NULL , " ");
 
-	while(pos < length){
-		// TODO: read the input 
+		if(size < count){
+			size += 64;
+			array = realloc(array, sizeof(long) * size);
+		}
 	}
+
+	s->size = count;
+	s->tab = array;
+
 	//construction d'un tableau pour tester
 	/*
 	s->size = 16;
@@ -402,7 +452,7 @@ void printArray(struct tablo *tmp)
 	int i;
 	for (i = 0; i < size; ++i)
 	{
-		printf("%i ", tmp->tab[i]);
+		printf("%ld ", tmp->tab[i]);
 	}
 	printf("\n");
 }
@@ -411,6 +461,6 @@ struct tablo *allocateTablo(int size)
 {
 	struct tablo *tmp = malloc(sizeof(struct tablo));
 	tmp->size = size;
-	tmp->tab = malloc(size * sizeof(int));
+	tmp->tab = malloc(size * sizeof(long));
 	return tmp;
 }
