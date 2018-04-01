@@ -8,7 +8,7 @@
 #define SUFFIX 1
 #define PREFIX 2
 
-#define DEBUG 0
+#define DEBUG 1
 
 #define BUFFER_SIZE (1 * 1024 * 1024)
 
@@ -21,7 +21,6 @@
 struct tablo
 {
 	long int *tab;
-	int used;
   	int size;
 };
 
@@ -37,7 +36,7 @@ void montee_max(struct tablo *, struct tablo *);
 void descente_max(struct tablo *, struct tablo *);
 void final_max(struct tablo *, struct tablo *);
 
-void generateArray(struct tablo *, char*, int);
+void generateArray(struct tablo *, char*);
 void printArray(struct tablo *);
 struct tablo *allocateTablo(int);
 void inverser_tablo(struct tablo *);
@@ -86,7 +85,7 @@ int main(int argc, char *argv[])
 	 * 1. Calculer les sum-prefix de Q et les mettre dans un tableau PSUM
 	 */
 	struct tablo Q;
-	generateArray(&Q, buffer, strlen(buffer)); // TODO: replace this with file's input
+	generateArray(&Q, buffer); // TODO: replace this with file's input
 
 	if(DEBUG)
 	{
@@ -150,7 +149,7 @@ int main(int argc, char *argv[])
 	struct tablo *Mp = allocateTablo(Q.size);
 	struct tablo *M = allocateTablo(Q.size);
 
-#pragma omp parallel for
+	#pragma omp parallel for
 	for (int i = 0; i < Q.size; i++)
 	{
 		Ms->tab[i] = PMAX->tab[i] - SSUM->tab[i] + Q.tab[i];
@@ -400,49 +399,32 @@ void inverser_tablo(struct tablo *a)
 	}
 }
 
-void generateArray(struct tablo *s, char* inputs, int length)
+void generateArray(struct tablo *s, char* buffer)
 {
 	char* token;
 	int count = 0;
-	int size = 64;
+	int size = 8;
 	long* array = malloc(sizeof(long) * size);
+	if(array == NULL)
+	{
+		fprintf(stderr, "An error occured allocatinng memory\n");
+		exit(EXIT_FAILURE);
+	}
 
-	token = strtok(inputs , " ");
+	token = strtok(buffer , " ");
 	while(token != NULL)
 	{
 		array[count++] = atol(token);
 		token = strtok(NULL , " ");
 
 		if(size < count){
-			size += 64;
+			size *= 2;
 			array = realloc(array, sizeof(long) * size);
 		}
 	}
 
 	s->size = count;
 	s->tab = array;
-
-	//construction d'un tableau pour tester
-	/*
-	s->size = 16;
-	s->tab = malloc(s->size * sizeof(int));
-	s->tab[0] = 3;
-	s->tab[1] = 2;
-	s->tab[2] = -7;
-	s->tab[3] = 11;
-	s->tab[4] = 10;
-	s->tab[5] = -6;
-	s->tab[6] = 4;
-	s->tab[7] = 9;
-	s->tab[8] = -6;
-	s->tab[9] = 1;
-	s->tab[10] = -2;
-	s->tab[11] = -3;
-	s->tab[12] = 4;
-	s->tab[13] = -3;
-	s->tab[14] = 0;
-	s->tab[15] = 2;
-	*/
 }
 
 void printArray(struct tablo *tmp)
@@ -460,7 +442,17 @@ void printArray(struct tablo *tmp)
 struct tablo *allocateTablo(int size)
 {
 	struct tablo *tmp = malloc(sizeof(struct tablo));
+	if(tmp == NULL)
+	{
+		fprintf(stderr, "An error occured allocatinng memory.\n");
+		exit(EXIT_FAILURE);
+	}
 	tmp->size = size;
 	tmp->tab = malloc(size * sizeof(long));
+	if(tmp->tab == NULL)
+	{
+		fprintf(stderr, "An error occured allocatinng memory..\n");
+		exit(EXIT_FAILURE);
+	}
 	return tmp;
 }
