@@ -32,7 +32,7 @@
 
 * Avec openmp
   ```
-  real	0m2.166s
+  real	0m2.166s /!\
   user	0m3.508s
   sys	0m0.948s
   ```
@@ -40,7 +40,7 @@
 * Sans openmp
 
   ```
-  real	0m3.325s
+  real	0m3.325s /!\
   user	0m2.608s
   sys	0m0.572s
   ```
@@ -48,4 +48,4 @@
 ### Remarques
 
 * fichier de 3.6 Go -> problèmes de mémoire
-* Avec ou sans openmp, pas trop de différences ... il faut paralléliser l'inversion de tableau ...
+* Avec openmp, on a un gain d'une seconde ... il faut paralléliser l'inversion de tableau ...
