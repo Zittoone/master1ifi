@@ -4,13 +4,13 @@
 #include <math.h>
 #include <limits.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #define SUFFIX 1
 #define PREFIX 2
 
-#define DEBUG 1
-
-#define BUFFER_SIZE (1 * 1024 * 1024)
+#define DEBUG 0
 
 #define max(a, b) \
 	({ __typeof__ (a) _a = (a); \
@@ -59,27 +59,34 @@ int main(int argc, char *argv[])
 	}
 
 	/* file reading */
-	char buffer[BUFFER_SIZE]; // 1 MiB buffer
+	struct stat fi;
+  	stat(argv[1], &fi);
 
-	// Might reconsider this ... https://faq.cprogramming.com/cgi-bin/smartfaq.cgi?answer=1046476070&id=1043284351
-	// while(!feof(fp))
+	// int BLOCK_SIZE = fi.st_blksize;
+	fseek(fp, 0, SEEK_END);
+	long fileSize = ftell (fp);
+	rewind(fp);
 
-	/*while(fread(buffer, BUFFER_SIZE, 1, fp) > 0)
+	/*if(DEBUG)
 	{
-		// INT_MIN is -2147483648 -> 11 bytes long
-
+		printf("BLOCK_SIZE = %d octets\n", BLOCK_SIZE);
 	}*/
-	// Naive reading
-	if(fgets(buffer, BUFFER_SIZE, fp) == NULL)
-	{
-		fprintf(stderr, "An error occured reading the file \"%s\"\n", argv[1]);
+
+	// char * buffer = malloc(sizeof(char) * BLOCK_SIZE); read block by block ?
+	char * buffer = malloc(sizeof(char) * fileSize + 1);
+
+	long result = fread (buffer,1,fileSize,fp);
+  	if (result != fileSize) {
+		fprintf(stderr, "Reading error.\n");
 		exit(EXIT_FAILURE);
 	}
 
+	// ¯\_(ツ)_/¯
+	buffer[fileSize] = '\0';
+
+
 	/* close file */
 	fclose(fp);
-
-
 
 	/*
 	 * 1. Calculer les sum-prefix de Q et les mettre dans un tableau PSUM
@@ -167,8 +174,7 @@ int main(int argc, char *argv[])
 	int start = 0;
 	int end = 0;
 
-#pragma omp parallel for reduction(max \
-								   : max_val)
+	#pragma omp parallel for reduction(max : max_val)
 	for (int i = 1; i < M->size; i++)
 	{
 		if (M->tab[i] > max_val)
@@ -401,25 +407,29 @@ void inverser_tablo(struct tablo *a)
 
 void generateArray(struct tablo *s, char* buffer)
 {
-	char* token;
 	int count = 0;
-	int size = 8;
-	long* array = malloc(sizeof(long) * size);
+	int size = 512;
+	long* array = (long*) malloc(sizeof(long) * size);
 	if(array == NULL)
 	{
 		fprintf(stderr, "An error occured allocatinng memory\n");
 		exit(EXIT_FAILURE);
 	}
 
-	token = strtok(buffer , " ");
+	char* token = strtok(buffer , " ");
 	while(token != NULL)
 	{
 		array[count++] = atol(token);
 		token = strtok(NULL , " ");
 
 		if(size < count){
-			size *= 2;
-			array = realloc(array, sizeof(long) * size);
+			size = size * 2;
+			array = (long*) realloc(array, sizeof(long) * size);
+			if(array == NULL)
+			{
+				fprintf(stderr, "An error occured re-allocating memory\n");
+				exit(EXIT_FAILURE);
+			}
 		}
 	}
 
