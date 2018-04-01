@@ -3,6 +3,10 @@
 #include <math.h>
 #include <time.h>
 
+#define max_number 45000
+#define minimum_number -45000
+
+
 int main(int argc, char *argv[])
 {
 
@@ -16,9 +20,9 @@ int main(int argc, char *argv[])
 
     int iterations = pow(2, atoi(argv[1]));
     for(int i = 0; i < iterations - 1; i++){
-        printf("%d ", (rand() % 100) - 50);
+        printf("-2 ");
     }
 
-    printf("%d\n", (rand() % 100) - 50);
+    printf("1\n");
 
 }
