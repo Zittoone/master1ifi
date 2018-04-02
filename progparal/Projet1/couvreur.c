@@ -17,9 +17,21 @@
        __typeof__ (b) _b = (b); \
      _a > _b ? _a : _b; })
 
-struct Compare { long val; int index; };
-#pragma omp declare reduction(maximum : struct Compare : omp_out = omp_in.val > omp_out.val ? omp_in : omp_out) initializer(omp_priv = {val: LONG_MIN})
+#define min(a, b) \
+	({ __typeof__ (a) _a = (a); \
+       __typeof__ (b) _b = (b); \
+     _a > _b ? _b : _a; })
 
+struct Compare { long val; int index; };
+#pragma omp declare reduction(maximum : struct Compare : omp_out = omp_in.val > omp_out.val ? omp_in : omp_in.val == omp_out.val ? omp_in.index < omp_out.index ? omp_in : omp_out : omp_out) initializer(omp_priv = {val: LONG_MIN, index: -1})
+
+/*
+omp_out = omp_in.val > omp_out.val ? omp_in
+	: omp_in.val == omp_out.val ?
+		omp_in.index < omp_out.index ? omp_in 
+			: omp_out 
+		: 
+*/
 /* Structures */
 struct tablo
 {
@@ -190,9 +202,35 @@ sum_parallel(&Q, &Q, PSUM, SSUM, PREFIX, SUFFIX, Q.size);
 
 	struct Compare max_val;
 	max_val.val = M->tab[0];
+/*
+	#pragma omp parallel
+	{
+		int index_local = -1;
+		long max_local = -1;
+		#pragma omp for nowait
+		for (int i = 0; i < M->size; i++)
+		{
+			if (M->tab[i] > max_local)
+			{
+				max_local = M->tab[i];
+				index_local = i;
+			}
+		}
 
+		#pragma omp critical
+		{
+			if(max_local > max_val.val){
+				printf("Found new value %ld at %d\n", max_local, index_local);
+				max_val.val = max_local;
+				max_val.index = index_local;
+			} else if(max_local == max_val.val){
+				max_val.index = min(max_val.index, index_local);
+			}
+		}
+	}*/
+	
 	#pragma omp parallel for reduction(maximum:max_val)
-	for (int i = 0; i < M->size; i++)
+	for (int i = 1; i < M->size; i++)
 	{
 		if (M->tab[i] > max_val.val)
 		{
