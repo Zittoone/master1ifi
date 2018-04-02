@@ -34,6 +34,11 @@ void montee_sum(struct tablo *, struct tablo *, int mode);
 void descente_sum(struct tablo *, struct tablo *);
 void final_sum(struct tablo *, struct tablo *);
 
+void sum_parallel(struct tablo * source1, struct tablo * source2, struct tablo * destination1, struct tablo * destination2, int mode1, int mode2, int size);
+void montee_sum_parallel(struct tablo * source1, struct tablo * source2, struct tablo * destination1, struct tablo * destination2, int mode1, int mode2, int size);
+void descente_sum_parallel(struct tablo * source1, struct tablo * source2, struct tablo * destination1, struct tablo * destination2, int size);
+void final_sum_parallel(struct tablo * source1, struct tablo * source2, struct tablo * destination1, struct tablo * destination2, int size);
+
 void maximum(struct tablo *, struct tablo *, int mode);
 void montee_max(struct tablo *, struct tablo *, int mode);
 void descente_max(struct tablo *, struct tablo *);
@@ -111,17 +116,12 @@ int main(int argc, char *argv[])
 	struct tablo *PSUM = allocateTablo(Q.size);
 	struct tablo *SSUM = allocateTablo(Q.size);
 
-	//#pragma omp parallel sections
-	{
-		//#pragma omp section
-		{
-			sum(&Q, PSUM, PREFIX);
-		}
-		//#pragma omp section
-		{
-			sum(&Q, SSUM, SUFFIX);
-		}
-	}
+	/*
+	sum(&Q, PSUM, PREFIX);
+	sum(&Q, SSUM, SUFFIX);
+	*/
+	sum_parallel(&Q, &Q, PSUM, SSUM, PREFIX, SUFFIX, Q.size);
+
 
 	if(DEBUG)
 	{
@@ -295,6 +295,93 @@ void final_sum(struct tablo *a, struct tablo *b)
 	for (int i = pow(2, m - 1); i <= c1; i++)
 	{
 		b->tab[i] = b->tab[i] + a->tab[i];
+	}
+}
+
+/*---- SUM PARALLEL ---------------------------------------*/
+
+void sum_parallel(struct tablo * source1, struct tablo * source2, struct tablo * destination1, struct tablo * destination2, int mode1, int mode2, int size)
+{
+	struct tablo *a1 = allocateTablo(size * 2);
+	struct tablo *a2 = allocateTablo(size * 2);
+
+	montee_sum_parallel(source1, source2, a1, a2, mode1, mode2, size);
+
+
+
+	struct tablo *b1 = allocateTablo(size * 2);
+	struct tablo *b2 = allocateTablo(size * 2);
+
+	descente_sum_parallel(a1, a2, b1, b2, size * 2);
+
+
+	final_sum_parallel(a1, a2, b1, b2, size * 2);
+
+	#pragma omp parallel for
+	for (int i = 0; i < size; i++)
+	{
+			destination1->tab[i] = b1->tab[size + (i + (size- 1 - 2 * i) * mode1)];
+			destination2->tab[i] = b2->tab[size + (i + (size- 1 - 2 * i) * mode2)];
+	}
+
+	free(a1);
+	free(a2);
+	free(b1);
+	free(b2);
+}
+void montee_sum_parallel(struct tablo * source1, struct tablo * source2, struct tablo * destination1, struct tablo * destination2, int mode1, int mode2, int size)
+{
+	#pragma omp parallel for
+	for (int i = 0; i < size; i++)
+	{
+			destination1->tab[size + i] = source1->tab[i + (size- 1 - 2 * i) * mode1];
+			destination2->tab[size + i] = source2->tab[i + (size- 1 - 2 * i) * mode2];
+	}
+
+	for (int l = log2(size) - 1; l >= 0; l--)
+	{
+		int c1 = ((int)pow(2, l + 1)) - 1; // Without compilaion optimizations, maybe this is recomputed every iterations
+		#pragma omp parallel for
+		for (int i = (int)pow(2, l) - 1; i <= c1; i++)
+		{
+			destination1->tab[i] = destination1->tab[2 * i] + destination1->tab[2 * i + 1];
+			destination2->tab[i] = destination2->tab[2 * i] + destination2->tab[2 * i + 1];
+		}
+	}
+}
+void descente_sum_parallel(struct tablo * source1, struct tablo * source2, struct tablo * destination1, struct tablo * destination2, int size)
+{
+	destination1->tab[1] = 0;
+	destination2->tab[1] = 0;
+
+	for (int k = 1; k <= log2(size) - 1; k++)
+	{
+		int c1 = (int)pow(2, k + 1) - 1;
+		#pragma omp parallel for
+		for (int i = pow(2, k); i <= c1; i++)
+		{
+			if (i % 2 == 0)
+			{
+				destination1->tab[i] = destination1->tab[i / 2];
+				destination2->tab[i] = destination2->tab[i / 2];
+			}
+			else
+			{
+				destination1->tab[i] = destination1->tab[i / 2] + source1->tab[i - 1];
+				destination2->tab[i] = destination2->tab[i / 2] + source2->tab[i - 1];
+			}
+		}
+	}
+}
+void final_sum_parallel(struct tablo * source1, struct tablo * source2, struct tablo * destination1, struct tablo * destination2, int size)
+{
+	int m = log2(size / 2);
+	int c1 = (int)pow(2, m + 1) - 1;
+	#pragma omp parallel for
+	for (int i = pow(2, m - 1); i <= c1; i++)
+	{
+		destination1->tab[i] = destination1->tab[i] + source1->tab[i];
+		destination2->tab[i] = destination2->tab[i] + source2->tab[i];
 	}
 }
 
