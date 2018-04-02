@@ -18,7 +18,7 @@
      _a > _b ? _a : _b; })
 
 struct Compare { long val; int index; };
-#pragma omp declare reduction(maximum : struct Compare : omp_out = omp_in.val > omp_out.val ? omp_in : omp_out)
+#pragma omp declare reduction(maximum : struct Compare : omp_out = omp_in.val > omp_out.val ? omp_in : omp_out) initializer(omp_priv = {val: LONG_MIN})
 
 /* Structures */
 struct tablo
@@ -92,10 +92,10 @@ int main(int argc, char *argv[])
 	fclose(fp);
 
 	/*
-	 * 0. Création tableau innitial
+	 * 0. Création tableau initial
 	 */
 	struct tablo Q;
-	generateArray(&Q, buffer); // TODO: replace this with file's input
+	generateArray(&Q, buffer);
 
 	if(DEBUG)
 	{
@@ -166,16 +166,14 @@ int main(int argc, char *argv[])
 	 * 	3. M[i] = Ms[i] + Mp[i] - Q[i]
 	 */
 
-	struct tablo *Ms = allocateTablo(Q.size);
-	struct tablo *Mp = allocateTablo(Q.size);
 	struct tablo *M = allocateTablo(Q.size);
 
 	#pragma omp parallel for
 	for (int i = 0; i < Q.size; i++)
 	{
-		Ms->tab[i] = PMAX->tab[i] - SSUM->tab[i] + Q.tab[i];
-		Mp->tab[i] = SMAX->tab[i] - PSUM->tab[i] + Q.tab[i];
-		M->tab[i] = Ms->tab[i] + Mp->tab[i] - Q.tab[i];
+		long Ms = PMAX->tab[i] - SSUM->tab[i] + Q.tab[i];
+		long Mp = SMAX->tab[i] - PSUM->tab[i] + Q.tab[i];
+		M->tab[i] = Ms + Mp - Q.tab[i];
 	}
 
 	if(DEBUG)
@@ -187,8 +185,8 @@ int main(int argc, char *argv[])
 	struct Compare max_val;
 	max_val.val = M->tab[0];
 
-	#pragma omp parallel reduction(maximum : max_val)
-	for (int i = 1; i < M->size; i++)
+	#pragma omp parallel for reduction(maximum:max_val)
+	for (int i = 0; i < M->size; i++)
 	{
 		if (M->tab[i] > max_val.val)
 		{
@@ -206,9 +204,14 @@ int main(int argc, char *argv[])
 	{
 		if (M->tab[i] == max_val.val)
 		{
-			printf("%ld ", Q.tab[i]);
-		} else {
-			break;
+			if(i == M->size - 1){
+				printf("%ld\n", Q.tab[i]);
+			} else if(M->tab[i+1] == max_val.val){
+				printf("%ld ", Q.tab[i]);
+			} else {
+				printf("%ld\n", Q.tab[i]);
+				break;
+			}
 		}
 	}
 }
@@ -229,11 +232,7 @@ void sum(struct tablo *source, struct tablo *destination, int mode)
 	#pragma omp parallel for
 	for (int i = 0; i < source->size; i++)
 	{
-		if(mode == SUFFIX){
-			destination->tab[i] = b->tab[source->size + (source->size - 1) - i];
-		} else {
-			destination->tab[i] = b->tab[source->size + i];
-		}
+		destination->tab[i] = b->tab[source->size + i + (source->size - 1 - 2 * i) * mode];
 	}
 
 	free(a);
@@ -246,11 +245,7 @@ void montee_sum(struct tablo *source, struct tablo *destination, int mode)
 	#pragma omp parallel for
 	for (int i = 0; i < source->size; i++)
 	{
-		if(mode == SUFFIX){
-			destination->tab[source->size + i] = source->tab[(source->size - 1) - i];
-		} else {
-			destination->tab[source->size + i] = source->tab[i];
-		}
+		destination->tab[source->size + i] = source->tab[i + (source->size - 1 - 2 * i) * mode];
 	}
 
 	for (int l = log2(source->size) - 1; l >= 0; l--)
@@ -314,11 +309,7 @@ void maximum(struct tablo *source, struct tablo *destination, int mode)
 	#pragma omp parallel for
 	for (int i = 0; i < source->size; i++)
 	{
-		if(mode == SUFFIX){
-			destination->tab[i] = b->tab[source->size + (source->size - 1) - i];
-		} else {
-			destination->tab[i] = b->tab[source->size + i];
-		}
+		destination->tab[i] = b->tab[source->size + i + (source->size - 1 - 2 * i) * mode];
 	}
 
 	free(a);
@@ -330,11 +321,7 @@ void montee_max(struct tablo *source, struct tablo *destination, int mode)
 	#pragma omp parallel for
 	for (int i = 0; i < source->size; i++)
 	{
-		if(mode == SUFFIX){
-			destination->tab[source->size + i] = source->tab[(source->size - 1) - i];
-		} else {
-			destination->tab[source->size + i] = source->tab[i];
-		}
+		destination->tab[source->size + i] = source->tab[i + (source->size - 1 - 2 * i) * mode];
 	}
 
 	for (int l = log2(source->size) - 1; l >= 0; l--)
