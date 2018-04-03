@@ -3,6 +3,8 @@ window.onload = init;
 let canvas, ctx;
 let ennemis = [];
 
+var mousepos = {x: 0, y: 0}
+
 // main.js
 function init() {
   console.log("page chargee");
@@ -32,12 +34,27 @@ function init() {
   ennemis.push(cercle1)
   */
   joueur = new Rectangle(20, 250, 10, 10, 'blue');
+  joueur.move = function(){
+    let dx = joueur.x - mousepos.x;
+    let dy = joueur.y - mousepos.y;
+    let angle = Math.atan2(dy, dx);
+    
+    if (distance(joueur.x, joueur.y, mousepos.x, mousepos.y) >= 10) {
+        //ball.v = 0;
+        joueur.x -= joueur.vitesseMax * Math.cos(angle);
+        joueur.y -= joueur.vitesseMax * Math.sin(angle);
+    }
+  }
 
   creerEnnemis(5)
   
   // Ecouteurs de clavier
-  window.onkeydown = traiteKeydown;
-  window.onkeyup = traiteKeyup;
+  // window.onkeydown = traiteKeydown;
+  // window.onkeyup = traiteKeyup;
+
+  canvas.addEventListener('mousemove', function (evt) {
+    mousepos = getMousePos(canvas, evt);
+  }, false);
 
   // on demarre l'animation
   requestAnimationFrame(animation);

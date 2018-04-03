@@ -36,3 +36,27 @@ function traiteKeydown(evt) {
         break;
     }
   }
+
+  function distance(x1, y1, x2, y2) {
+    return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+}
+
+function getMousePos(canvas, evt) {
+  // get canvas position
+  var obj = canvas;
+  var top = 0;
+  var left = 0;
+  while (obj && obj.tagName != 'BODY') {
+      top += obj.offsetTop;
+      left += obj.offsetLeft;
+      obj = obj.offsetParent;
+  }
+
+  // return relative mouse position
+  var mouseX = evt.clientX - left + window.pageXOffset;
+  var mouseY = evt.clientY - top + window.pageYOffset;
+  return {
+      x: mouseX,
+      y: mouseY
+  };
+}

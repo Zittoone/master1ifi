@@ -10,7 +10,7 @@ class Rectangle {
       this.primCouleur = this.couleur
       this.vitesseX = 0; // en pixels par image d'animation
       this.vitesseY = 0; // en pixels par image d'animation
-      this.vitesseMax = 3;
+      this.vitesseMax = 5;
   
     }
     
