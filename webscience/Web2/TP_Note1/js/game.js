@@ -25,6 +25,11 @@ function init() {
    rect2 = new GrowingRectangle(110, 110, 100, 100, 'green');
     rect2.vitesseY = 2;
   ennemis.push(rect2);
+
+  cercle1 = new Cercle(60, 60, 15, 'blue')
+  cercle1.vitesseX = 5
+  cercle1.vitesseY = 2
+  ennemis.push(cercle1)
   joueur = new Rectangle(20, 250, 10, 10, 'blue');
   
   // Ecouteurs de clavier
