@@ -52,7 +52,7 @@ function testeCollisions() {
      //console.log("collision");
      el.couleur = 'pink';
    } else {
-     el.couleur = 'red';
+     el.couleur = el.primCouleur;
    }      
   })
    
