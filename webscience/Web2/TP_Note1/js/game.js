@@ -2,6 +2,8 @@ window.onload = init;
 
 let canvas, ctx;
 let ennemis = [];
+let score = 0
+let vies = 5
 
 var mousepos = {x: 0, y: 0}
 
@@ -70,6 +72,10 @@ function animation() {
   
   // 2 on dessine et on deplace
   dessineEtDeplaceLesObjets();
+
+  // On dessine le text
+  ctx.fillText("Score : " + score, canvas.width - 50, 20)
+  ctx.fillText("Vies : " + vies, canvas.width - 50, 40)
   
   // 3 on teste les collisions
   testeCollisions();
