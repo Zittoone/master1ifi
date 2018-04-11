@@ -203,33 +203,7 @@ sum_parallel(&Q, &Q, PSUM, SSUM, PREFIX, SUFFIX, Q.size);
 	struct Compare max_val;
 	max_val.val = M->tab[0];
 	max_val.index = 0;
-/*
-	#pragma omp parallel
-	{
-		int index_local = -1;
-		long max_local = -1;
-		#pragma omp for nowait
-		for (int i = 0; i < M->size; i++)
-		{
-			if (M->tab[i] > max_local)
-			{
-				max_local = M->tab[i];
-				index_local = i;
-			}
-		}
 
-		#pragma omp critical
-		{
-			if(max_local > max_val.val){
-				printf("Found new value %ld at %d\n", max_local, index_local);
-				max_val.val = max_local;
-				max_val.index = index_local;
-			} else if(max_local == max_val.val){
-				max_val.index = min(max_val.index, index_local);
-			}
-		}
-	}*/
-	
 	#pragma omp parallel for reduction(maximum:max_val)
 	for (int i = 1; i < M->size; i++)
 	{
@@ -245,11 +219,11 @@ sum_parallel(&Q, &Q, PSUM, SSUM, PREFIX, SUFFIX, Q.size);
 	 * Affichage final
 	*/
 	printf("%ld ", max_val.val);
-	for (int i = max_val.index; i < M->size; i++)
+	for (int i = max_val.index; i < Q.size; i++)
 	{
 		if (M->tab[i] == max_val.val)
 		{
-			if(i == M->size - 1){
+			if(i == Q.size - 1){
 				printf("%ld\n", Q.tab[i]);
 			} else if(M->tab[i+1] == max_val.val){
 				printf("%ld ", Q.tab[i]);
@@ -587,8 +561,8 @@ void final_maximum_parallel(struct tablo * source1, struct tablo * source2, stru
 void generateArray(struct tablo *s, char* buffer)
 {
 	int count = 0;
-	int size = 512;
-	long* array = (long*) malloc(sizeof(long) * size);
+	int size = 2;
+	long* array = malloc(sizeof(long int) * size);
 	if(array == NULL)
 	{
 		fprintf(stderr, "An error occured allocating memory.\n");
@@ -598,12 +572,12 @@ void generateArray(struct tablo *s, char* buffer)
 	char* token = strtok(buffer , " ");
 	while(token != NULL)
 	{
-		array[count++] = atol(token);
+		array[count] = atol(token);
+		count = count + 1;
 		token = strtok(NULL , " ");
-
-		if(size < count){
+		if(size <= count){
 			size = size * 2; // 2^n so, everytime we realloc with power up ;)
-			array = (long*) realloc(array, sizeof(long) * size);
+			array = realloc(array, sizeof(long int) * size);
 			if(array == NULL)
 			{
 				fprintf(stderr, "An error occured re-allocating memory.\n");
