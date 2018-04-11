@@ -202,6 +202,7 @@ sum_parallel(&Q, &Q, PSUM, SSUM, PREFIX, SUFFIX, Q.size);
 
 	struct Compare max_val;
 	max_val.val = M->tab[0];
+	max_val.index = 0;
 /*
 	#pragma omp parallel
 	{
