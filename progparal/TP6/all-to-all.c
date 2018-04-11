@@ -1,7 +1,6 @@
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 
 
 void afficherTableau(int* tab, int length){
