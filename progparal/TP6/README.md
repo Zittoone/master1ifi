@@ -46,3 +46,5 @@ data[2] = 2
 data[3] = 3
 ```
 Remarque : *avec trop de processus, l'output se mélange, mais cela fonctionne bien.*
+
+## Produit Matrice-Matrice

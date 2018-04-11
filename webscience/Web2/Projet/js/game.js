@@ -13,6 +13,12 @@ function init() {
   
   // 1 On recupere un pointeur sur le canvas
   canvas = document.querySelector("#myCanvas");
+
+  // Get a 16/9 aspect ratio
+  let width = 1080;
+  let height = 608;
+  canvas.setAttribute("width", width);
+  canvas.setAttribute("height", height);
   
   // 2 On recupere le contexte graphique pour dessiner
   // dans le canvas
@@ -48,7 +54,7 @@ function init() {
     }
   }
 
-  creerEnnemis(5)
+  creerEnnemis(25)
   
   // Ecouteurs de clavier
   // window.onkeydown = traiteKeydown;
@@ -104,7 +110,7 @@ function creerEnnemis(nb){
     h = Math.random() * (60 - 20) + 20
     l = Math.random() * (60 - 20) + 20
     couleur = '#'+(Math.random()*0xFFFFFF<<0).toString(16);
-    let rect = new Rectangle(x, y, h, l, couleur)
+    let rect = new GrowingRectangle(x, y, h, l, couleur)
     rect.vitesseX = 2 || Math.random * rect.vitesseMax + 1
     rect.vitesseY = 2 || Math.random * rect.vitesseMax + 1
 
