@@ -26,4 +26,18 @@ Ne pas chiffrer vos clés ! Me rendre au moins votre certificat {F},,k,, {K}PKMB
 
 Pour générer un pseudo aléatoire en hex de 16 bytes ( 128 bits ) : `openssl rand -hex 16`
 
+## Exercice 3 : Clés secrètes
+
+### a)
+
+- 4528e6a7bb9341c36c425faf40ef32c3 === __pass__ (md5 decrypted)
+- a39cce46f68858d14998c58f03aabdcf === __simple__ (md5 decrypted)
+
+### b)
+
+Le bon mot de passe était __simple__ : `openssl enc -des-ede-cbc -d -in aDechiffrer.crypt -out aDechiffrer.decrypt`
+
+### c)
+
+Le fichier décrypté est un peu plus petit, car lors de l'encryption on crypte par blocs de 32 bits, comme la taille du fichier n'est pas forcément un multiple de 32 bits, on fait du **padding** et on complète avec des 0 jusqu'à la fin.
 
