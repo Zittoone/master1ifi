@@ -109,3 +109,15 @@ Commandes supposées du prof :
 
 *reChiffre.decrypt* a bien le même contenu que *aDechiffrer.decrypt* !
 
+### 4.3) Signature de données
+
+- Calcul de l'empreinte : `openssl dgst <hachage> -out <empreinte> <fichier_entrée>` (où hachage est une fonction de hachage à choisir parmi -md5 -sha1 ou -ripemd160)
+
+- Signature avec l'empreinte : `openssl rsautl -sign -in <empreinte> -inkey <key> -out <signature>`
+
+- Vérification : `openssl rsautl -verify -in <signature> -inkey <cle> -out <empreinte>`
+
+- Calcul empreinte + signature : `openssl dgst <hachage> -sign <cle> -out <signature> <fichier_entrée>`
+
+- Vérification empreinte produite == empreinte calculée : `openssl dgst <hachage> -verify <cle> -signature <signature> <fichier_entree>`
+
