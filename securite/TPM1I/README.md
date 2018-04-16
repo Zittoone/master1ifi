@@ -212,3 +212,13 @@ Certificate:
             Public Key Algorithm: rsaEncryption
                 Public-Key: (1024 bit)
 ```
+
+#### 5.2.3) Vérification de certificats
+
+Vérification :
+
+    ```shell
+    $ openssl verify -CAfile M1I.pem EtudCert.pem
+    EtudCert.pem: OK
+    ```
+
