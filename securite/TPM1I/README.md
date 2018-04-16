@@ -21,3 +21,9 @@ Ne pas chiffrer vos clés ! Me rendre au moins votre certificat {F},,k,, {K}PKMB
 
 - Génération clé RSA : rien mettre
 - Génération clé shared : toto
+
+## Exercice 2 : Générateur pseudo-aléatoire
+
+Pour générer un pseudo aléatoire en hex de 16 bytes ( 128 bits ) : `openssl rand -hex 16`
+
+
