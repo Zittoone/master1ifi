@@ -87,4 +87,25 @@ Le fichier décrypté est un peu plus petit, car lors de l'encryption on crypte 
 
 6. `openssl rsa -in Etud.pem -pubout > EtudPK.pem`
 
+### 4.2) Chiffrement de données
+
+> `openssl rsautl -encrypt -in <fichier_entree> -inkey <cle> -out <fichier_sortie>`
+
+Test avec clé privée connue :
+
+`$ openssl rsautl -encrypt -in pseudo_aleatoire -inkey EtudPK.pem -pubin -out DigitEnv.rsa`
+
+`$ openssl rsautl -decrypt -in DigitEnv.rsa -inkey Etud.pem -out pseudo_aleatoire.decrypt`
+
+Commandes supposées du prof :
+
+`$ openssl rsautl -encrypt -in pseudo_aleatoire -inkey BMPK.pem -pubin -out DigitEnv.rsa`
+
+`$ openssl rsautl -decrypt -in DigitEnv.rsa -inkey BMK.pem -out pseudo_aleatoire.decrypt`
+
+1. `$ openssl enc -aes-128-cbc -K $(cat pseudo_aleatoire) -iv 0 -in aDechiffrer.decrypt -out reChiffre.crypt`
+
+2. `$ openssl enc -aes-128-cbc -K $(cat pseudo_aleatoire.decrypt) -d -iv 0 -in reChiffre.crypt -out reChiffre.decrypt`
+
+*reChiffre.decrypt* a bien le même contenu que *aDechiffrer.decrypt* !
 
