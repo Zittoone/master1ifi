@@ -186,3 +186,22 @@ Certificate Request:
 ```
 
 La clé privée n'y figure pas, il y a cependant le module, l'exposant, l'algorithme de cryptage, l'algorithme de signature.
+
+### 5.2) Demande de signature de certificat
+
+#### 5.2.1) L’autorité de certification M1I
+
+1. Le certificat est valable jusqu'au __2 Décembre 2018 à 18:46:46 GMT__. Et la clé a une taille de __1024 bits__.
+    ```shell
+    $ openssl x509 -in M1I.pem -text -noout
+    ...
+    Validity
+        Not Before: Dec  2 18:46:46 2017 GMT
+        Not After : Dec  2 18:46:46 2018 GMT
+    Subject: C = fr, ST = PACA, L = Sophia Antipolis, O = Univ. Nice Sophia Antipolis, OU = Dpt of Computer Science, CN = ICS_CA, emailAddress = Bruno.Martin@unice.fr
+    Subject Public Key Info:
+        Public Key Algorithm: rsaEncryption
+            Public-Key: (1024 bit)
+    ...
+    ```
+
