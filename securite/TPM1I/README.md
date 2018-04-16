@@ -161,28 +161,7 @@ Certificate Request:
         Subject Public Key Info:
             Public Key Algorithm: rsaEncryption
                 Public-Key: (1024 bit)
-                Modulus:
-                    00:bd:ad:b4:bc:a5:01:9c:26:48:c2:58:6e:b8:c8:
-                    55:7b:55:ca:ba:c8:eb:4f:e2:46:d9:2b:10:62:56:
-                    99:ca:46:b5:d3:f0:9f:9c:e5:26:ba:fe:30:88:34:
-                    49:a2:10:b7:03:c9:7e:f6:fd:54:15:31:53:b3:d5:
-                    3f:1e:f0:8b:e5:71:0c:4c:82:b4:1a:c9:93:43:08:
-                    1e:d5:bf:9a:ac:86:5b:b6:14:92:d5:8d:c4:08:e7:
-                    bc:a3:ed:fa:17:76:41:5a:a8:e9:f4:15:15:d1:69:
-                    38:9e:f6:03:8a:07:96:0b:ae:b8:f5:f8:a5:b5:7f:
-                    47:e9:f7:2a:80:ca:32:d8:69
-                Exponent: 65537 (0x10001)
-        Attributes:
-            a0:00
-    Signature Algorithm: sha256WithRSAEncryption
-         7d:b3:06:e0:7a:b6:bb:53:93:20:09:2b:8c:3a:08:7d:28:93:
-         7d:e8:23:48:fc:d6:44:02:85:41:09:08:12:df:f7:f3:99:55:
-         2a:a9:4b:c9:2c:f0:0d:8b:88:6f:0e:82:2d:a1:7f:62:f4:40:
-         ca:1b:32:c1:16:f4:26:3e:be:6e:db:ec:53:7c:e7:91:31:0e:
-         3d:fb:80:03:63:89:d1:3d:6d:df:4b:65:01:21:d4:32:34:68:
-         7d:3c:b6:12:c3:b0:ca:cc:c2:52:8a:a8:24:bd:30:0c:d7:b1:
-         0d:4f:5f:44:7d:98:4c:50:21:de:8d:90:2e:17:79:cb:6d:14:
-         03:bd
+                ...
 ```
 
 La clé privée n'y figure pas, il y a cependant le module, l'exposant, l'algorithme de cryptage, l'algorithme de signature.
@@ -205,3 +184,31 @@ La clé privée n'y figure pas, il y a cependant le module, l'exposant, l'algori
     ...
     ```
 
+#### 5.2.2) Création du certificat
+
+1. Création du certificat
+    ```shell
+    $ openssl x509 -days 10 -CA M1I.pem -CAkey M1I.pem -in maRequete.csr -req -out EtudCert.pem
+    Signature ok
+    subject=C = FR, ST = PACA, L = Sophia-Antipolis, O = UCA, OU = Deptinfo, emailAddress = alexiscouvreur.pro@gmail.com
+    Getting CA Private Key
+    ```
+
+2. Vérification
+
+```shell
+$ openssl x509 -in EtudCert.pem -text -noout
+Certificate:
+    Data:
+        Version: 1 (0x0)
+        Serial Number: 3 (0x3)
+    Signature Algorithm: sha256WithRSAEncryption
+        Issuer: C = fr, ST = PACA, L = Sophia Antipolis, O = Univ. Nice Sophia Antipolis, OU = Dpt of Computer Science, CN = ICS_CA, emailAddress = Bruno.Martin@unice.fr
+        Validity
+            Not Before: Apr 16 09:17:56 2018 GMT
+            Not After : May 16 09:17:56 2018 GMT
+        Subject: C = FR, ST = PACA, L = Sophia-Antipolis, O = UCA, OU = Deptinfo, emailAddress = alexiscouvreur.pro@gmail.com
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (1024 bit)
+```
