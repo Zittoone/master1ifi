@@ -1,6 +1,13 @@
-# Projet 2 : 
+# Projet 2 : Produit Matriciel Distribué
 
-## Good links :
+## Compilation & éxecution
+
+Parce que j'oublie tout le temps comment compiler et éxucter ce truc.
+
+* __Compilation__ : `mpicc couvreur.c -o couvreur -lm`
+* __Execution__ : `mpirun ./couvreur`
+
+## Good links
 
 * [MPI Scatter and Gather](http://mpitutorial.com/tutorials/mpi-scatter-gather-and-allgather/)
 
@@ -8,7 +15,7 @@
 
 * Un fichier nom.c où nom doit être remplacé par votre nom et un fichier nom.txt qui indique quelles fonctionnalités vous avez implémenté.
 
-* Un fichier nom.txt qui décrira brièvement l'implémentation (structures, linéarisation des matrices, communications...) ainsi que la liste des fonctionnalités implémentées (voir à la fin). 
+* Un fichier nom.txt qui décrira brièvement l'implémentation (structures, linéarisation des matrices, communications...) ainsi que la liste des fonctionnalités implémentées (voir à la fin).
 
 * Ce programme devra utiliser MPI pour le calcul distribué (circulation sur anneau), et openMP pour la parallélisation des calculs
 
