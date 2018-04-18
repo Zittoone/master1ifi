@@ -221,4 +221,3 @@ Vérification :
     $ openssl verify -CAfile M1I.pem EtudCert.pem
     EtudCert.pem: OK
     ```
-

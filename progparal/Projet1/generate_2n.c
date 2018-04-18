@@ -19,10 +19,14 @@ int main(int argc, char *argv[])
     srand(time(NULL));
 
     int iterations = pow(2, atoi(argv[1]));
-    for(int i = 0; i < iterations - 1; i++){
+    for(int i = 0; i < (iterations / 2) - 2; i++){
         printf("-2 ");
     }
 
-    printf("1\n");
+    printf("4 7 3 4 ");
+
+    for(int i = 0; i < (iterations / 2) - 2; i++){
+        printf("-2 ");
+    }
 
 }
