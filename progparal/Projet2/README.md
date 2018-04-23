@@ -34,3 +34,8 @@ Parce que j'oublie tout le temps comment compiler et éxucter ce truc.
 ### Linéarisation des matrices
 
 ### Communications
+
+## TODO
+
+* File reading -> realloc on the pointer
+* File reading -> handle empty lines
