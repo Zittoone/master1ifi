@@ -1,0 +1,29 @@
+--------------------FICHIER REPONSES---------------------------------
+NOMS et Prénoms :
+Couvreur Alexis
+Gauthier Thomas
+Bleyfuez Yonathan
+
+Q1: Listez les chiffres à clé secrète (seulement les chiffres pas
+leurs différents modes de fonctionnement ou la taille des clés)
+disponibles dans votre version d’openssl et dites par quelle commande
+vous les avez obtenus
+
+Q2: Dites pourquoi il est possible de retrouver le mot de passe à
+partir de son empreinte md5 et quel était le bon mot de passe.
+
+Q3: Expliquez pourquoi la taille du fichier aDechiffrer.decrypt est
+différente de celle du fichier aDechiffrer.crypt et de celle du
+fichier reChiffre.crypt
+
+Q4: Donnez la commande qui permet de récupérer (sur la sortie
+standard) la clé AES utilisée (avec l’IV à zéro) à partir de
+DigitEnv.rsa (avec ma clé BMK.pem)
+Q5: Donnez la commande qui déchiffre le fichier reChiffre.crypt.
+Q6: Donnez la commande qui vérifie votre certificat.
+Q7: Donnez la commande pour extraire votre clé publique à
+partir du certificat EtudCert.pem et la ranger dans EPK.pem
+Q8: Signez le fichier Reponses.txt APRES avoir répondu à toutes les
+questions et donnez la (ou les) commandes qui permettent de vérifier
+la signature de votre fichier (fournie dans le fichier Reponses.sign)
+--------------------FIN FICHIER REPONSES-----------------------------
