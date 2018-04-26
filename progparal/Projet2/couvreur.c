@@ -270,13 +270,13 @@ void matrixProduct(struct Matrix *A, struct Matrix *B, struct Matrix *C)
 
 void partialMatrixProduct(struct Matrix *A, struct Matrix *B_partial, struct Matrix *C, int col_start, int col_end) {
 
+    #pragma omp parallel for
     for(int i = 0; i < A->row; i++)
     {
         for(int j = col_start; j < col_end; j++)
         {
             for (int k = 0; k < B_partial->row; k++)
             {
-
                 int newVal = getMatrixElement(C, i, j) + getMatrixElement(A, i, k) * getMatrixElement(B_partial, k, j - col_start);
                 setMatrixElement(C, i, j, newVal);
             }
