@@ -68,10 +68,13 @@ void main(int argc, char *argv[])
         }
         
         m3 = allocateMatrix(N, N);
+    }
 
-        // matrixProduct(m1, m2, m3);
-
-        // printMatrix(m3);
+    if(numprocs == 1) {
+        matrixProduct(m1, m2, m3);
+        printMatrix(m3);
+        MPI_Finalize();
+        exit(EXIT_SUCCESS);
     }
 
     MPI_Bcast(&N, 1, MPI_INT, root, MPI_COMM_WORLD);
@@ -346,7 +349,7 @@ char *readFileToBuffer(char *fileName)
     lSize = ftell(pFile);
     rewind(pFile);
 
-    buffer = (char *)malloc(sizeof(char) * lSize);
+    buffer = (char *)malloc(sizeof(char) * lSize + 1);
     if (buffer == NULL)
     {
         fputs("Memory error", stderr);
@@ -361,6 +364,8 @@ char *readFileToBuffer(char *fileName)
     }
 
     fclose(pFile);
+
+    buffer[lSize] = '\0';
     return buffer;
 }
 
