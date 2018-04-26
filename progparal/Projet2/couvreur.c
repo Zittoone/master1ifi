@@ -18,12 +18,13 @@ struct Matrix *allocateMatrixWithArray(int row, int col, int* m);
 struct Matrix *allocateMatrixFromColumns(int row, int col, int* m);
 struct Matrix *generateMatrix(char *);
 void matrixProduct(struct Matrix *, struct Matrix *, struct Matrix *);
-void partialMatrixProduct(struct Matrix *A, struct Matrix *B_partial, struct Matrix *C, int col_start, int col_end, int rank);
+void partialMatrixProduct(struct Matrix *A, struct Matrix *B_partial, struct Matrix *C, int col_start, int col_end);
 struct Matrix* transposeMatrix(struct Matrix *A);
 
 /* MPI */
 int getSuccessor(int rank, int numprocs);
 int getPredecessor(int rank, int numprocs);
+int getColStart(int rank, int numprocs, int nb_col, int iteration);
 
 /* Utils */
 void printArray(int *tab, int length);
@@ -61,6 +62,10 @@ void main(int argc, char *argv[])
         free(fileB);
 
         N = m1->row;
+
+        if(N%numprocs != 0){
+            printf("Warning! N is not multiple of P (N=%d, P=%d)!\n", N, numprocs);
+        }
         
         m3 = allocateMatrix(N, N);
 
@@ -102,62 +107,53 @@ void main(int argc, char *argv[])
     struct Matrix* C = allocateMatrix(count / N, N);
 
     int nb_col = count / N;
-    int col_start = nb_col * rank; // included
-    int col_end = nb_col * (rank + 1); // excluded
+    int col_start = getColStart(rank, numprocs, nb_col, 0); // included
+    int col_end = col_start + nb_col; // excluded
 
-    printf("[%d] partial product on columns [%d, %d[ on matrix row %d, col %d.\n",rank, col_start, col_end, A->row, A->col);
-    partialMatrixProduct(A, B, C, col_start, col_end, rank);
-
-    
+    partialMatrixProduct(A, B, C, col_start, col_end);
 
     // Ring structure
-    for(int i = 0; i < numprocs; i++) {
+    for(int i = 1; i < numprocs; i++) {
         
         if(rank == root) {
-            printf("Processing turn %d ...\n", i);
             
-            MPI_Send(cols_received, count, MPI_INT, getSuccessor(rank, numprocs), 0, MPI_COMM_WORLD);
-            printf("[%d] Sent data to process %d ...\n", rank, getSuccessor(rank, numprocs));
+            // Send our columns
+            MPI_Send(B->matrix, count, MPI_INT, getSuccessor(rank, numprocs), 0, MPI_COMM_WORLD);
+            
+            // Receive the new columns to ompute into B
+            MPI_Recv(B->matrix, count, MPI_INT, getPredecessor(rank, numprocs), 0, MPI_COMM_WORLD, NULL);
+            
+            // Recalibrate columns
+            col_start = getColStart(rank, numprocs, nb_col, i);
+            col_end = col_start + nb_col;
 
-            MPI_Recv(cols_received, count, MPI_INT, getPredecessor(rank, numprocs), 0, MPI_COMM_WORLD, NULL);
-            printf("[%d] Received data from process %d ...\n", rank, getPredecessor(rank, numprocs));
-
-            // Do stuff ...
-            B->matrix = cols_received;
-            col_start = nb_col * (rank + (i + 1));
-            col_end = nb_col * (rank + (i + 1));
-
-            // printf("[%d] partial product on columns [%d, %d[ on matrix row %d, col %d.\n",rank, col_start, col_end, A->row, A->col);
-            // partialMatrixProduct(A, B, C, col_start, col_end, rank);
+            // Compute
+            partialMatrixProduct(A, B, C, col_start, col_end);
             
 
         } else {
 
+            // Copy old columns into buffer
+            memcpy(cols_received, B->matrix, sizeof(int) * count);
 
-            MPI_Recv(cols_received, count, MPI_INT, getPredecessor(rank, numprocs), 0, MPI_COMM_WORLD, NULL);
-            printf("[%d] Received data from process %d ...\n", rank, getPredecessor(rank, numprocs));
+            // Receive new columns
+            MPI_Recv(B->matrix, count, MPI_INT, getPredecessor(rank, numprocs), 0, MPI_COMM_WORLD, NULL);
 
-            // Do stuff ...
-            B->matrix = cols_received;/*
-            col_start = nb_col * (rank + (i + 1));
-            col_end = nb_col * (rank + (i + 1));
-            printf("[%d] partial product on columns [%d, %d[ on matrix row %d, col %d.\n",rank, col_start, col_end, A->row, A->col);*/
-            //partialMatrixProduct(A, B, C, col_start, col_end);
+            // Recalibrate columns
+            col_start = getColStart(rank, numprocs, nb_col, i);
+            col_end = col_start + nb_col;
 
+            // Compute
+            partialMatrixProduct(A, B, C, col_start, col_end);
+
+            // Send old columns
             MPI_Send(cols_received, count, MPI_INT, getSuccessor(rank, numprocs), 0, MPI_COMM_WORLD);
-            printf("[%d] Sent data to process %d ...\n", rank, getSuccessor(rank, numprocs));
         }
     }
-
-    if(rank == root) {
-        printf("All processus have finished their work, now i gather !\n");
-    }
-    
 
     MPI_Gather(C->matrix, count, MPI_INT, m3->matrix, count, MPI_INT, root, MPI_COMM_WORLD);
 
     if(rank == root) {
-        printf("Root gathered matrix is : \n");
         printMatrix(m3);
     }
     
@@ -272,7 +268,7 @@ void matrixProduct(struct Matrix *A, struct Matrix *B, struct Matrix *C)
     }
 }
 
-void partialMatrixProduct(struct Matrix *A, struct Matrix *B_partial, struct Matrix *C, int col_start, int col_end, int rank) {
+void partialMatrixProduct(struct Matrix *A, struct Matrix *B_partial, struct Matrix *C, int col_start, int col_end) {
 
     for(int i = 0; i < A->row; i++)
     {
@@ -282,7 +278,6 @@ void partialMatrixProduct(struct Matrix *A, struct Matrix *B_partial, struct Mat
             {
 
                 int newVal = getMatrixElement(C, i, j) + getMatrixElement(A, i, k) * getMatrixElement(B_partial, k, j - col_start);
-                // printf("[%d] C[%d][%d] = C[%d][%d] + A[%d][%d] * B[%d][%d] => %d + %d * %d = %d\n", rank, i, j, i, j, i, k, k, j, getMatrixElement(C, i, j), getMatrixElement(A, i, k), getMatrixElement(B_partial, k, j), newVal);
                 setMatrixElement(C, i, j, newVal);
             }
         }
@@ -396,4 +391,12 @@ int getLines(char* in, char** out) {
     }
     
     return nbLines;
+}
+
+int getColStart(int rank, int numprocs, int nb_col, int iteration){
+    for(int i = 0; i < iteration; i++) {
+        rank = getPredecessor(rank, numprocs);
+    }
+
+    return rank * nb_col;
 }
