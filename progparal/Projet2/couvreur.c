@@ -320,11 +320,11 @@ void printMatrix(struct Matrix *matrix)
 {
     for (int i = 0; i < matrix->row; i++)
     {
-        for (int j = 0; j < matrix->col; j++)
+        for (int j = 0; j < matrix->col - 1; j++)
         {
-            printf("%d\t", getMatrixElement(matrix, i, j));
+            printf("%d ", getMatrixElement(matrix, i, j));
         }
-        printf("\n");
+        printf("%d\n", getMatrixElement(matrix, i, matrix->col - 1));
     }
 }
 
