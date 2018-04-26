@@ -7,15 +7,19 @@
 struct Matrix
 {
     int col;
-    int line;
+    int row;
     int *matrix;
 };
 
 int getMatrixElement(struct Matrix *, int, int);
 void setMatrixElement(struct Matrix *, int, int, int);
-struct Matrix *allocateMatrix(int line, int col);
+struct Matrix *allocateMatrix(int row, int col);
+struct Matrix *allocateMatrixWithArray(int row, int col, int* m);
+struct Matrix *allocateMatrixFromColumns(int row, int col, int* m);
 struct Matrix *generateMatrix(char *);
 void matrixProduct(struct Matrix *, struct Matrix *, struct Matrix *);
+void partialMatrixProduct(struct Matrix *A, struct Matrix *B_partial, struct Matrix *C, int col_start, int col_end, int rank);
+struct Matrix* transposeMatrix(struct Matrix *A);
 
 /* MPI */
 int getSuccessor(int rank, int numprocs);
@@ -56,35 +60,145 @@ void main(int argc, char *argv[])
         m2 = generateMatrix(fileB);
         free(fileB);
 
-        N = m1->line;
+        N = m1->row;
         
         m3 = allocateMatrix(N, N);
 
-        matrixProduct(m1, m2, m3);
+        // matrixProduct(m1, m2, m3);
 
-        printMatrix(m3);
+        // printMatrix(m3);
     }
 
     MPI_Bcast(&N, 1, MPI_INT, root, MPI_COMM_WORLD);
 
-    // printf("I am %d and N is %d\n", rank, N);
+    // Now we have N we can compute the slices
+    int count = N*N/numprocs;
 
-    // TODO: scatter it o the other workers
+    // Of matrix A
+    int *rows_received = malloc(sizeof(int) * count);
+    // Of matrix B
+    int *cols_received = malloc(sizeof(int) * count);
 
+    if(rank != root) {
+        m1 = allocateMatrix(N, N);
+        m2 = allocateMatrix(N, N);
+        m3 = allocateMatrix(N, N);
+    }
+
+    // 1. Scatter Matrix A by lines to all processes
+    MPI_Scatter(m1->matrix, count, MPI_INT, rows_received, count, MPI_INT, root, MPI_COMM_WORLD);
+
+    // 2. Transpose matrix B to scatter it column by column if root
+    if(rank == root) {
+        m2 = transposeMatrix(m2);
+    }
+
+    // 3. Scatter matrix B
+    MPI_Scatter(m2->matrix, count, MPI_INT, cols_received, count, MPI_INT, root, MPI_COMM_WORLD);
+
+    // 4. Create pseudo matrices
+    struct Matrix* A = allocateMatrixWithArray(count / N, N, rows_received);
+    struct Matrix* B = allocateMatrixFromColumns(count / N, N, cols_received);
+    struct Matrix* C = allocateMatrix(count / N, N);
+
+    int nb_col = count / N;
+    int col_start = nb_col * rank; // included
+    int col_end = nb_col * (rank + 1); // excluded
+
+    printf("[%d] partial product on columns [%d, %d[ on matrix row %d, col %d.\n",rank, col_start, col_end, A->row, A->col);
+    partialMatrixProduct(A, B, C, col_start, col_end, rank);
+
+    
+
+    // Ring structure
+    for(int i = 0; i < numprocs; i++) {
+        
+        if(rank == root) {
+            printf("Processing turn %d ...\n", i);
+            
+            MPI_Send(cols_received, count, MPI_INT, getSuccessor(rank, numprocs), 0, MPI_COMM_WORLD);
+            printf("[%d] Sent data to process %d ...\n", rank, getSuccessor(rank, numprocs));
+
+            MPI_Recv(cols_received, count, MPI_INT, getPredecessor(rank, numprocs), 0, MPI_COMM_WORLD, NULL);
+            printf("[%d] Received data from process %d ...\n", rank, getPredecessor(rank, numprocs));
+
+            // Do stuff ...
+            B->matrix = cols_received;
+            col_start = nb_col * (rank + (i + 1));
+            col_end = nb_col * (rank + (i + 1));
+
+            // printf("[%d] partial product on columns [%d, %d[ on matrix row %d, col %d.\n",rank, col_start, col_end, A->row, A->col);
+            // partialMatrixProduct(A, B, C, col_start, col_end, rank);
+            
+
+        } else {
+
+
+            MPI_Recv(cols_received, count, MPI_INT, getPredecessor(rank, numprocs), 0, MPI_COMM_WORLD, NULL);
+            printf("[%d] Received data from process %d ...\n", rank, getPredecessor(rank, numprocs));
+
+            // Do stuff ...
+            B->matrix = cols_received;/*
+            col_start = nb_col * (rank + (i + 1));
+            col_end = nb_col * (rank + (i + 1));
+            printf("[%d] partial product on columns [%d, %d[ on matrix row %d, col %d.\n",rank, col_start, col_end, A->row, A->col);*/
+            //partialMatrixProduct(A, B, C, col_start, col_end);
+
+            MPI_Send(cols_received, count, MPI_INT, getSuccessor(rank, numprocs), 0, MPI_COMM_WORLD);
+            printf("[%d] Sent data to process %d ...\n", rank, getSuccessor(rank, numprocs));
+        }
+    }
+
+    if(rank == root) {
+        printf("All processus have finished their work, now i gather !\n");
+    }
+    
+
+    MPI_Gather(C->matrix, count, MPI_INT, m3->matrix, count, MPI_INT, root, MPI_COMM_WORLD);
+
+    if(rank == root) {
+        printf("Root gathered matrix is : \n");
+        printMatrix(m3);
+    }
+    
     MPI_Finalize();
 }
 
-struct Matrix *allocateMatrix(int line, int col)
+struct Matrix *allocateMatrix(int row, int col)
 {
     struct Matrix *matrix = malloc(sizeof(struct Matrix));
+    matrix->row = row;
     matrix->col = col;
-    matrix->line = line;
-    matrix->matrix = (int *)malloc(sizeof(int) * col * line);
+    matrix->matrix = (int *)malloc(sizeof(int) * col * row);
 
-    for (int i = 0; i < col * line; i++)
+    for (int i = 0; i < col * row; i++)
     {
         matrix->matrix[i] = 0;
     }
+
+    return matrix;
+}
+
+struct Matrix *allocateMatrixWithArray(int row, int col, int* m)
+{
+    struct Matrix *matrix = malloc(sizeof(struct Matrix));
+    matrix->col = col;
+    matrix->row = row;
+    matrix->matrix = m;
+
+    return matrix;
+}
+
+// Meaning the array is by columns instead of rows
+struct Matrix *allocateMatrixFromColumns(int row, int col, int* m)
+{
+    struct Matrix *matrix = malloc(sizeof(struct Matrix));
+    matrix->col = col;
+    matrix->row = row;
+
+    matrix->matrix = m;
+
+    matrix = transposeMatrix(matrix);
 
     return matrix;
 }
@@ -94,7 +208,7 @@ struct Matrix *generateMatrix(char *buffer)
     struct Matrix* matrix;
 
     int count = 0;
-    char **lines = (char**) malloc(sizeof(char*) * 10);
+    char **lines = (char**) malloc(sizeof(char*) * 64);
 
     int nLines = getLines(buffer, lines);
     
@@ -122,34 +236,70 @@ struct Matrix *generateMatrix(char *buffer)
 
 /*
  * Matrix struct has a 1D array as a matrix.
- * To get mat[line][col] we need to access mat[(line * col) + offset]
+ * To get mat[row][col] we need to access mat[(row * col) + offset]
  * 
  * Ex: elem matrix[4][3] of matrix[5][5] is (4 * 5) + 3 which is the 23rd element
 */
-int getMatrixElement(struct Matrix *mat, int line, int col)
+int getMatrixElement(struct Matrix *mat, int row, int col)
 {
-    return mat->matrix[(line * mat->col) + col];
+    return mat->matrix[(row * mat->col) + col];
 }
 
-void setMatrixElement(struct Matrix *mat, int line, int col, int val)
+void setMatrixElement(struct Matrix *mat, int row, int col, int val)
 {
-    mat->matrix[(line * mat->col) + col] = val;
+    mat->matrix[(row * mat->col) + col] = val;
 }
 
+/*
+ * To calculate this you need
+ * A.col 
+ * 
+
+*/
 void matrixProduct(struct Matrix *A, struct Matrix *B, struct Matrix *C)
 {
 
-    for (int i = 0; i < A->line; i++)
+    for (int i = 0; i < A->row; i++)
     {
         for (int j = 0; j < A->col; j++)
         {
-            for (int k = 0; k < B->line; k++)
+            for (int k = 0; k < B->row; k++)
             {
                 int newVal = getMatrixElement(C, i, j) + getMatrixElement(A, i, k) * getMatrixElement(B, k, j);
                 setMatrixElement(C, i, j, newVal);
             }
         }
     }
+}
+
+void partialMatrixProduct(struct Matrix *A, struct Matrix *B_partial, struct Matrix *C, int col_start, int col_end, int rank) {
+
+    for(int i = 0; i < A->row; i++)
+    {
+        for(int j = col_start; j < col_end; j++)
+        {
+            for (int k = 0; k < B_partial->row; k++)
+            {
+
+                int newVal = getMatrixElement(C, i, j) + getMatrixElement(A, i, k) * getMatrixElement(B_partial, k, j - col_start);
+                // printf("[%d] C[%d][%d] = C[%d][%d] + A[%d][%d] * B[%d][%d] => %d + %d * %d = %d\n", rank, i, j, i, j, i, k, k, j, getMatrixElement(C, i, j), getMatrixElement(A, i, k), getMatrixElement(B_partial, k, j), newVal);
+                setMatrixElement(C, i, j, newVal);
+            }
+        }
+    }
+}
+
+struct Matrix* transposeMatrix(struct Matrix *A) {
+
+    struct Matrix* B = allocateMatrix(A->col, A->row);
+
+    for(int i = 0; i < A->row; i++) {
+        for(int j = 0; j < A->col; j++) {
+            setMatrixElement(B, j, i, getMatrixElement(A, i, j));
+        }
+    }
+
+    return B;
 }
 
 int getSuccessor(int rank, int numprocs)
@@ -173,7 +323,7 @@ void printArray(int *tab, int length)
 
 void printMatrix(struct Matrix *matrix)
 {
-    for (int i = 0; i < matrix->line; i++)
+    for (int i = 0; i < matrix->row; i++)
     {
         for (int j = 0; j < matrix->col; j++)
         {

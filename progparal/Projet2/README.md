@@ -39,3 +39,8 @@ Parce que j'oublie tout le temps comment compiler et éxucter ce truc.
 
 * File reading -> realloc on the pointer
 * File reading -> handle empty lines
+
+1. Scatter A
+2. Scatter B
+3. Send / Recv en anneau les colonnes de B pour compute A*B = C (créer fonction translation de matrice)
+4. Gather C
