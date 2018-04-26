@@ -374,7 +374,7 @@ char *readFileToBuffer(char *fileName)
  * 
 */
 int getLines(char* in, char*** out) {
-    
+
     int nbLines = 0;
     int size = 16;
     
@@ -385,10 +385,8 @@ int getLines(char* in, char*** out) {
     {
         
         tmp[nbLines] = token;
-        
         nbLines++;
 
-        /* TODO: realloc the pointer */
         if(nbLines >= size) {
             
             size *= 2;
