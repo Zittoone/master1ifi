@@ -30,7 +30,7 @@ int getColStart(int rank, int numprocs, int nb_col, int iteration);
 void printArray(int *tab, int length);
 void printMatrix(struct Matrix *);
 char *readFileToBuffer(char *);
-int getLines(char* in, char** out);
+int getLines(char* in, char*** out);
 
 void main(int argc, char *argv[])
 {
@@ -207,9 +207,9 @@ struct Matrix *generateMatrix(char *buffer)
     struct Matrix* matrix;
 
     int count = 0;
-    char **lines = (char**) malloc(sizeof(char*) * 64);
+    char **lines;
 
-    int nLines = getLines(buffer, lines);
+    int nLines = getLines(buffer, &lines);
     
     matrix = allocateMatrix(nLines, nLines);
     
@@ -373,28 +373,38 @@ char *readFileToBuffer(char *fileName)
  * Split a buffer into lines and returns the number of lines
  * 
 */
-int getLines(char* in, char** out) {
-    int nbLines = 0;
-    int size = 10;
+int getLines(char* in, char*** out) {
     
+    int nbLines = 0;
+    int size = 16;
+    
+    char** tmp = (char**) malloc(sizeof(char*) * size);
+
     char *token = strtok(in, "\n");
     while (token != NULL)
     {
         
-        out[nbLines] = token;
+        tmp[nbLines] = token;
         
         nbLines++;
 
-        /* TODO: realloc the pointer
+        /* TODO: realloc the pointer */
         if(nbLines >= size) {
-            size += 10;
-            out = (char**) realloc(out, sizeof(char*) * size);
+            
+            size *= 2;
+            
+            tmp = (char**) realloc(tmp, sizeof(char*) * size);
+            if(tmp == NULL){
+                fputs("Memory error", stderr);
+                exit(2);
+            }
         }
-        */
+
         
         token = strtok(NULL, "\n");
     }
     
+    (*out) = tmp;
     return nbLines;
 }
 
