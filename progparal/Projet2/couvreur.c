@@ -232,7 +232,7 @@ struct Matrix *generateMatrix(char *buffer)
         while (token != NULL)
         {
 
-            long value = atol(token);
+            long value = atol(token); // les opticiens
 
             setMatrixElement(matrix, i, j, value);
             j++;
@@ -260,12 +260,6 @@ void setMatrixElement(struct Matrix *mat, int row, int col, long val)
     mat->matrix[(row * mat->col) + col] = val;
 }
 
-/*
- * To calculate this you need
- * A.col 
- * 
-
-*/
 void matrixProduct(struct Matrix *A, struct Matrix *B, struct Matrix *C)
 {
 
