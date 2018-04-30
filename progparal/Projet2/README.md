@@ -4,7 +4,7 @@
 
 Parce que j'oublie tout le temps comment compiler et éxucter ce truc.
 
-* __Compilation__ : `mpicc couvreur.c -o couvreur -lm`
+* __Compilation__ : `mpicc -g -Wall couvreur.c -o couvreur -lm -fopenmp`
 * __Execution__ : `mpirun ./couvreur`
 
 ## Good links
