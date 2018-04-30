@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
         {
 
             // Copy old columns into buffer
-            memcpy(cols_received, B->matrix, sizeof(int) * count);
+            memcpy(cols_received, B->matrix, sizeof(long) * count);
 
             // Receive new columns
             MPI_Recv(B->matrix, count, MPI_LONG, getPredecessor(rank, numprocs), 0, MPI_COMM_WORLD, NULL);
@@ -284,7 +284,7 @@ void matrixProduct(struct Matrix *A, struct Matrix *B, struct Matrix *C)
 void partialMatrixProduct(struct Matrix *A, struct Matrix *B_partial, struct Matrix *C, int col_start, int col_end)
 {
 
-#pragma omp parallel for
+//#pragma omp parallel for
     for (int i = 0; i < A->row; i++)
     {
         for (int j = col_start; j < col_end; j++)
