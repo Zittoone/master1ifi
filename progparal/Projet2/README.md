@@ -29,18 +29,30 @@ Parce que j'oublie tout le temps comment compiler et éxucter ce truc.
 
 ## Implémentation
 
+### Objectifs
+
+- [x] Calcul du produit matriciel avec N multiple de P
+- [x] Gestion des matrices très grandes (testé avec 2000x2000)
+- [ ] Gestion du déséquilibre dans le calcul, i.e N non multiple de P
+
 ### Structures
+
+Une structure *Matrix* composée du nombre de lignes, de colonnes et d'un tableau à une dimension représentant la matrice.
 
 ### Linéarisation des matrices
 
+Les matrices sont donc linéarisées, chaques lignes sont à la suite les unes des autres. Donc contigües dans la mémoire.
+
 ### Communications
 
-## TODO
+1. Un premier broadcast est effectué pour donner la taille N des matrices.
+2. On scatter la matrice du fichier 1 par lignes, puis la matrice du fichier B par ligne (je transpose la matrice pour pouvoir utiliser la primitive scatter et la re-transpose une fois reçu).
+3. Par la suite les calculs sont effectués en faisant circuler les colonnes en anneau.
+4. Et enfin on gather les résultats.
 
-* File reading -> realloc on the pointer
-* File reading -> handle empty lines
+### Parallélisation des calculs
 
-1. Scatter A
-2. Scatter B
-3. Send / Recv en anneau les colonnes de B pour compute A*B = C (créer fonction translation de matrice)
-4. Gather C
+* Produit matriciel : __oui__ en utilisant un *scheduling static* sans spécifier la taille du chunk, chaque processus aura un nombre équivalant de lignes à traiter en parallèle.
+* Produit matriciel partiel : __oui__ identique que précédement en ajustant les calcul sur la matrice partiel des colonnes.
+* Transposition de matrice : __oui__  simple parallélisation d'une boucle for, comme je copie d'une matrice A vers une matrice B je n'ai pas à avoir peur que \[j][i] soit modifié avant \[i][j].
+* Lecture fichier : __non__ mon disque dur ne possède qu'un seul bras.
