@@ -180,6 +180,7 @@ struct Matrix *allocateMatrix(int row, int col)
     matrix->col = col;
     matrix->matrix = malloc(sizeof(long) * col * row);
 
+    #pragma omp parallel for
     for (int i = 0; i < col * row; i++)
     {
         matrix->matrix[i] = 0;
@@ -268,31 +269,44 @@ void setMatrixElement(struct Matrix *mat, int row, int col, long val)
 void matrixProduct(struct Matrix *A, struct Matrix *B, struct Matrix *C)
 {
 
-    for (int i = 0; i < A->row; i++)
+    int i,j,k;
+    long *a = A->matrix;
+    long *b = B->matrix;
+    long *c = C->matrix;
+    #pragma omp parallel shared(a,b,c) private(i,j,k)
     {
-        for (int j = 0; j < A->col; j++)
+        #pragma omp for  schedule(static)
+        for (i = 0; i < A->row; i++)
         {
-            for (int k = 0; k < B->row; k++)
+            for (j = 0; j < A->col; j++)
             {
-                int newVal = getMatrixElement(C, i, j) + getMatrixElement(A, i, k) * getMatrixElement(B, k, j);
-                setMatrixElement(C, i, j, newVal);
+                for (k = 0; k < B->row; k++)
+                {
+                    c[(i * C->col) + j] = c[(i * C->col) + j] + a[(i * A->col) + k] * b[(k * B->col) + j];
+                }
             }
-        }
+    }
     }
 }
 
 void partialMatrixProduct(struct Matrix *A, struct Matrix *B_partial, struct Matrix *C, int col_start, int col_end)
 {
-
-//#pragma omp parallel for
-    for (int i = 0; i < A->row; i++)
+    
+    int i,j,k;
+    long *a = A->matrix;
+    long *b = B_partial->matrix;
+    long *c = C->matrix;
+    #pragma omp parallel shared(a,b,c) private(i,j,k)
     {
-        for (int j = col_start; j < col_end; j++)
+        #pragma omp for  schedule(static)
+        for (i = 0; i < A->row; i++)
         {
-            for (int k = 0; k < B_partial->row; k++)
+            for (j = col_start; j < col_end; j++)
             {
-                int newVal = getMatrixElement(C, i, j) + getMatrixElement(A, i, k) * getMatrixElement(B_partial, k, j - col_start);
-                setMatrixElement(C, i, j, newVal);
+                for (k = 0; k < B_partial->row; k++)
+                {
+                    c[(i * C->col) + j] = c[(i * C->col) + j] + a[(i * A->col) + k] * b[(k * B_partial->col) + j - col_start];
+                }
             }
         }
     }
@@ -303,6 +317,7 @@ struct Matrix *transposeMatrix(struct Matrix *A)
 
     struct Matrix *B = allocateMatrix(A->col, A->row);
 
+    #pragma omp parallel for collapse(2)
     for (int i = 0; i < A->row; i++)
     {
         for (int j = 0; j < A->col; j++)
