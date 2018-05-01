@@ -269,7 +269,7 @@ void matrixProduct(struct Matrix *A, struct Matrix *B, struct Matrix *C)
     long *c = C->matrix;
     #pragma omp parallel shared(a,b,c) private(i,j,k)
     {
-        #pragma omp for  schedule(static)
+        #pragma omp for
         for (i = 0; i < A->row; i++)
         {
             for (j = 0; j < A->col; j++)
@@ -292,7 +292,7 @@ void partialMatrixProduct(struct Matrix *A, struct Matrix *B_partial, struct Mat
     long *c = C->matrix;
     #pragma omp parallel shared(a,b,c) private(i,j,k)
     {
-        #pragma omp for  schedule(static)
+        #pragma omp for
         for (i = 0; i < A->row; i++)
         {
             for (j = col_start; j < col_end; j++)
