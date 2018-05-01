@@ -5,7 +5,7 @@
 Parce que j'oublie tout le temps comment compiler et éxucter ce truc.
 
 * __Compilation__ : `mpicc -g -Wall couvreur.c -o couvreur -lm -fopenmp`
-* __Execution__ : `mpirun ./couvreur`
+* __Execution__ : `mpirun ./couvreur data/A data/B`
 
 ## Good links
 
@@ -52,7 +52,20 @@ Les matrices sont donc linéarisées, chaques lignes sont à la suite les unes d
 
 ### Parallélisation des calculs
 
-* Produit matriciel : __oui__ en utilisant un *scheduling static* sans spécifier la taille du chunk, chaque processus aura un nombre équivalant de lignes à traiter en parallèle.
+* Produit matriciel : __oui__ chaque processus aura un nombre équivalant de lignes à traiter en parallèle.
 * Produit matriciel partiel : __oui__ identique que précédement en ajustant les calcul sur la matrice partiel des colonnes.
 * Transposition de matrice : __oui__  simple parallélisation d'une boucle for, comme je copie d'une matrice A vers une matrice B je n'ai pas à avoir peur que \[j][i] soit modifié avant \[i][j].
 * Lecture fichier : __non__ mon disque dur ne possède qu'un seul bras.
+
+### N non multiple de P
+
+Deux cas :
+
+1. N est inférieur à P et donc :
+    * certains P n'auront pas de travail ;
+    * la circulation de l'anneau devra être revue ;
+    * nécissité d'utiliser un anneau ? autant faire tout sur root et basta ?
+2. N est supérieur à P et donc :
+    * déséquilibre au niveau du découpage (le reste de N/P doit être réparti)
+    * comment scatter et gather les extra ?
+    * faire simple : root s'en occupe et prend ce qu'il reste
