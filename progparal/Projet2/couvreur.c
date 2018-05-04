@@ -6,22 +6,22 @@
 /* Matrix */
 struct Matrix
 {
-    int col;
-    int row;
-    long *matrix;
+    size_t col;
+    size_t row;
+    long long *matrix;
 };
 
-long getMatrixElement(struct Matrix *matrix, int row, int col);
-void setMatrixElement(struct Matrix *matrix, int row, int col, long value);
+long long getMatrixElement(struct Matrix *matrix, size_t row, size_t col);
+void setMatrixElement(struct Matrix *matrix, size_t row, size_t col, long long value);
 
-struct Matrix *allocateMatrix(int row, int col);
-struct Matrix *allocateMatrixWithArray(int row, int col, long *array);
-struct Matrix *allocateMatrixFromColumns(int row, int col, long *columns);
+struct Matrix *allocateMatrix(size_t row, size_t col, int shouldAlloc);
+struct Matrix *allocateMatrixWithArray(size_t row, size_t col, long long *array);
+struct Matrix *allocateMatrixFromColumns(size_t row, size_t col, long long *columns);
 struct Matrix *transposeMatrix(struct Matrix *matrix);
 struct Matrix *generateMatrix(char *buffer);
 
 void matrixProduct(struct Matrix *, struct Matrix *, struct Matrix *);
-void partialMatrixProduct(struct Matrix *A, struct Matrix *B_partial, struct Matrix *C, int col_start, int col_end);
+void partialMatrixProduct(struct Matrix *A, struct Matrix *B_partial, struct Matrix *C, size_t col_start, size_t col_end);
 
 /* MPI */
 int getSuccessor(int rank, int numprocs);
@@ -67,13 +67,12 @@ int main(int argc, char *argv[])
         if (N % numprocs != 0)
         {
             printf("Warning! N is not multiple of P (N=%d, P=%d)!\n", N, numprocs);
-        }
-
-        m3 = allocateMatrix(N, N);
+        } 
     }
 
     if (numprocs == 1)
     {
+        m3 = allocateMatrix(N, N, 1);
         matrixProduct(m1, m2, m3);
         printMatrix(m3);
         MPI_Finalize();
@@ -83,23 +82,35 @@ int main(int argc, char *argv[])
     MPI_Bcast(&N, 1, MPI_INT, root, MPI_COMM_WORLD);
 
     // Now we have N we can compute the slices
-    long count = N * N / numprocs;
+    int count = N * N / numprocs;
+    int rest = N * N % numprocs;
+
+    // N < P
+    if (count == 0)
+    {
+        m3 = allocateMatrix(N, N, 1);
+        matrixProduct(m1, m2, m3);
+        printMatrix(m3);
+        MPI_Finalize();
+        exit(EXIT_SUCCESS);
+    }
 
     // Of matrix A
-    long *rows_received = malloc(sizeof(long) * count);
+    long long *rows_received = malloc(sizeof(long long) * count);
     // Of matrix B
-    long *cols_received = malloc(sizeof(long) * count);
+    long long *cols_received = malloc(sizeof(long long) * count);
 
     if (rank != root)
     {
-        m1 = allocateMatrix(N, N);
-        m2 = allocateMatrix(N, N);
-        m3 = allocateMatrix(N, N);
+        m1 = allocateMatrix(N, N, 0);
+        m2 = allocateMatrix(N, N, 0);
     }
 
-    // 1. Scatter Matrix A by lines to all processes
-    MPI_Scatter(m1->matrix, count, MPI_LONG, rows_received, count, MPI_LONG, root, MPI_COMM_WORLD);
+    m3 = allocateMatrix(N, N, 0);
 
+    // 1. Scatter Matrix A by lines to all processes
+    MPI_Scatter(m1->matrix, count, MPI_LONG_LONG, rows_received, count, MPI_LONG_LONG, root, MPI_COMM_WORLD);
+    
     // 2. Transpose matrix B to scatter it column by column if root
     if (rank == root)
     {
@@ -107,12 +118,12 @@ int main(int argc, char *argv[])
     }
 
     // 3. Scatter matrix B
-    MPI_Scatter(m2->matrix, count, MPI_LONG, cols_received, count, MPI_LONG, root, MPI_COMM_WORLD);
+    MPI_Scatter(m2->matrix, count, MPI_LONG_LONG, cols_received, count, MPI_LONG_LONG, root, MPI_COMM_WORLD);
 
     // 4. Create pseudo matrices
     struct Matrix *A = allocateMatrixWithArray(count / N, N, rows_received);
     struct Matrix *B = allocateMatrixFromColumns(count / N, N, cols_received);
-    struct Matrix *C = allocateMatrix(count / N, N);
+    struct Matrix *C = allocateMatrix(count / N, N, 1);
 
     int nb_col = count / N;
     int col_start = getColStart(rank, numprocs, nb_col, 0); // included
@@ -124,14 +135,13 @@ int main(int argc, char *argv[])
     for (int i = 1; i < numprocs; i++)
     {
 
-        if (rank == root)
+        if (rank != root)
         {
-
             // Send our columns
-            MPI_Send(B->matrix, count, MPI_LONG, getSuccessor(rank, numprocs), 0, MPI_COMM_WORLD);
+            MPI_Send(B->matrix, count, MPI_LONG_LONG, getSuccessor(rank, numprocs), 0, MPI_COMM_WORLD);
 
             // Receive the new columns to ompute into B
-            MPI_Recv(B->matrix, count, MPI_LONG, getPredecessor(rank, numprocs), 0, MPI_COMM_WORLD, NULL);
+            MPI_Recv(B->matrix, count, MPI_LONG_LONG, getPredecessor(rank, numprocs), 0, MPI_COMM_WORLD, NULL);
 
             // Recalibrate columns
             col_start = getColStart(rank, numprocs, nb_col, i);
@@ -144,10 +154,10 @@ int main(int argc, char *argv[])
         {
 
             // Copy old columns into buffer
-            memcpy(cols_received, B->matrix, sizeof(long) * count);
+            memcpy(cols_received, B->matrix, sizeof(long long) * count);
 
             // Receive new columns
-            MPI_Recv(B->matrix, count, MPI_LONG, getPredecessor(rank, numprocs), 0, MPI_COMM_WORLD, NULL);
+            MPI_Recv(B->matrix, count, MPI_LONG_LONG, getPredecessor(rank, numprocs), 0, MPI_COMM_WORLD, NULL);
 
             // Recalibrate columns
             col_start = getColStart(rank, numprocs, nb_col, i);
@@ -157,11 +167,11 @@ int main(int argc, char *argv[])
             partialMatrixProduct(A, B, C, col_start, col_end);
 
             // Send old columns
-            MPI_Send(cols_received, count, MPI_LONG, getSuccessor(rank, numprocs), 0, MPI_COMM_WORLD);
+            MPI_Send(cols_received, count, MPI_LONG_LONG, getSuccessor(rank, numprocs), 0, MPI_COMM_WORLD);
         }
     }
 
-    MPI_Gather(C->matrix, count, MPI_LONG, m3->matrix, count, MPI_LONG, root, MPI_COMM_WORLD);
+    MPI_Gather(C->matrix, count, MPI_LONG_LONG, m3->matrix, count, MPI_LONG_LONG, root, MPI_COMM_WORLD);
 
     if (rank == root)
     {
@@ -173,23 +183,32 @@ int main(int argc, char *argv[])
     exit(EXIT_SUCCESS);
 }
 
-struct Matrix *allocateMatrix(int row, int col)
+struct Matrix *allocateMatrix(size_t row, size_t col, int shouldAlloc)
 {
     struct Matrix *matrix = malloc(sizeof(struct Matrix));
     matrix->row = row;
     matrix->col = col;
-    matrix->matrix = malloc(sizeof(long) * col * row);
+    matrix->matrix = malloc(sizeof(long long) * col * row);
 
-    #pragma omp parallel for
-    for (int i = 0; i < col * row; i++)
+    if(matrix->matrix == NULL)
     {
-        matrix->matrix[i] = 0;
+        fputs("Memory error allocating matrix", stderr);
+        exit(EXIT_FAILURE);
     }
+
+    if(shouldAlloc) {
+        #pragma omp parallel for
+        for (int i = 0; i < col * row; i++)
+        {
+            matrix->matrix[i] = 0;
+        }
+    }
+    
 
     return matrix;
 }
 
-struct Matrix *allocateMatrixWithArray(int row, int col, long *m)
+struct Matrix *allocateMatrixWithArray(size_t row, size_t col, long long *m)
 {
     struct Matrix *matrix = malloc(sizeof(struct Matrix));
     matrix->col = col;
@@ -200,7 +219,7 @@ struct Matrix *allocateMatrixWithArray(int row, int col, long *m)
 }
 
 // Meaning the array is by columns instead of rows
-struct Matrix *allocateMatrixFromColumns(int row, int col, long *m)
+struct Matrix *allocateMatrixFromColumns(size_t row, size_t col, long long *m)
 {
     struct Matrix *matrix = malloc(sizeof(struct Matrix));
     matrix->col = col;
@@ -221,7 +240,7 @@ struct Matrix *generateMatrix(char *buffer)
 
     int nLines = getLines(buffer, &lines);
 
-    matrix = allocateMatrix(nLines, nLines);
+    matrix = allocateMatrix(nLines, nLines, 0);
 
     for (int i = 0; i < nLines; i++)
     {
@@ -232,7 +251,7 @@ struct Matrix *generateMatrix(char *buffer)
         while (token != NULL)
         {
 
-            long value = atol(token); // les opticiens
+            long long value = atol(token); // les opticiens
 
             setMatrixElement(matrix, i, j, value);
             j++;
@@ -250,12 +269,12 @@ struct Matrix *generateMatrix(char *buffer)
  * 
  * Ex: elem matrix[4][3] of matrix[5][5] is (4 * 5) + 3 which is the 23rd element
 */
-long getMatrixElement(struct Matrix *mat, int row, int col)
+long long getMatrixElement(struct Matrix *mat, size_t row, size_t col)
 {
     return mat->matrix[(row * mat->col) + col];
 }
 
-void setMatrixElement(struct Matrix *mat, int row, int col, long val)
+void setMatrixElement(struct Matrix *mat, size_t row, size_t col, long long val)
 {
     mat->matrix[(row * mat->col) + col] = val;
 }
@@ -263,10 +282,10 @@ void setMatrixElement(struct Matrix *mat, int row, int col, long val)
 void matrixProduct(struct Matrix *A, struct Matrix *B, struct Matrix *C)
 {
 
-    int i,j,k;
-    long *a = A->matrix;
-    long *b = B->matrix;
-    long *c = C->matrix;
+    size_t i,j,k;
+    long long *a = A->matrix;
+    long long *b = B->matrix;
+    long long *c = C->matrix;
     #pragma omp parallel shared(a,b,c) private(i,j,k)
     {
         #pragma omp for
@@ -283,13 +302,13 @@ void matrixProduct(struct Matrix *A, struct Matrix *B, struct Matrix *C)
     }
 }
 
-void partialMatrixProduct(struct Matrix *A, struct Matrix *B_partial, struct Matrix *C, int col_start, int col_end)
+void partialMatrixProduct(struct Matrix *A, struct Matrix *B_partial, struct Matrix *C, size_t col_start, size_t col_end)
 {
     
-    int i,j,k;
-    long *a = A->matrix;
-    long *b = B_partial->matrix;
-    long *c = C->matrix;
+    size_t i,j,k;
+    long long *a = A->matrix;
+    long long *b = B_partial->matrix;
+    long long *c = C->matrix;
     #pragma omp parallel shared(a,b,c) private(i,j,k)
     {
         #pragma omp for
@@ -309,12 +328,12 @@ void partialMatrixProduct(struct Matrix *A, struct Matrix *B_partial, struct Mat
 struct Matrix *transposeMatrix(struct Matrix *A)
 {
 
-    struct Matrix *B = allocateMatrix(A->col, A->row);
+    struct Matrix *B = allocateMatrix(A->col, A->row, 0);
 
-    #pragma omp parallel for collapse(2)
-    for (int i = 0; i < A->row; i++)
+    #pragma omp parallel for
+    for (size_t i = 0; i < A->row; i++)
     {
-        for (int j = 0; j < A->col; j++)
+        for (size_t j = 0; j < A->col; j++)
         {
             setMatrixElement(B, j, i, getMatrixElement(A, i, j));
         }
@@ -339,9 +358,9 @@ void printMatrix(struct Matrix *matrix)
     {
         for (int j = 0; j < matrix->col - 1; j++)
         {
-            printf("%ld ", getMatrixElement(matrix, i, j));
+            printf("%lld ", getMatrixElement(matrix, i, j));
         }
-        printf("%ld\n", getMatrixElement(matrix, i, matrix->col - 1));
+        printf("%lld\n", getMatrixElement(matrix, i, matrix->col - 1));
     }
 }
 
