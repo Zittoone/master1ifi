@@ -13,34 +13,11 @@ function init() {
   
   // 1 On recupere un pointeur sur le canvas
   canvas = document.querySelector("#myCanvas");
-
-  // Get a 16/9 aspect ratio
-  let width = 1080;
-  let height = 608;
-  canvas.setAttribute("width", width);
-  canvas.setAttribute("height", height);
   
   // 2 On recupere le contexte graphique pour dessiner
   // dans le canvas
   ctx = canvas.getContext("2d");
   
-  // 3 on dessine pour verifier que ca marche
-  //ctx.fillStyle = 'red';
-  //ctx.fillRect(10, 10, 100, 100);
-  /*rect1 = new Rectangle(10, 10, 30, 30, 'red');
-  rect1.vitesseX = 5;
-  rect1.vitesseY=3;
-  ennemis.push(rect1);
-  
-   rect2 = new GrowingRectangle(110, 110, 100, 100, 'green');
-    rect2.vitesseY = 2;
-  ennemis.push(rect2);
-
-  cercle1 = new Cercle(60, 60, 15, 'blue')
-  cercle1.vitesseX = 5
-  cercle1.vitesseY = 2
-  ennemis.push(cercle1)
-  */
   joueur = new Rectangle(20, 250, 10, 10, 'blue');
   joueur.move = function(){
     let dx = joueur.x - mousepos.x;
