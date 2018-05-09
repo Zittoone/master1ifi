@@ -7,3 +7,6 @@
 [submodule "TER"]
 	path = TER
 	url = https://github.com/ThomasGauthierr/TER
+[submodule "webscience/TD_Serena_Villata"]
+	path = webscience/TD_Serena_Villata
+	url = https://github.com/Zittoone/Argument-Mining-on-the-Web
