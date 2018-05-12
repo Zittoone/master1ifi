@@ -1,62 +1,29 @@
-function traiteKeydown(evt) {
+function onKeydown(evt) {
     let code = evt.code;
-    switch(code) {
-      case 'ArrowRight':
-        // on va vers la droite
-        joueur.vitesseX = joueur.vitesseMax;
-        break;
-      case 'ArrowLeft':
-        // on va vers la gauche
-        joueur.vitesseX = -joueur.vitesseMax;
-        break;
-      case 'ArrowUp':
-        // on va vers la droite
-        joueur.vitesseY = -joueur.vitesseMax;
-        break;
-      case 'ArrowDown':
-        // on va vers la gauche
-        joueur.vitesseY = joueur.vitesseMax;
-        break;
+    if (event.keyCode === 37 || code === 'ArrowLeft') {
+        evt.inputStates.left = true;
+    } else if (event.keyCode === 38 || code === 'ArrowUp') {
+        evt.inputStates.up = true;
+    } else if (event.keyCode === 39 || code === 'ArrowRight') {
+        evt.inputStates.right = true;
+    } else if (event.keyCode === 40 || code === 'ArrowDown') {
+        evt.inputStates.down = true;
+    } else if (event.keyCode === 32 || code === 'Space') {
+        evt.inputStates.space = true;
     }
-  }
-  
-  function traiteKeyup(evt) {
-    let code = evt.code;
-    
-    switch(code) {
-      case 'ArrowRight':
-      case 'ArrowLeft':
-        // on s'arrete horizontalement
-        joueur.vitesseX = 0;
-        break;
-      case 'ArrowUp':
-      case 'ArrowDown':
-        // on s'arrete horizontalement
-        joueur.vitesseY = 0;
-        break;
-    }
-  }
-
-  function distance(x1, y1, x2, y2) {
-    return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 }
 
-function getMousePos(canvas, evt) {
-  // get canvas position
-  var obj = canvas;
-  var top = 0;
-  var left = 0;
-  while (obj && obj.tagName != 'BODY') {
-      top += obj.offsetTop;
-      left += obj.offsetLeft;
-      obj = obj.offsetParent;
-  }
-
-  // return relative mouse position
-  var mouseX = evt.clientX - left + window.pageXOffset;
-  var mouseY = evt.clientY - top + window.pageYOffset;
-  return {
-      x: mouseX,
-      y: mouseY
-  };
+function onKeyup(evt) {
+    let code = evt.code;
+    if (event.keyCode === 37 || code === 'ArrowLeft') {
+        evt.inputStates.left = false;
+    } else if (event.keyCode === 38 || code === 'ArrowUp') {
+        evt.inputStates.up = false;
+    } else if (event.keyCode === 39 || code === 'ArrowRight') {
+        evt.inputStates.right = false;
+    } else if (event.keyCode === 40 || code === 'ArrowDown') {
+        evt.inputStates.down = false;
+    } else if (event.keyCode === 32 || code === 'Space') {
+        evt.inputStates.space = false;
+    }
 }
