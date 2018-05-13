@@ -1,4 +1,7 @@
 function testeCollisions(joueur, obstacles, lasers, stars) {
+    if(joueur.state != entityStates.alive)
+        return;
+
     testeCollisionsAvecMurs(joueur);
     testCollisionJoueursObstacles(joueur, obstacles);
     testCollisionJoueursLasers(joueur, lasers);
@@ -7,7 +10,11 @@ function testeCollisions(joueur, obstacles, lasers, stars) {
 
 function testCollisionJoueursObstacles(joueur, obstacles) {
     obstacles.forEach((o) => {
-        // testeCollisionsAvecMurs(o);
+        if(o.x > 0 && o.x < w)            
+        if (((joueur.x + joueur.l) > o.x) && ((joueur.x) < o.x + o.l) && ((joueur.y + joueur.h) > o.y) && ((joueur.y) < (o.y + o.h))){
+            o.explode();
+            joueur.explode();
+        } 
     });
 }
 
@@ -30,15 +37,19 @@ function testeCollisionsAvecMurs(r) {
 
     if ((r.x + r.l) > canvas.width) {
         r.x = canvas.width - r.l;
+        r.resetSpeed();
     } else if ((r.x) < 0) {
         r.x = 0;
+        r.resetSpeed();
     }
 
     // MURS BAS ET HAUT
     if ((r.y + r.h) > canvas.height) {
         r.y = canvas.height - r.h;
+        r.resetSpeed();
     } else if ((r.y) < 0) {
         r.y = 0;
+        r.resetSpeed();
     }
 }
 
