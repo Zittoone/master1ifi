@@ -1,3 +1,6 @@
+/******************************************************************/
+/*                          CLASS CIRCLE                          */
+/******************************************************************/
 class Cercle {
   constructor(x, y, r) {
     this.x = x || 0;
@@ -11,10 +14,6 @@ class Cercle {
   }
 
   draw(ctx) {
-    // Bonne pratique : si on modifie le contexte
-    // couleur, epaisseur du trait, repere geometrique etc
-    // on sauvegarde au debut de la fonction, on restaure a
-    // la fin
     ctx.save();
 
     ctx.fillStyle = this.couleur;
@@ -26,64 +25,19 @@ class Cercle {
     ctx.restore();
   }
 
-  move() {
-    this.x += this.vitesseX;
-    this.y += this.vitesseY;
-  }
-}
-
-class Boss extends Cercle {
-  constructor(x, y, r, v, img, scale) {
-    super(x, y, r);
-    this.couleur = "rgb(255, 29, 129)";
-    this.trail1 = "rgb(77, 56, 112)";
-    this.trail2 = "rgb(12, 254, 230)";
-    this.vitesseX = v;
-    this.sprite = img;
-    this.current_angle = 0;
-    this.state = entityStates.alive;
-    this.scale = scale || 1;
-    this.l *= this.scale;
-    this.h *= this.scale;
-    
-  }
-
-  shot() {
-
-  }
-
-  draw(ctx) {
-
-
-    if(this.current_angle == 360) {
-        this.current_angle = 0;
-    }
-
-    this.sprite.draw(ctx, this.x, this.y, this.scale, this.current_angle++);
-    ctx.save();
-
-    ctx.fillStyle = "black";
-    ctx.beginPath();
-    ctx.arc(this.x + this.r, this.y + this.r, this.r, 0, 2 * Math.PI);
-    ctx.closePath();
-    ctx.fill();
-
-    ctx.restore();
-    
-  }
-
-  move(modifier) {
+  move(m) {
+    let modifier = m || 1;
     this.x += this.vitesseX * modifier;
     this.y += this.vitesseY * modifier;
   }
 }
 
-class Asteroid extends Cercle {
+/******************************************************************/
+/*                        CLASS ASTEROID                          */
+/******************************************************************/
+class Asteroid extends Cercle{
   constructor(x, y, r, v, img, scale) {
     super(x, y, r);
-    this.couleur = "rgb(255, 29, 129)";
-    this.trail1 = "rgb(77, 56, 112)";
-    this.trail2 = "rgb(12, 254, 230)";
     this.vitesseX = v;
     this.sprite = img;
     this.current_angle = 0;
@@ -91,50 +45,49 @@ class Asteroid extends Cercle {
     this.scale = scale || 1;
     this.l *= this.scale;
     this.h *= this.scale;
+    this.r *= this.scale;
     
+  }
+
+  draw(ctx) {
+
+    // Update the angle
+    if(this.current_angle == 360) {
+        this.current_angle = 0;
+    }
+    this.sprite.draw(ctx, this.x - this.r, this.y - this.r, this.scale, this.current_angle++);
+
+
+    ctx.save();
+
+    ctx.fillStyle = this.couleur;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.restore();
   }
 
   explode() {
     this.state = entityStates.dead;
   }
-
-  draw(ctx) {
-
-    /*let rad = (45 * Math.PI) / 180;
-        ctx.translate(this.x, this.y);
-        ctx.rotate(rad);*/
-
-        /*
-    ctx.fillStyle = this.couleur;
-    ctx.beginPath();
-    ctx.arc(this.x + this.r, this.y + this.r, this.r, 0, 2 * Math.PI);
-    ctx.closePath();
-    ctx.fill();
-*/
-    if(this.current_angle == 360) {
-        this.current_angle = 0;
-    }
-
-    this.sprite.draw(ctx, this.x - this.l / 2, this.y - this.h / 2, this.scale, this.current_angle++);
-    
-  }
-
-  move(modifier) {
-    this.x += this.vitesseX * modifier;
-    this.y += this.vitesseY * modifier;
-  }
 }
 
-class ParallaxStar {
+/******************************************************************/
+/*                     CLASS PARALLAX STAR                        */
+/******************************************************************/
+class ParallaxStar extends Cercle {
   constructor(x, y, layer) {
-    this.x = x;
-    this.y = y;
+    super(x, y, 3 + layer);
     this.layer = layer;
-    this.r = 3 + layer;
     this.color1 = "rgb(52, 84, 135," + layer / 10 + ")";
     this.color2 = "rgb(40, 69, 111," + layer / 10 + ")";
   }
 
+  /**
+   * Draw 2 opposed arcs
+   */
   draw(ctx) {
     let angle = -45 * 180 / Math.PI;
     ctx.save();
