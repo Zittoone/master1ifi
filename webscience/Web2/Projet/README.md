@@ -2,37 +2,37 @@
 
 ## Gameplay
 
-Jeu 2D vu de côté (plateformer), bougeant en permanance vers la droite.
-Le joueur doit placer des formes pour permettre à l'individu de se déplacer jusqu'à la fin du niveau.
-gghg
-## Définition du niveau
-
-Un niveau est décrit dans un fichier .json avec comme paramètres :
-    * le titre du fichier défini le nom du niveau ;
-    * les plateformes avec le côté haut gauche (x1, y1) et le côté bas droit (x2 et y2) ;
-    * les formes disponibles définies par la largeur et la hauteur, la couleur le le nombre disponible ;
-    * la taille de la carte ;
-    * le lien vers la musique du niveau ;
-    * le lien vers les sprites du joueur, fond etc. ;
-
-C'est cool d'avoir un effet parrallax sur le fond. 
+Vous contrôlez un fusée dôtée d'un bouclier activable via **ESPACE**, le but est de survivre pendant un temps *t* affiché en haut à gauche.
+Le bouclier vous permet de passer outre les obstacles.
 
 ## Effets sonores
 
+Une musique de fond est activé via l'API `Audio`.
 
+## Design
 
-## Direction artistique
+* Simulation d'un effet parallax en fonction du layer choisi (cf. fonction `createStars` dans **game.js**) ;
+* utilisation de sprites :
+    1. pour le joueur, la fusée est animée à l'arrière grâce à un sprite, de même que pour son bouclier (sprite non animé) et l'explosion (sprite animé) ;
+    2. pour les astéroïdes, j'utilise un sprite représentant différents astéroïdes et donc ne sont pas une suite de mouvement, chaque astéroïde généré en a un choisi au hasard ;
+* les images ainsi que le fichier audio ont été trouvés sur internet.
 
-* trouver une palette de couleur pour l'environnement par type : on pourra imaginer terre / eau / feu / vent
+## Points positifs
 
+* Utilisation des techniques apprises en cours :
+    1. syntaxe ES6 (classes, héritage, lambdas, etc.) ;
+    2. frameworks à la main (GameFramework skelleton) ;
+    3. loader d'assets (dans le fichier **sprite.js**) asynchrone avec fonction de callback ;
+    4. utilisation de sprites sheets ;
+    5. utilisation audio (malheureusement pas **AudioContext**) ;
+    6. black-boxing comme le game framework (voire framework Shield dans **joueur.js**) ;
+    7. séparation des tâches en fichier
+* niveaux infinis car générés aléatoirement ;
+* déplacement du vaisseau fluide via un facteur accélération et vélocité ;
+* facilement maintenable et évolutif.
 
-## Contraintes
+## Points négatifs
 
-* Javascript 6
-* Utilisation canvas avec les pratiques vues en cours
-
-## Bons points
-
-* Utilisation musique 
-* Interaction direct avec la souris / clavier
-* FUN
+* Gameplay pas forcément très intéressant et diversifié ;
+* l'utilisation de l'audio est très limitée, j'aurais aimé synchroniser le rythme de la musique avec le spawning d'astéroïde ;
+* impossiblité d'utiliser l'API soundcloud car ils ne permettent plus d'enregistrer une application ! (c'est dommage !).
