@@ -114,9 +114,12 @@ var GF = () => {
 
         if (inputStates.space) {
             // Callback function that will start the game once the player is fully loaded
-            initLevel(1, function() {
+            initLevel(1, function(player) {
+                // Change the gameState to gameRunning
+                joueur = player;
                 gameState = gameStates.gameRunning;
             });
+
             inputStates.space = false;
         }
     };
@@ -137,14 +140,12 @@ var GF = () => {
             o.move(vitesse);
         });
 
-        let player = joueur[0];
-
         // Draw all the time
-        player.draw(ctx);
-        switch (player.state) {
+        joueur.draw(ctx);
+        switch (joueur.state) {
             case entityStates.alive:
-                player.move(1, inputStates);
-                testeCollisions(player, obstacles, lasers, stars);
+                joueur.move(1, inputStates);
+                testeCollisions(joueur, obstacles, lasers, stars);
                 time_left = timeLeft();
                 if (time_left <= 0) {
                     gameState = gameStates.gameLevelWon;
@@ -167,12 +168,12 @@ var GF = () => {
         }
 
         if (inputStates.space) {
-            player.activateShield();
+            joueur.activateShield();
             // Prevent spam
             inputStates.space = false;
         }
 
-        writeText("Temps restant : " + parseFloat(time_left).toFixed(2), 10, 15, 10, "left", ctx);
+        writeText("Temps restant : " + parseFloat(time_left / 1000).toFixed(2) + "s", 10, 15, 10, "left", ctx);
         writeText("Niveau : " + current_level, w - 5, 15, 10, "right", ctx);
     };
 
@@ -187,7 +188,9 @@ var GF = () => {
 
         if (inputStates.space) {
             current_level++;
-            initLevel(current_level, function() {
+            initLevel(current_level, function(player) {
+                // Change the gameState to gameRunning
+                joueur = player;
                 gameState = gameStates.gameRunning;
             });
             inputStates.space = false;
@@ -205,8 +208,9 @@ var GF = () => {
 
         if (inputStates.space) {
             // Reinit the game to the level 1
-            initLevel(1, function() {
+            initLevel(1, function(player) {
                 // Change the gameState to gameRunning
+                joueur = player;
                 gameState = gameStates.gameRunning;
             });
 
@@ -237,7 +241,6 @@ var GF = () => {
         /**
          * Create the entities
          */
-        createJoueur(w / 2 - 80 / 2, h / 2 - 48 / 2, joueur, 1, callback);
 
         stars = [];
         stars.pushArray(createStars(50, 1));
@@ -249,6 +252,8 @@ var GF = () => {
         let pixel_per_second = 8;
         let start_offset = w * 2;
         createAsteroids(n * 40, pixel_per_second, start_offset, start_offset + w * 10 * n, obstacles);
+
+        createJoueur(w / 2 - 80 / 2, h / 2 - 48 / 2, 1, callback);
     };
 
     /**
@@ -322,7 +327,7 @@ function createAsteroids(n, s, xStart, xEnd, array) {
             let scale = 0.25 + Math.random() * 0.75;
             let x = xStart + Math.random() * (xEnd - xStart + 1);
             let y = Math.random() * h;
-            let asteroid = new Asteroid(x, y, (SPRITE_WIDTH / 2) - delta, -s, sprites[Math.floor(Math.random() * NB_POSTURES)], scale);
+            let asteroid = new Asteroid(x, y, SPRITE_WIDTH / 2 - delta, -s, sprites[Math.floor(Math.random() * NB_POSTURES)], scale);
             array.push(asteroid);
         }
     });
@@ -332,26 +337,29 @@ function createAsteroids(n, s, xStart, xEnd, array) {
  *
  * @param {number} xPos the x of the player
  * @param {number} yPos the y of the player
- * @param {array} joueur the referenced array
  * @param {number} scale the scale
  */
-function createJoueur(xPos, yPos, joueur, scale, callback) {
+function createJoueur(xPos, yPos, scale, callback) {
     let SPRITESHEET_URL = "./assets/img/joueur.png";
     let SPRITE_WIDTH = 64;
     let SPRITE_HEIGHT = 29;
     let NB_POSTURES = 1;
     let NB_SPRITES_PER_ROW = 1;
 
-    loadAssetsAnimated(SPRITESHEET_URL, SPRITE_WIDTH, SPRITE_HEIGHT, NB_POSTURES, 4, function(sprites) {
-        joueur[0] = new Joueur(xPos, yPos, SPRITE_WIDTH, SPRITE_HEIGHT, sprites, scale);
-        createExplosionSprite(joueur[0], scale);
-        createShieldSprite(joueur[0], 0.5);
+    loadAssetsAnimated(SPRITESHEET_URL, SPRITE_WIDTH, SPRITE_HEIGHT, NB_POSTURES, 4, function(s1) {
+        let player = new Joueur(xPos, yPos, SPRITE_WIDTH, SPRITE_HEIGHT, s1, scale);
 
-        callback();
+        createExplosionSprite(scale, function(s2) {
+            player.explosion = s2;
+            createShieldSprite(0.5, function(s3) {
+                player.shield = s3;
+                callback(player);
+            });
+        });
     });
 }
 
-function createExplosionSprite(joueur, scale) {
+function createExplosionSprite(scale, callback) {
     let SPRITESHEET_URL = "./assets/img/explosion.png";
     let SPRITE_WIDTH = 128;
     let SPRITE_HEIGHT = 128;
@@ -359,11 +367,11 @@ function createExplosionSprite(joueur, scale) {
     let NB_SPRITES_PER_ROW = 4;
     loadAssetsAnimated(SPRITESHEET_URL, SPRITE_WIDTH, SPRITE_HEIGHT, NB_POSTURES, 14, function(sprites) {
         sprites[0].setNbImagesPerSecond(7);
-        joueur.explosion = sprites;
+        callback(sprites);
     });
 }
 
-function createShieldSprite(joueur, scale) {
+function createShieldSprite(scale, callback) {
     let SPRITESHEET_URL = "./assets/img/ring.png";
     let SPRITE_WIDTH = 256;
     let SPRITE_HEIGHT = 256;
@@ -371,7 +379,8 @@ function createShieldSprite(joueur, scale) {
     let NB_SPRITES_PER_ROW = 1;
     loadAssetsAnimated(SPRITESHEET_URL, SPRITE_WIDTH, SPRITE_HEIGHT, NB_POSTURES, 1, function(sprites) {
         sprites[0].setNbImagesPerSecond(7);
-        joueur.shield_sprite = sprites;
+        // Shield framework here, see in "player.js"
+        callback(new Shield(sprites));
     });
 }
 

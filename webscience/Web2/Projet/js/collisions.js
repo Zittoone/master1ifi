@@ -8,7 +8,7 @@ function testeCollisions(joueur, obstacles, lasers, stars) {
 }
 
 function testCollisionJoueursObstacles(joueur, obstacles) {
-  if (!joueur.shield_activated) {
+  if (!joueur.shield.isActivated()) {
     obstacles.forEach(o => {
       if (o.x > 0 && o.x < w) {
         if(rectsOverlapCircle(joueur.x, joueur.y, joueur.l, joueur.h, o.x, o.y, o.r)) {

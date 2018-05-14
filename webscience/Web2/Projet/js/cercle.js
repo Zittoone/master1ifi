@@ -56,17 +56,6 @@ class Asteroid extends Cercle{
         this.current_angle = 0;
     }
     this.sprite.draw(ctx, this.x - this.r, this.y - this.r, this.scale, this.current_angle++);
-
-
-    ctx.save();
-
-    ctx.fillStyle = this.couleur;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI);
-    ctx.closePath();
-    ctx.fill();
-
-    ctx.restore();
   }
 
   explode() {
