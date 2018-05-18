@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#define _NUM_THREADS 4
 
 /* Matrix */
 struct Matrix
@@ -21,7 +22,8 @@ struct Matrix *transposeMatrix(struct Matrix *matrix);
 struct Matrix *generateMatrix(char *buffer);
 
 void matrixProduct(struct Matrix *, struct Matrix *, struct Matrix *);
-void partialMatrixProduct(struct Matrix *A, struct Matrix *B_partial, struct Matrix *C, size_t col_start, size_t col_end);
+void partialMatrixProduct(struct Matrix *A, struct Matrix *B_partial, struct Matrix *C, size_t col_start, size_t col_end, size_t rest);
+void nonMultipleMatrixProduct(struct Matrix *, struct Matrix *, struct Matrix *, size_t);
 
 /* MPI */
 int getSuccessor(int rank, int numprocs);
@@ -36,6 +38,9 @@ int getLines(char *in, char ***out);
 int main(int argc, char *argv[])
 {
     int rank, numprocs, root;
+
+    /* set number of threads to spawn */
+    omp_set_num_threads(_NUM_THREADS);
 
     int N;
     root = 0;
@@ -63,11 +68,6 @@ int main(int argc, char *argv[])
         free(fileB);
 
         N = m1->row;
-
-        if (N % numprocs != 0)
-        {
-            printf("Warning! N is not multiple of P (N=%d, P=%d)!\n", N, numprocs);
-        } 
     }
 
     if (numprocs == 1)
@@ -82,7 +82,8 @@ int main(int argc, char *argv[])
     MPI_Bcast(&N, 1, MPI_INT, root, MPI_COMM_WORLD);
 
     // Now we have N we can compute the slices
-    int count = N * N / numprocs;
+    int count = (N * N / numprocs);
+    count -= (count % N);
     int rest = N * N % numprocs;
 
     // N < P
@@ -106,7 +107,7 @@ int main(int argc, char *argv[])
         m2 = allocateMatrix(N, N, 0);
     }
 
-    m3 = allocateMatrix(N, N, 0);
+    m3 = allocateMatrix(N, N, 1);
 
     // 1. Scatter Matrix A by lines to all processes
     MPI_Scatter(m1->matrix, count, MPI_LONG_LONG, rows_received, count, MPI_LONG_LONG, root, MPI_COMM_WORLD);
@@ -121,51 +122,40 @@ int main(int argc, char *argv[])
     MPI_Scatter(m2->matrix, count, MPI_LONG_LONG, cols_received, count, MPI_LONG_LONG, root, MPI_COMM_WORLD);
 
     // 4. Create pseudo matrices
-    struct Matrix *A = allocateMatrixWithArray(count / N, N, rows_received);
-    struct Matrix *B = allocateMatrixFromColumns(count / N, N, cols_received);
-    struct Matrix *C = allocateMatrix(count / N, N, 1);
-
     int nb_col = count / N;
-    int col_start = getColStart(rank, numprocs, nb_col, 0); // included
-    int col_end = col_start + nb_col;                       // excluded
+    int rest_nb_col = N % numprocs;
+    struct Matrix *A = allocateMatrixWithArray(nb_col, N, rows_received);
+    struct Matrix *B = allocateMatrixFromColumns(nb_col, N, cols_received);
+    struct Matrix *C = allocateMatrix(nb_col, N, 1);
 
-    partialMatrixProduct(A, B, C, col_start, col_end);
+    int col_start; // included
+    int col_end; // excluded
+
 
     // Ring structure
-    for (int i = 1; i < numprocs; i++)
+    for (int i = 0; i < numprocs; i++)
     {
+        col_start = getColStart(rank, numprocs, nb_col, i);
+        col_end = col_start + nb_col;
 
+        // 1. Everyone computes
+        partialMatrixProduct(A, B, C, col_start, col_end, 0);
+
+        // 2. Root save into buffer old columns and others send their data
         if (rank != root)
         {
             // Send our columns
             MPI_Send(B->matrix, count, MPI_LONG_LONG, getSuccessor(rank, numprocs), 0, MPI_COMM_WORLD);
-
-            // Receive the new columns to ompute into B
-            MPI_Recv(B->matrix, count, MPI_LONG_LONG, getPredecessor(rank, numprocs), 0, MPI_COMM_WORLD, NULL);
-
-            // Recalibrate columns
-            col_start = getColStart(rank, numprocs, nb_col, i);
-            col_end = col_start + nb_col;
-
-            // Compute
-            partialMatrixProduct(A, B, C, col_start, col_end);
-        }
-        else
-        {
-
-            // Copy old columns into buffer
+        } else {
             memcpy(cols_received, B->matrix, sizeof(long long) * count);
+        }
 
-            // Receive new columns
-            MPI_Recv(B->matrix, count, MPI_LONG_LONG, getPredecessor(rank, numprocs), 0, MPI_COMM_WORLD, NULL);
+        // 3. Everyone receive
+        MPI_Recv(B->matrix, count, MPI_LONG_LONG, getPredecessor(rank, numprocs), 0, MPI_COMM_WORLD, NULL);
 
-            // Recalibrate columns
-            col_start = getColStart(rank, numprocs, nb_col, i);
-            col_end = col_start + nb_col;
-
-            // Compute
-            partialMatrixProduct(A, B, C, col_start, col_end);
-
+        // 4. Root send, unlocking the ring
+        if(rank == root)
+        {
             // Send old columns
             MPI_Send(cols_received, count, MPI_LONG_LONG, getSuccessor(rank, numprocs), 0, MPI_COMM_WORLD);
         }
@@ -175,6 +165,10 @@ int main(int argc, char *argv[])
 
     if (rank == root)
     {
+        if(rest != 0) {
+            m2 = transposeMatrix(m2);
+            nonMultipleMatrixProduct(m1, m2, m3, N - rest);
+        }
         printMatrix(m3);
     }
 
@@ -302,7 +296,7 @@ void matrixProduct(struct Matrix *A, struct Matrix *B, struct Matrix *C)
     }
 }
 
-void partialMatrixProduct(struct Matrix *A, struct Matrix *B_partial, struct Matrix *C, size_t col_start, size_t col_end)
+void partialMatrixProduct(struct Matrix *A, struct Matrix *B_partial, struct Matrix *C, size_t col_start, size_t col_end, size_t rest)
 {
     
     size_t i,j,k;
@@ -312,7 +306,7 @@ void partialMatrixProduct(struct Matrix *A, struct Matrix *B_partial, struct Mat
     #pragma omp parallel shared(a,b,c) private(i,j,k)
     {
         #pragma omp for
-        for (i = 0; i < A->row; i++)
+        for (i = rest; i < A->row; i++)
         {
             for (j = col_start; j < col_end; j++)
             {
@@ -325,10 +319,34 @@ void partialMatrixProduct(struct Matrix *A, struct Matrix *B_partial, struct Mat
     }
 }
 
+void nonMultipleMatrixProduct(struct Matrix *A, struct Matrix *B, struct Matrix *C, size_t rest)
+{
+    
+    size_t i,j,k;
+    long long *a = A->matrix;
+    long long *b = B->matrix;
+    long long *c = C->matrix;
+    #pragma omp parallel shared(a,b,c) private(i,j,k)
+    {
+        #pragma omp for
+        for (i = 0; i < A->row; i++)
+        {
+            for (j = 0; j < A->col; j++)
+            {
+                for (k = 0; k < B->row; k++)
+                {
+                    if(i >= rest || j >= rest)
+                    c[(i * C->col) + j] = c[(i * C->col) + j] + a[(i * A->col) + k] * b[(k * B->col) + j];
+                }
+            }
+        }
+    }
+}
+
 struct Matrix *transposeMatrix(struct Matrix *A)
 {
 
-    struct Matrix *B = allocateMatrix(A->col, A->row, 0);
+    struct Matrix *B = allocateMatrix(A->col, A->row, 1);
 
     #pragma omp parallel for
     for (size_t i = 0; i < A->row; i++)

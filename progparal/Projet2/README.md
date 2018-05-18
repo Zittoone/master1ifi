@@ -11,6 +11,8 @@ Parce que j'oublie tout le temps comment compiler et éxucter ce truc.
 
 * [MPI Scatter and Gather](http://mpitutorial.com/tutorials/mpi-scatter-gather-and-allgather/)
 
+* [Hybrid MPI and OpenMP](https://www.cct.lsu.edu/~estrabd/intro-hybrid-mpi-openmp.pdf)
+
 ## Important things
 
 * Un fichier nom.c où nom doit être remplacé par votre nom et un fichier nom.txt qui indique quelles fonctionnalités vous avez implémenté.
@@ -33,7 +35,7 @@ Parce que j'oublie tout le temps comment compiler et éxucter ce truc.
 
 - [x] Calcul du produit matriciel avec N multiple de P
 - [x] Gestion des matrices très grandes (testé avec 2000x2000)
-- [ ] Gestion du déséquilibre dans le calcul, i.e N non multiple de P
+- [x] Gestion du déséquilibre dans le calcul, i.e N non multiple de P
 
 ### Structures
 
@@ -69,3 +71,23 @@ Deux cas :
     * déséquilibre au niveau du découpage (le reste de N/P doit être réparti)
     * comment scatter et gather les extra ?
     * faire simple : root s'en occupe et prend ce qu'il reste
+
+### Différents benchmarks
+
+Au préalable : `set OMP_NUM_THREADS 4`. OMP ne met qu'un thread par process, donc il vaut mieux changer ce paramètre.
+
+* Avec N = 5600 soit 31 360 000 éléments :
+    1. avec `-n 1`
+        * real  16m36,511s
+        * user  64m37,896s
+        * sys   0m5,481s
+    2. avec `-n 4`
+        * real  17m18,370s
+        * user  67m35,635s
+        * sys   0m26,430s
+    3. sans arguments (n = 2)
+        * real  17m56,094s
+        * user  69m38,305s
+        * sys   0m7,417s
+
+Les résultats ne sont vraiment pas satisfaisants même si on voit l'accélération dûe au parallélisme, je ne sais pas s'il s'agit des specs de mon PC (2 Core i7) parceque l'application est designé pour du calcul distribué ou alors qu'il y a des optimisations à faire que je ne connais pas.
