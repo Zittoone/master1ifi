@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
     int rank, numprocs, root;
 
     /* set number of threads to spawn */
-    omp_set_num_threads(_NUM_THREADS);
+    // omp_set_num_threads(_NUM_THREADS);
 
     int N;
     root = 0;
