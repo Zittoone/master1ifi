@@ -7,9 +7,9 @@ void main(int argc, char* argv[]) {
 
     for(int i = 0; i < N; i++) {
         for(int j = 0; j < N - 1; j++) {
-            printf("%d ", i + j);
+            printf("%d ", 1);
         }
-        printf("%d\n", i + (N - 1));
+        printf("%d\n", 1);
     }
 
 }
