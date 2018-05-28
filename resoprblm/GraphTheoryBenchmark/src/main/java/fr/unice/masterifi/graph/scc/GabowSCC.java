@@ -25,7 +25,8 @@ public class GabowSCC implements SCC {
         num = 0;
 
         strong(g);
-        System.out.println(Arrays.toString(I));
+
+        count = count - g.V();
     }
 
     private void strong(DirectedGraph g) {
@@ -54,9 +55,6 @@ public class GabowSCC implements SCC {
         S.push(v);
         B.push(v);
         I[v] = num;
-        System.out.print("S=" + Utils.toStringListCustom(S, Utils::toAlphabet) + ";");
-        System.out.print(" B=" + Utils.toStringListCustom(B, Utils::toAlphabet) + ";");
-        System.out.println(" num(" + Utils.toAlphabet(v) + ") = " + num);
         num++;
 
         for(int w : g.adj(v)) {
@@ -65,7 +63,6 @@ public class GabowSCC implements SCC {
             } else {
                 /* if non affected to CFC */
                 if(I[w] <= g.V()) {
-                    System.out.println("on touche " + Utils.toAlphabet(w) + " on dépile " + Utils.toAlphabet(v) + " de B");
                     while (I[B.peek()] > I[w]) {
                         B.pop();
                     }
@@ -73,29 +70,13 @@ public class GabowSCC implements SCC {
             }
         }
 
-        System.out.print("S=" + Utils.toStringListCustom(S, Utils::toAlphabet) + ";");
-        System.out.print(" B=" + Utils.toStringListCustom(B, Utils::toAlphabet) + ";");
-        System.out.println(" On quitte " + Utils.toAlphabet(v));
-
         if(v == B.peek()) {
             count++;
-            System.out.println("S="+ S);
-            System.out.println("I=" + Arrays.toString(I));
-            System.out.println(v + " <= " + S.peek());
             while (!S.empty() && v != S.peek()) {
                 I[S.pop()] = count;
             }
             I[S.pop()] = count;
             B.pop();
-
-            List<Character> cfc = new LinkedList<>();
-            for(int i = 0; i < g.V(); i++) {
-                if(I[i] == count) {
-                    cfc.add(Utils.toAlphabet(i));
-                }
-            }
-            System.out.println(Utils.toAlphabet(v) + " est le sommet de B. On dépile S jusqu'à " + Utils.toAlphabet(v) + " CFC = " + Arrays.toString(cfc.toArray()) + ". B=" + Utils.toStringListCustom(B, Utils::toAlphabet));
-
         }
     }
 
