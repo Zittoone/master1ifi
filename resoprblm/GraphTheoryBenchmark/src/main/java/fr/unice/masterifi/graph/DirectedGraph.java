@@ -1,5 +1,6 @@
 package fr.unice.masterifi.graph;
 
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -39,6 +40,7 @@ public class DirectedGraph {
         adj[v].add(w);
         indegree[w]++;
         E++;
+        adj[v].sort(Comparator.comparingInt(Integer::intValue));
     }
 
     public Iterable<Integer> adj(int v) {
