@@ -35,9 +35,6 @@ public class TarjanSCC implements SCC {
                 parcours(graph, v);
             }
         }
-
-        for (List<Integer> l : partition)
-            System.out.println(Utils.toStringListCustom(l, Utils::toAlphabet));
     }
 
     private void parcours(DirectedGraph graph, int v) {
@@ -46,8 +43,6 @@ public class TarjanSCC implements SCC {
         num++;
         P.push(v);
         dans_P[v] = true;
-
-        System.out.println("Parcours de " + Utils.toAlphabet(v) + "; P=" + Utils.toStringListCustom(P, Utils::toAlphabet));
 
         for(Integer w : graph.adj(v)) {
             if(nums[w] == -1) {
