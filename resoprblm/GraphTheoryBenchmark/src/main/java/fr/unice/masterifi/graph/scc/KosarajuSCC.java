@@ -23,7 +23,7 @@ public class KosarajuSCC implements SCC {
             id[i] = 0;
         }
         visited = new boolean[g.V()];
-        count = 1;
+        count = 0;
 
         List<Integer> elems = new ArrayList<>();
         for (int i = 0; i < g.V(); i++) {
@@ -43,10 +43,10 @@ public class KosarajuSCC implements SCC {
             visited[i] = false;
         }
         while(!S.empty()) {
+            count++;
             int v = S.pop();
             id[v] = count;
             dfs2(transposed, v);
-            count++;
         }
     }
 
