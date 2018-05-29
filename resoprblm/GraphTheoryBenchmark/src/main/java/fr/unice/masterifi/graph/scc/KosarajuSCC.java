@@ -37,7 +37,6 @@ public class KosarajuSCC implements SCC {
             dfs(g, current);
         }
 
-        System.out.println("On prend le transposé");
         DirectedGraph transposed = g.reverse();
 
         for (int i = 0; i < g.V(); i++) {
@@ -45,7 +44,6 @@ public class KosarajuSCC implements SCC {
         }
         while(!S.empty()) {
             int v = S.pop();
-            System.out.println("On dépile S: " + Utils.toAlphabet(v) + ". On atteint : " + Utils.toStringListCustom(Utils.toList(transposed.adj(v)), Utils::toAlphabet));
             id[v] = count;
             dfs2(transposed, v);
             count++;
@@ -59,7 +57,6 @@ public class KosarajuSCC implements SCC {
                 dfs2(transposed, a);
             }
         }
-        System.out.println("adding " + Utils.toAlphabet(v) + " to CFC " + count);
         id[v] = count;
         S.remove(((Integer) v));
     }
@@ -72,7 +69,6 @@ public class KosarajuSCC implements SCC {
             }
         }
         S.add(u);
-        System.out.println("On ferme " + Utils.toAlphabet(u) + " : " + Utils.toStringListCustom(S, Utils::toAlphabet));
     }
 
     @Override
