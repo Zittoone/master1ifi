@@ -1,11 +1,9 @@
 package fr.unice.masterifi;
 
 import fr.unice.masterifi.graph.AdjMatrixDirectedGraph;
-import fr.unice.masterifi.graph.DirectedGraph;
 import fr.unice.masterifi.graph.Graph;
 import fr.unice.masterifi.graph.scc.GabowSCC;
 import fr.unice.masterifi.graph.scc.KosarajuSCC;
-import fr.unice.masterifi.graph.scc.KosarajuSharirSCC;
 import fr.unice.masterifi.graph.scc.TarjanSCC;
 import org.knowm.xchart.*;
 import org.knowm.xchart.style.Styler;
@@ -21,7 +19,6 @@ public class App {
         // adj matrix so Kosaraju is O(V²)
         Graph graph = new AdjMatrixDirectedGraph(V);
 
-        KosarajuSharirSCC kosarajuSharirSCC;
         KosarajuSCC kosaraju;
         TarjanSCC tarjan;
         GabowSCC gabow;
