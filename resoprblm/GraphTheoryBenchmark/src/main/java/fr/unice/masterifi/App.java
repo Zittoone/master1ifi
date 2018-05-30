@@ -15,7 +15,7 @@ public class App {
 
     public static void main(String[] args) throws IOException {
 
-        int V = 5000;
+        int V = 10000;
         // adj matrix so Kosaraju is O(V²)
         Graph graph = new AdjMatrixDirectedGraph(V);
 
@@ -25,7 +25,7 @@ public class App {
         int nbSimulations = 100;
         int inc = V/nbSimulations;
 
-        double ms[][] = new double[6][nbSimulations+1];
+        double ms[][] = new double[7][nbSimulations+1];
         long t1, t2;
 
         for (int i = 0; i < nbSimulations + 1; i++) {
@@ -39,6 +39,7 @@ public class App {
             t2 = System.currentTimeMillis();
             ms[0][i] = t2 - t1;
             ms[4][i] = tarjan.getCount();
+            ms[6][i] = graph.E() / V;
 
             System.out.println("Tarjan done in " + ms[0][i] + "ms => " + tarjan.getCount());
 
@@ -88,20 +89,14 @@ public class App {
         System.out.println(Arrays.deepToString(ms));
 
         // XYChart chart = QuickChart.getChart("SCC Solvers Benchmark", "Graph density (Edges/V²)", "Time to solve (ms));
-        XYChart chart = new XYChartBuilder().width(1920).height(1080).title("SCC Solvers Benchmark with " + V + " vertices").xAxisTitle("Graph density (Edges/V²)").yAxisTitle("Time to solve (ms)").theme(Styler.ChartTheme.GGPlot2).build();
+        XYChart chart = new XYChartBuilder().width(1920).height(1080).title("SCC Solvers Benchmark with " + V + " vertices").xAxisTitle("Graph density (Edges/V²)").yAxisTitle("Time to solve (ms)").theme(Styler.ChartTheme.XChart).build();
         chart.addSeries("Tarjan", ms[3], ms[0]);
         chart.addSeries("Kosaraju", ms[3], ms[5]);
         chart.addSeries("Gabow", ms[3], ms[2]);
-        // chart.addSeries("Number of SCC", ms[3], ms[4]);
-        // chart.getStyler().setMarkerSize(1);
-        // chart.getStyler().setAnnotationsFont()
 
         new SwingWrapper<>(chart).displayChart();
 
-        // Save it
-        BitmapEncoder.saveBitmap(chart, "./Sample_Chart_" + V + "_" + System.currentTimeMillis(), BitmapEncoder.BitmapFormat.PNG);
-
 // or save it in high-res
-        BitmapEncoder.saveBitmapWithDPI(chart, "./Sample_Chart_300_DPI_" + V + "_" + System.currentTimeMillis(), BitmapEncoder.BitmapFormat.PNG, 300);
+        BitmapEncoder.saveBitmap(chart, "./SCCSolvers_" + V + "_" + System.currentTimeMillis(), BitmapEncoder.BitmapFormat.PNG);
     }
 }
