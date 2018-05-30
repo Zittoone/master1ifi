@@ -1,6 +1,7 @@
 package fr.unice.masterifi.graph.scc;
 
 import fr.unice.masterifi.graph.DirectedGraph;
+import fr.unice.masterifi.graph.Graph;
 import fr.unice.masterifi.graph.Utils;
 
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ public class TarjanSCC implements SCC {
     private Stack<Integer> P;
     private List<List<Integer>> partition;
 
-    public TarjanSCC(DirectedGraph graph) {
+    public TarjanSCC(Graph graph) {
         num = 0;
         P = new Stack<>();
         nums = new int[graph.V()];
@@ -37,7 +38,7 @@ public class TarjanSCC implements SCC {
         }
     }
 
-    private void parcours(DirectedGraph graph, int v) {
+    private void parcours(Graph graph, int v) {
         nums[v] = num;
         numAccessible[v] = num;
         num++;

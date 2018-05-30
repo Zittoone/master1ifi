@@ -1,6 +1,7 @@
 package fr.unice.masterifi.graph.scc;
 
 import fr.unice.masterifi.graph.DirectedGraph;
+import fr.unice.masterifi.graph.Graph;
 import fr.unice.masterifi.graph.Utils;
 
 import java.util.ArrayList;
@@ -15,7 +16,7 @@ public class KosarajuSCC implements SCC {
     private int[] id;
     private int count;
 
-    public KosarajuSCC(DirectedGraph g) {
+    public KosarajuSCC(Graph g) {
 
         S = new Stack<>();
         id = new int[g.V()];
@@ -37,7 +38,7 @@ public class KosarajuSCC implements SCC {
             dfs(g, current);
         }
 
-        DirectedGraph transposed = g.reverse();
+        Graph transposed = g.reverse();
 
         for (int i = 0; i < g.V(); i++) {
             visited[i] = false;
@@ -50,7 +51,7 @@ public class KosarajuSCC implements SCC {
         }
     }
 
-    private void dfs2(DirectedGraph transposed, int v) {
+    private void dfs2(Graph transposed, int v) {
         visited[v] = true;
         for(Integer a : transposed.adj(v)) {
             if(!visited[a]) {
@@ -61,7 +62,7 @@ public class KosarajuSCC implements SCC {
         S.remove(((Integer) v));
     }
 
-    private void dfs(DirectedGraph g, int u) {
+    private void dfs(Graph g, int u) {
         visited[u] = true;
         for(Integer a : g.adj(u)) {
             if(!visited[a]) {

@@ -3,7 +3,7 @@ package fr.unice.masterifi.graph;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class AdjMatrixDirectedGraph {
+public class AdjMatrixDirectedGraph implements Graph {
     private int V;
     private int E;
     private boolean[][] adj;
@@ -25,6 +25,17 @@ public class AdjMatrixDirectedGraph {
 
     public Iterable<Integer> adj(int v) {
         return new AdjIterator(v);
+    }
+
+    @Override
+    public AdjMatrixDirectedGraph reverse() {
+        AdjMatrixDirectedGraph reverse = new AdjMatrixDirectedGraph(V);
+        for (int v = 0; v < V; v++) {
+            for (int w : adj(v)) {
+                reverse.addEdge(w, v);
+            }
+        }
+        return reverse;
     }
 
     private class AdjIterator implements Iterator<Integer>, Iterable<Integer> {
