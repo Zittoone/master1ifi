@@ -2,33 +2,26 @@
 
 ## Gabow
 
-* Implémentation compréhensible, assez rapide à implémenter
+L'algorithme de Gabow n'est pas évident à comprendre et difficile à mettre en oeuvre, mais est relativement très puissant.
 
 ## Kosaraju
 
-* Implémentation très simple, algo très élégant
+L'algorithme de kosaraju est simple à comprendre, il est très élégant car on utilise le transposé du graphe, ce qui lui coûte beaucoup de performance.
+Cela m'a forcé à réévaluer l'algorithme par rapport à d'autres implémentations sur internet, et finalement il s'agit juste du transposé du graphe qui prend beaucoup de temps.
+Pourtant j'utilise bien une matrice d'adjacence.
 
 ## Tarjan
 
-* Implémentation très rapide, pas très évident à comprendre au début
+L'agorithme de Tarjan est 
 
-## Benchmarks
-Temps en ms avec 10 000 000 de sommets et ajout à chaque itération (10) de 1 000 000 d'arcs avec respectivement Tarjan, Kosaraju et Gabow
+## Benchmark
 
-* Take 1 :
-```
-[
-    [6923, 5565, 5242, 4410, 3523, 3613, 4652, 4610, 3400, 3902],
-    [10612, 6320, 11986, 12576, 14795, 18790, 16943, 21020, 20026, 22321],
-    [3019, 703, 865, 829, 833, 2909, 3023, 770, 820, 3082]
-]
-```
+Détails :
+* __Nombre de sommets :__ 5000
+* __Nombre d'itérations :__ 100
+* __Densité du graphe :__ de 0 à 1
 
-* Take 2 :
-```
-[
-    [7477, 4508, 4086, 3369, 4428, 3297, 4471, 4481, 3255, 3777],
-    [15169, 11123, 12446, 11356, 16374, 18721, 16227, 20413, 19377, 23402],
-    [704, 925, 766, 693, 712, 2782, 2843, 783, 819, 833]
-]
-```
+![alt text](Sample_Chart_300_DPI_5000_1527686433185.png "High res")
+![alt text](Sample_Chart_5000_1527686432612.png "Low res")
+
+## Conclusion

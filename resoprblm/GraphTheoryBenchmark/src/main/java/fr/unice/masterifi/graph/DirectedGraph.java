@@ -40,6 +40,7 @@ public class DirectedGraph implements Graph {
     public void addEdge(int v, int w) {
         validateVertex(v);
         validateVertex(w);
+
         adj[v].add(w);
         indegree[w]++;
         E++;
