@@ -4,7 +4,7 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-public class DirectedGraph {
+public class DirectedGraph implements Graph {
 
     private final int V;                // Vertices
     private int E;                      // Edges
@@ -21,10 +21,12 @@ public class DirectedGraph {
         }
     }
 
+    @Override
     public int V() {
         return V;
     }
 
+    @Override
     public int E() {
         return E;
     }
@@ -34,17 +36,19 @@ public class DirectedGraph {
             throw new IllegalArgumentException("vertex " + v + " is not between 0 and " + (V-1));
     }
 
+    @Override
     public void addEdge(int v, int w) {
         validateVertex(v);
         validateVertex(w);
         adj[v].add(w);
         indegree[w]++;
         E++;
-        adj[v].sort(Comparator.comparingInt(Integer::intValue));
     }
 
+    @Override
     public Iterable<Integer> adj(int v) {
         validateVertex(v);
+        // adj[v].sort(Comparator.comparingInt(Integer::intValue));
         return adj[v];
     }
 
@@ -58,6 +62,7 @@ public class DirectedGraph {
         return indegree[v];
     }
 
+    @Override
     public DirectedGraph reverse() {
         DirectedGraph reverse = new DirectedGraph(V);
         for (int v = 0; v < V; v++) {

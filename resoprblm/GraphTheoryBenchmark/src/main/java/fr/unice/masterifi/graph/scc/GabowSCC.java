@@ -1,5 +1,6 @@
 package fr.unice.masterifi.graph.scc;
 
+import fr.unice.masterifi.graph.Graph;
 import fr.unice.masterifi.graph.Utils;
 import fr.unice.masterifi.graph.DirectedGraph;
 
@@ -17,7 +18,7 @@ public class GabowSCC implements SCC {
     private int count;
     private int num;
 
-    public GabowSCC(DirectedGraph g) {
+    public GabowSCC(Graph g) {
 
         I = new int[g.V()];
         S = new Stack<>();
@@ -29,7 +30,7 @@ public class GabowSCC implements SCC {
         count = count - g.V();
     }
 
-    private void strong(DirectedGraph g) {
+    private void strong(Graph g) {
         // 1. Empty stacks S and B
         S.clear();
         B.clear();
@@ -50,7 +51,7 @@ public class GabowSCC implements SCC {
 
     }
 
-    private void dfs(DirectedGraph g, int v) {
+    private void dfs(Graph g, int v) {
 
         S.push(v);
         B.push(v);
