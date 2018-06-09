@@ -4,7 +4,7 @@
 
 Merci [Stackoverflow](https://stackoverflow.com/questions/7864075/using-mpi-bcast-for-mpi-communication).
 
-Tout le monde appelle la méthode de broadcast, les données sont reçu du rang 0 dans leur buffer.
+Tout le monde appelle la méthode de broadcast, les données sont reçues du rang 0 dans leur buffer.
 
 Exemple avec 666 comme donnée attribuée dans le processus 0 :
 ```
